@@ -310,10 +310,34 @@ The built files will be in the `dist` directory, ready for deployment to any sta
 
 ### Deployment Options
 
-- **Vercel**: Connect your repository for automatic deployments
-- **Netlify**: Deploy the `dist` folder or connect your repository
-- **GitHub Pages**: Deploy the `dist` folder to GitHub Pages
-- **Any Static Host**: Upload the `dist` folder contents
+#### **Netlify** (Recommended)
+1. Connect your repository for automatic deployments, or
+2. Deploy the `dist` folder manually
+3. **Important**: The project includes a `public/_redirects` file that handles client-side routing
+4. This ensures direct URL access (e.g., `/principle-of-relationship-pair-matching-game`) works correctly
+
+#### **Vercel**
+- Connect your repository for automatic deployments
+- Vercel automatically handles SPA routing
+
+#### **GitHub Pages**
+- Deploy the `dist` folder to GitHub Pages
+- May require additional configuration for client-side routing
+
+#### **Other Static Hosts**
+- Upload the `dist` folder contents
+- Ensure the hosting service supports SPA redirects or configure accordingly
+
+### SPA Routing Configuration
+
+This project uses React Router for client-side routing. For direct URL access to work properly:
+
+**Netlify**: Uses `public/_redirects` file (already included):
+```
+/*    /index.html   200
+```
+
+**Other hosting services** may require similar redirect configurations to serve `index.html` for all routes.
 
 ## 🧪 Testing
 
