@@ -17,12 +17,12 @@ import broccoliImg from "../vegetable_images/brocolli.jpeg";
 import cabbageImg from "../vegetable_images/cabbage.jpeg";
 import carrotImg from "../vegetable_images/carrot.jpeg";
 import cauliflowerImg from "../vegetable_images/cauliflower.jpeg";
-import cucumberImg from "../vegetable_images/cucumber.jpeg";
 import greenBeansImg from "../vegetable_images/green beans.jpeg";
 import mushroomImg from "../vegetable_images/mushroom.jpeg";
 import onionImg from "../vegetable_images/onion.jpeg";
-import peppersImg from "../vegetable_images/peppers.jpeg";
 import spinachImg from "../vegetable_images/spinach.jpeg";
+import potatoImg from "../vegetable_images/potato.jpeg";
+import brinjalImg from "../vegetable_images/brinjal.jpeg";
 
 interface Item {
   id: number;
@@ -49,12 +49,12 @@ const vegetables: Item[] = [
   { id: 12, name: "Cabbage", type: "vegetable", image: cabbageImg },
   { id: 13, name: "Carrot", type: "vegetable", image: carrotImg },
   { id: 14, name: "Cauliflower", type: "vegetable", image: cauliflowerImg },
-  { id: 15, name: "Cucumber", type: "vegetable", image: cucumberImg },
-  { id: 16, name: "Green Beans", type: "vegetable", image: greenBeansImg },
-  { id: 17, name: "Mushroom", type: "vegetable", image: mushroomImg },
-  { id: 18, name: "Onion", type: "vegetable", image: onionImg },
-  { id: 19, name: "Peppers", type: "vegetable", image: peppersImg },
-  { id: 20, name: "Spinach", type: "vegetable", image: spinachImg },
+  { id: 15, name: "Green Beans", type: "vegetable", image: greenBeansImg },
+  { id: 16, name: "Mushroom", type: "vegetable", image: mushroomImg },
+  { id: 17, name: "Onion", type: "vegetable", image: onionImg },
+  { id: 18, name: "Spinach", type: "vegetable", image: spinachImg },
+  { id: 19, name: "Potato", type: "vegetable", image: potatoImg },
+  { id: 20, name: "Brinjal", type: "vegetable", image: brinjalImg },
 ];
 
 export function FruitVegetableGame(): React.JSX.Element {
