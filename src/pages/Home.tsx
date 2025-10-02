@@ -58,6 +58,29 @@ export function Home(): React.JSX.Element {
             </Link>
           </div>
 
+          {/* Fruit & Vegetable Matching Game Card */}
+          <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-2xl p-8 border-4 border-green-300 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <div className="text-6xl mb-4">🍎🥕</div>
+            <h2 className="text-3xl font-bold mb-4 text-green-800">
+              Fruit & Vegetable Matching Game
+            </h2>
+            <p className="text-lg text-gray-700 mb-6">
+              Test your knowledge! Drag fruits and vegetables to their correct columns. Race against time to get the highest score!
+            </p>
+            <div className="flex flex-wrap gap-2 mb-6 justify-center">
+              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-semibold">Fruits</span>
+              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">Vegetables</span>
+              <span className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-semibold">Drag & Drop</span>
+              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">40 Seconds</span>
+            </div>
+            <Link
+              to="/fruit-vegetable-matching-game"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-orange-600 text-white text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              🎮 Play Now! 🎮
+            </Link>
+          </div>
+
           {/* Future games placeholder */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border-4 border-gray-300 shadow-lg opacity-75">
             <div className="text-6xl mb-4">🚀</div>
