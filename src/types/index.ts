@@ -24,3 +24,19 @@ export interface PairMatchingGameProps {
   gameConfig: GameConfig;
   title: string;
 }
+
+export interface QuizQuestion {
+  prompt: string;
+  options: string[];
+  answer: string;
+}
+
+export interface ChallengeCard {
+  id: number;
+  topic: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  resource: string;
+  explanation: string;
+}

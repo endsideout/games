@@ -42,13 +42,22 @@ export function Home(): React.JSX.Element {
               Principle of Relationship Game
             </h2>
             <p className="text-lg text-gray-700 mb-6">
-              Match relationship principles and learn the foundations of healthy relationships through this engaging pair-matching game.
+              Match relationship principles and learn the foundations of healthy
+              relationships through this engaging pair-matching game.
             </p>
             <div className="flex flex-wrap gap-2 mb-6 justify-center">
-              <span className="px-3 py-1 bg-pink-200 text-pink-800 rounded-full text-sm font-semibold">Communication</span>
-              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-semibold">Trust</span>
-              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">Respect</span>
-              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">Equality</span>
+              <span className="px-3 py-1 bg-pink-200 text-pink-800 rounded-full text-sm font-semibold">
+                Communication
+              </span>
+              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-semibold">
+                Trust
+              </span>
+              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">
+                Respect
+              </span>
+              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">
+                Equality
+              </span>
             </div>
             <Link
               to="/principle-of-relationship-pair-matching-game"
@@ -65,17 +74,84 @@ export function Home(): React.JSX.Element {
               Fruit & Vegetable Matching Game
             </h2>
             <p className="text-lg text-gray-700 mb-6">
-              Test your knowledge! Drag fruits and vegetables to their correct columns. Race against time to get the highest score!
+              Test your knowledge! Drag fruits and vegetables to their correct
+              columns. Race against time to get the highest score!
             </p>
             <div className="flex flex-wrap gap-2 mb-6 justify-center">
-              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-semibold">Fruits</span>
-              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">Vegetables</span>
-              <span className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-semibold">Drag & Drop</span>
-              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">40 Seconds</span>
+              <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-semibold">
+                Fruits
+              </span>
+              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">
+                Vegetables
+              </span>
+              <span className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-semibold">
+                Drag & Drop
+              </span>
+              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">
+                40 Seconds
+              </span>
             </div>
             <Link
               to="/fruit-vegetable-matching-game"
               className="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-orange-600 text-white text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              🎮 Play Now! 🎮
+            </Link>
+          </div>
+
+          {/* Fruit & Veggie Quiz Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-2xl p-8 border-4 border-blue-300 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <div className="text-6xl mb-4">🌳</div>
+            <h2 className="text-3xl font-bold mb-4 text-blue-800">
+              Fruit & Veggie Quiz
+            </h2>
+            <p className="text-lg text-gray-700 mb-6">
+              Choose if it’s a fruit or a vegetable. Each correct answer grows
+              your tree!
+            </p>
+            <div className="flex flex-wrap gap-2 mb-6 justify-center">
+              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">
+                Quiz
+              </span>
+              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-semibold">
+                Fun & Learn
+              </span>
+            </div>
+            <Link
+              to="/fruit-veggie-quiz"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-green-600 text-white text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              🎮 Play Now! 🎮
+            </Link>
+          </div>
+
+          {/* Mental Health Challenge Quiz Card */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-4 border-purple-300 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <div className="text-6xl mb-4">🧠💚</div>
+            <h2 className="text-3xl font-bold mb-4 text-purple-800">
+              Mental Health Challenge
+            </h2>
+            <p className="text-lg text-gray-700 mb-6">
+              Test your emotional intelligence skills! Learn about empathy,
+              boundaries, and mental wellness through this interactive quiz.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-6 justify-center">
+              <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-semibold">
+                Empathy
+              </span>
+              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold">
+                Boundaries
+              </span>
+              <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">
+                Mental Health
+              </span>
+              <span className="px-3 py-1 bg-pink-200 text-pink-800 rounded-full text-sm font-semibold">
+                Emotional Intelligence
+              </span>
+            </div>
+            <Link
+              to="/challenge-quiz"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               🎮 Play Now! 🎮
             </Link>
@@ -88,7 +164,8 @@ export function Home(): React.JSX.Element {
               More Games Coming Soon!
             </h2>
             <p className="text-lg text-gray-500 mb-6">
-              Stay tuned for more exciting educational games that will help you learn and grow.
+              Stay tuned for more exciting educational games that will help you
+              learn and grow.
             </p>
             <button
               disabled
@@ -100,9 +177,7 @@ export function Home(): React.JSX.Element {
         </div>
 
         <div className="mt-12">
-          <p className="text-lg text-gray-600">
-            🎯 Learn • 🎮 Play • 🌱 Grow
-          </p>
+          <p className="text-lg text-gray-600">🎯 Learn • 🎮 Play • 🌱 Grow</p>
         </div>
       </div>
     </div>
