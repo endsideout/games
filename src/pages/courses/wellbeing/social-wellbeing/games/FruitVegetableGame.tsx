@@ -1,28 +1,29 @@
 import React, { useState, useEffect } from "react";
+import { Logo } from "../../../../../components";
 
 // Import fruit images
-import appleImg from "../fruits_images/apple.jpeg";
-import bananaImg from "../fruits_images/banana.jpeg";
-import grapesImg from "../fruits_images/grapes.jpeg";
-import kiwiImg from "../fruits_images/kiwi.jpeg";
-import mangoImg from "../fruits_images/mango.jpeg";
-import orangeImg from "../fruits_images/orange.jpeg";
-import pineappleImg from "../fruits_images/pineapple.jpeg";
-import pomegranateImg from "../fruits_images/pomogranete.jpeg";
-import strawberryImg from "../fruits_images/Strawberry.jpeg";
-import watermelonImg from "../fruits_images/watermelon.jpeg";
+import appleImg from "../../../../../assets/images/games/fruits/apple.jpeg";
+import bananaImg from "../../../../../assets/images/games/fruits/banana.jpeg";
+import grapesImg from "../../../../../assets/images/games/fruits/grapes.jpeg";
+import kiwiImg from "../../../../../assets/images/games/fruits/kiwi.jpeg";
+import mangoImg from "../../../../../assets/images/games/fruits/mango.jpeg";
+import orangeImg from "../../../../../assets/images/games/fruits/orange.jpeg";
+import pineappleImg from "../../../../../assets/images/games/fruits/pineapple.jpeg";
+import pomegranateImg from "../../../../../assets/images/games/fruits/pomogranete.jpeg";
+import strawberryImg from "../../../../../assets/images/games/fruits/Strawberry.jpeg";
+import watermelonImg from "../../../../../assets/images/games/fruits/watermelon.jpeg";
 
 // Import vegetable images
-import broccoliImg from "../vegetable_images/brocolli.jpeg";
-import cabbageImg from "../vegetable_images/cabbage.jpeg";
-import carrotImg from "../vegetable_images/carrot.jpeg";
-import cauliflowerImg from "../vegetable_images/cauliflower.jpeg";
-import greenBeansImg from "../vegetable_images/green beans.jpeg";
-import mushroomImg from "../vegetable_images/mushroom.jpeg";
-import onionImg from "../vegetable_images/onion.jpeg";
-import spinachImg from "../vegetable_images/spinach.jpeg";
-import potatoImg from "../vegetable_images/potato.jpeg";
-import brinjalImg from "../vegetable_images/brinjal.jpeg";
+import broccoliImg from "../../../../../assets/images/games/vegetables/brocolli.jpeg";
+import cabbageImg from "../../../../../assets/images/games/vegetables/cabbage.jpeg";
+import carrotImg from "../../../../../assets/images/games/vegetables/carrot.jpeg";
+import cauliflowerImg from "../../../../../assets/images/games/vegetables/cauliflower.jpeg";
+import greenBeansImg from "../../../../../assets/images/games/vegetables/green beans.jpeg";
+import mushroomImg from "../../../../../assets/images/games/vegetables/mushroom.jpeg";
+import onionImg from "../../../../../assets/images/games/vegetables/onion.jpeg";
+import spinachImg from "../../../../../assets/images/games/vegetables/spinach.jpeg";
+import potatoImg from "../../../../../assets/images/games/vegetables/potato.jpeg";
+import brinjalImg from "../../../../../assets/images/games/vegetables/brinjal.jpeg";
 
 interface Item {
   id: number;
@@ -161,6 +162,7 @@ export function FruitVegetableGame(): React.JSX.Element {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-orange-100 flex items-center justify-center p-8">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 max-w-2xl text-center">
+          <Logo size="md" className="mx-auto mb-4" />
           <div className="text-8xl mb-6">🍎🥕</div>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-transparent">
             Fruit & Vegetable Matching Game
@@ -188,6 +190,7 @@ export function FruitVegetableGame(): React.JSX.Element {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 flex items-center justify-center p-8">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 max-w-2xl text-center">
+          <Logo size="md" className="mx-auto mb-4" />
           <div className="text-8xl mb-6">🎉</div>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Game Over!
@@ -236,8 +239,11 @@ export function FruitVegetableGame(): React.JSX.Element {
           <div className="text-2xl font-bold text-purple-600">
             Score: {score}
           </div>
-          <div className="text-3xl font-bold text-blue-600">
-            Time: {timeLeft}s
+          <div className="flex items-center gap-3">
+            <Logo size="sm" />
+            <div className="text-3xl font-bold text-blue-600">
+              Time: {timeLeft}s
+            </div>
           </div>
           <button
             onClick={backToMenu}

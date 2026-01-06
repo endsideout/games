@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, PairMatchingGameProps } from "../types";
+import { Logo } from "./Logo";
 
 // Utility to shuffle array
 function shuffleArray(array: string[]): Card[] {
@@ -22,6 +23,7 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
   const [moves, setMoves] = useState(0);
   const [timeLeft, setTimeLeft] = useState(gameConfig.time);
   const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     // Initialize cards
@@ -51,6 +53,7 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
             card.word === firstCard.word ? { ...card, matched: true } : card
           )
         );
+        setScore((prev) => prev + 10); // Add 10 points for each correct match
         resetTurn();
       } else {
         setTimeout(() => resetTurn(), 1000);
@@ -103,14 +106,21 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
       <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-4 border-yellow-400 w-full max-w-7xl">
         {/* Game Header with Stats */}
         <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-xl p-3 border-2 border-blue-300 shadow-lg">
-          <div className="text-center bg-white bg-opacity-70 rounded-xl p-2 border border-blue-200 shadow-md">
-            <div className="text-lg font-black text-blue-600 mb-1">⏰ TIME</div>
-            <div
-              className={`text-2xl font-black ${
-                timeLeft <= 10 ? "text-red-500 animate-pulse" : "text-blue-800"
-              }`}
-            >
-              {timeLeft}s
+          <div className="flex items-center gap-3">
+            <Logo size="sm" />
+            <div className="text-center bg-white bg-opacity-70 rounded-xl p-2 border border-blue-200 shadow-md">
+              <div className="text-lg font-black text-blue-600 mb-1">⏰ TIME</div>
+              <div
+                className={`text-2xl font-black ${
+                  timeLeft <= 10 ? "text-red-500 animate-pulse" : "text-blue-800"
+                }`}
+              >
+                {timeLeft}s
+              </div>
+            </div>
+            <div className="text-center bg-white bg-opacity-70 rounded-xl p-2 border border-green-200 shadow-md">
+              <div className="text-lg font-black text-green-600 mb-1">⭐ SCORE</div>
+              <div className="text-2xl font-black text-green-800">{score}</div>
             </div>
           </div>
 
@@ -177,9 +187,14 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
             <p className="text-5xl font-black mb-4 text-red-800">
               ⏰ Time's Up! ⏰
             </p>
-            <p className="text-2xl mb-6 font-black text-red-700">
+            <p className="text-2xl mb-4 font-black text-red-700">
               Don't worry, try again! You made {moves} moves.
             </p>
+            <div className="bg-white rounded-xl p-4 mb-6 border-2 border-red-300">
+              <p className="text-3xl font-black text-orange-600">
+                Final Score: {score} points
+              </p>
+            </div>
             <div className="mb-6">
               <span className="text-6xl">😅</span>
             </div>
@@ -227,39 +242,43 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
             </div>
 
             {/* Centered congratulations overlay */}
-            <div className="absolute inset-0 flex items-center justify-center p-8">
-              <div className="text-center bg-white bg-opacity-95 backdrop-blur-md rounded-3xl p-12 border-4 border-yellow-400 shadow-2xl max-w-4xl">
-                <p className="text-6xl font-black mb-6 text-orange-800">
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="text-center bg-white bg-opacity-95 backdrop-blur-md rounded-3xl p-6 border-4 border-yellow-400 shadow-2xl max-w-3xl max-h-[90vh] overflow-y-auto">
+                <p className="text-4xl font-black mb-4 text-orange-800">
                   🎉 Amazing! 🎉
                 </p>
-                <p className="text-3xl mb-6 font-black text-orange-700">
-                  You matched all pairs in {moves} moves with {timeLeft} seconds
-                  left!
-                </p>
-                <p className="text-4xl mb-8 font-black text-orange-600">
+                <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-4 mb-4 border-4 border-green-400">
+                  <p className="text-3xl font-black text-green-700 mb-1">
+                    Final Score: {score} points! 🏆
+                  </p>
+                  <p className="text-lg font-bold text-gray-700">
+                    {moves} moves • {timeLeft} seconds remaining
+                  </p>
+                </div>
+                <p className="text-2xl mb-4 font-black text-orange-600">
                   These are the principles of a healthy relationship!
                 </p>
 
                 {/* All principles displayed */}
-                <div className="grid grid-cols-2 gap-6 mb-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200">
+                <div className="grid grid-cols-2 gap-3 mb-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 border-2 border-blue-200">
                   {words.map((word: string, index: number) => (
                     <div
                       key={index}
-                      className="flex items-center justify-center bg-white rounded-xl p-4 border-2 border-green-300 shadow-lg"
+                      className="flex items-center justify-center bg-white rounded-xl p-2 border-2 border-green-300 shadow-lg"
                     >
-                      <span className="text-2xl font-black text-green-700">
+                      <span className="text-lg font-black text-green-700">
                         ✓ {word}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mb-6">
-                  <span className="text-6xl">🏆</span>
+                <div className="mb-4">
+                  <span className="text-4xl">🏆</span>
                 </div>
                 <button
                   onClick={onBackToMenu}
-                  className="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xl font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-4 border-white"
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-4 border-white"
                 >
                   🏠 Play Again! 🏠
                 </button>

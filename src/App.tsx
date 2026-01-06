@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
   Home,
+  ThreeDWellness,
+  SocialWellbeing,
   PrincipleOfRelationshipGame,
   FruitVegetableGame,
   Quiz,
@@ -14,6 +16,8 @@ export default function App(): React.JSX.Element {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/3d-wellness" element={<ThreeDWellness />} />
+        <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"
           element={<PrincipleOfRelationshipGame />}
@@ -42,7 +46,14 @@ export default function App(): React.JSX.Element {
             />
           }
         />
-        {/* Add more game routes here in the future */}
+        {/* Placeholder routes for other wellness dimensions */}
+        <Route path="/emotional-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Emotional Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/environmental-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Environmental Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/financial-literacy" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Financial Literacy</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/intellectual-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Intellectual Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/occupational-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Occupational Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/physical-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Physical Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/spiritual-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Spiritual Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
       </Routes>
     </Router>
   );

@@ -1,5 +1,6 @@
 import React from "react";
-import type { QuizQuestion, ChallengeCard } from "../types";
+import type { QuizQuestion, ChallengeCard } from "../../../../../types";
+import { Logo } from "../../../../../components";
 
 export interface QuizProps {
   // Support both data formats for future quiz types
@@ -338,6 +339,7 @@ export function Quiz({
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-stretch">
         <div className="bg-white bg-opacity-95 rounded-2xl border-4 border-green-300 shadow-2xl p-6 flex flex-col">
           <div className="text-center mb-4">
+            <Logo size="sm" className="mx-auto mb-3" />
             <h1 className="text-3xl font-extrabold text-green-700">
               {title ?? "Quiz"}
             </h1>

@@ -1,5 +1,6 @@
 import React from "react";
 import { GameMenuProps } from "../types";
+import { Logo } from "./Logo";
 
 export function GameMenu({ onStartGame, title, description }: GameMenuProps): React.JSX.Element {
   return (
@@ -17,14 +18,7 @@ export function GameMenu({ onStartGame, title, description }: GameMenuProps): Re
       }}
     >
       <div className="text-center p-12 bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl border-8 border-yellow-300 max-w-4xl">
-        <div className="flex items-center justify-start mb-6">
-          <img
-            src="/EndsideOutLogo.png"
-            alt="Endsideout Logo"
-            className="w-24 h-auto mr-8 shadow-lg"
-          />
-          <div className="flex-1"></div>
-        </div>
+        <Logo size="md" className="mx-auto mb-6" />
         <h1 className="text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
           {title}
         </h1>

@@ -1,0 +1,1 @@
+export { ThreeDWellness } from "./ThreeDWellness";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { GameMenu, PairMatchingGame } from "../components";
-import { GameConfig } from "../types";
+import { GameMenu, PairMatchingGame } from "../../../../../components";
+import { GameConfig } from "../../../../../types";
 
 // Words for the Principle of Relationship cards
 const relationshipWords = [

@@ -1,4 +1,13 @@
-export { Home } from "./Home";
-export { PrincipleOfRelationshipGame } from "./PrincipleOfRelationshipGame";
-export { FruitVegetableGame } from "./FruitVegetableGame";
-export { Quiz } from "./Quiz";
+// Landing pages
+export { Home } from "./landing";
+
+// Course pages
+export { ThreeDWellness } from "./courses";
+export { SocialWellbeing } from "./courses/wellbeing";
+
+// Games
+export {
+  PrincipleOfRelationshipGame,
+  FruitVegetableGame,
+  Quiz
+} from "./courses/wellbeing/social-wellbeing/games";
