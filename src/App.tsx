@@ -4,6 +4,7 @@ import {
   Home,
   ThreeDWellness,
   SocialWellbeing,
+  PlanetProtectorGame,
   PrincipleOfRelationshipGame,
   FruitVegetableGame,
   Quiz,
@@ -48,7 +49,12 @@ export default function App(): React.JSX.Element {
         />
         {/* Placeholder routes for other wellness dimensions */}
         <Route path="/emotional-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Emotional Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
-        <Route path="/environmental-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Environmental Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route
+          path="/environmental-wellbeing"
+          element={
+              <PlanetProtectorGame />
+          }
+        />
         <Route path="/financial-literacy" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Financial Literacy</h1><p className="text-xl">Coming Soon!</p></div></div>} />
         <Route path="/intellectual-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Intellectual Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
         <Route path="/occupational-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Occupational Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
