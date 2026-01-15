@@ -4,10 +4,12 @@ import {
   Home,
   ThreeDWellness,
   SocialWellbeing,
+  EmotionalWellbeing,
   PlanetProtectorGame,
   PrincipleOfRelationshipGame,
   FruitVegetableGame,
   Quiz,
+  EmotionDetectiveGame,
 } from "./pages";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
 import { challengeCards } from "./data/challengeCards";
@@ -47,8 +49,10 @@ export default function App(): React.JSX.Element {
             />
           }
         />
+        {/* Emotional Wellbeing routes */}
+        <Route path="/emotional-wellbeing" element={<EmotionalWellbeing />} />
+        <Route path="/emotion-detective-game" element={<EmotionDetectiveGame />} />
         {/* Placeholder routes for other wellness dimensions */}
-        <Route path="/emotional-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Emotional Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
         <Route
           path="/environmental-wellbeing"
           element={

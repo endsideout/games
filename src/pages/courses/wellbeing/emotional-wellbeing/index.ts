@@ -1,0 +1,1 @@
+export { EmotionDetectiveGame } from "./games";
