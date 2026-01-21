@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "convert:webp": "node scripts/convert-to-webp.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
@@ -26,6 +27,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.7.2",
     "vite": "^5.4.11"
