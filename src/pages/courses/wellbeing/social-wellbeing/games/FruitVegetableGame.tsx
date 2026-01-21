@@ -2,28 +2,28 @@ import React, { useState, useEffect } from "react";
 import { Logo } from "../../../../../components";
 
 // Import fruit images
-import appleImg from "../../../../../assets/images/games/fruits/apple.jpeg";
-import bananaImg from "../../../../../assets/images/games/fruits/banana.jpeg";
-import grapesImg from "../../../../../assets/images/games/fruits/grapes.jpeg";
-import kiwiImg from "../../../../../assets/images/games/fruits/kiwi.jpeg";
-import mangoImg from "../../../../../assets/images/games/fruits/mango.jpeg";
-import orangeImg from "../../../../../assets/images/games/fruits/orange.jpeg";
-import pineappleImg from "../../../../../assets/images/games/fruits/pineapple.jpeg";
-import pomegranateImg from "../../../../../assets/images/games/fruits/pomogranete.jpeg";
-import strawberryImg from "../../../../../assets/images/games/fruits/Strawberry.jpeg";
-import watermelonImg from "../../../../../assets/images/games/fruits/watermelon.jpeg";
+import appleImg from "../../../../../assets/images/games/fruits/apple.webp";
+import bananaImg from "../../../../../assets/images/games/fruits/banana.webp";
+import grapesImg from "../../../../../assets/images/games/fruits/grapes.webp";
+import kiwiImg from "../../../../../assets/images/games/fruits/kiwi.webp";
+import mangoImg from "../../../../../assets/images/games/fruits/mango.webp";
+import orangeImg from "../../../../../assets/images/games/fruits/orange.webp";
+import pineappleImg from "../../../../../assets/images/games/fruits/pineapple.webp";
+import pomegranateImg from "../../../../../assets/images/games/fruits/pomogranete.webp";
+import strawberryImg from "../../../../../assets/images/games/fruits/Strawberry.webp";
+import watermelonImg from "../../../../../assets/images/games/fruits/watermelon.webp";
 
 // Import vegetable images
-import broccoliImg from "../../../../../assets/images/games/vegetables/brocolli.jpeg";
-import cabbageImg from "../../../../../assets/images/games/vegetables/cabbage.jpeg";
-import carrotImg from "../../../../../assets/images/games/vegetables/carrot.jpeg";
-import cauliflowerImg from "../../../../../assets/images/games/vegetables/cauliflower.jpeg";
-import greenBeansImg from "../../../../../assets/images/games/vegetables/green beans.jpeg";
-import mushroomImg from "../../../../../assets/images/games/vegetables/mushroom.jpeg";
-import onionImg from "../../../../../assets/images/games/vegetables/onion.jpeg";
-import spinachImg from "../../../../../assets/images/games/vegetables/spinach.jpeg";
-import potatoImg from "../../../../../assets/images/games/vegetables/potato.jpeg";
-import brinjalImg from "../../../../../assets/images/games/vegetables/brinjal.jpeg";
+import broccoliImg from "../../../../../assets/images/games/vegetables/brocolli.webp";
+import cabbageImg from "../../../../../assets/images/games/vegetables/cabbage.webp";
+import carrotImg from "../../../../../assets/images/games/vegetables/carrot.webp";
+import cauliflowerImg from "../../../../../assets/images/games/vegetables/cauliflower.webp";
+import greenBeansImg from "../../../../../assets/images/games/vegetables/green beans.webp";
+import mushroomImg from "../../../../../assets/images/games/vegetables/mushroom.webp";
+import onionImg from "../../../../../assets/images/games/vegetables/onion.webp";
+import spinachImg from "../../../../../assets/images/games/vegetables/spinach.webp";
+import potatoImg from "../../../../../assets/images/games/vegetables/potato.webp";
+import brinjalImg from "../../../../../assets/images/games/vegetables/brinjal.webp";
 
 interface Item {
   id: number;

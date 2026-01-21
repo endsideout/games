@@ -3,16 +3,16 @@ import { Link } from "react-router-dom";
 import { Logo } from "../../../../../components";
 
 // Import scenario images
-import mayaBikeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Maya's bike was stolen from the school playground.png";
-import johnCakeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/John's brother ate his piece of birthday cake.png";
-import sarahMovieImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Sarah is watching a scary movie alone at night.png";
-import tomPuppyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Tom got a puppy for his birthday.png";
-import lisaFriendImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/One for this  Lisa's best friend is moving to another city.png";
-import alexRaceImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Alex won first place in the school race.png";
-import emmaToyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Emma lost her favorite toy at the park.png";
-import benNoiseImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Ben heard a loud noise outside his window at night.png";
-import ninaGameImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Nina's team lost the final game of the season.png";
-import davidLunchImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/David's friend shared their lunch with him when he forgot his.png";
+import mayaBikeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Maya's bike was stolen from the school playground.webp";
+import johnCakeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/John's brother ate his piece of birthday cake.webp";
+import sarahMovieImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Sarah is watching a scary movie alone at night.webp";
+import tomPuppyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Tom got a puppy for his birthday.webp";
+import lisaFriendImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/One for this  Lisa's best friend is moving to another city.webp";
+import alexRaceImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Alex won first place in the school race.webp";
+import emmaToyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Emma lost her favorite toy at the park.webp";
+import benNoiseImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Ben heard a loud noise outside his window at night.webp";
+import ninaGameImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Nina's team lost the final game of the season.webp";
+import davidLunchImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/David's friend shared their lunch with him when he forgot his.webp";
 
 interface Scenario {
   id: number;
