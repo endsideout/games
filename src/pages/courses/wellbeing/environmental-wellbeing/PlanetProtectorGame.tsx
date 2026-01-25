@@ -12,8 +12,8 @@ const GAME_DURATION = 30;
 const ITEM_FALL_SPEED = 2;
 const ITEM_SPAWN_INTERVAL = 2500;
 
-const TILE_WIDTH = 120;
-const TILE_HEIGHT = 40;
+const TILE_WIDTH = 180;
+const TILE_HEIGHT = 60;
 
 const goodItems = [
   "Plant trees",
@@ -38,7 +38,7 @@ const PlanetProtectorGame: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
 
   const CONTAINER_HEIGHT = 420;
-  const EARTH_HEIGHT = 120;
+  const EARTH_HEIGHT = 70;
   const EARTH_TOP = CONTAINER_HEIGHT - EARTH_HEIGHT;
 
   // Spawn items
@@ -80,7 +80,12 @@ const PlanetProtectorGame: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [gameOver]);
-
+  const resetGame = () => {
+    setItems([]);
+    setScore(0);
+    setTimer(GAME_DURATION);
+    setGameOver(false);
+  };
   // Timer
   useEffect(() => {
     if (gameOver) return;
@@ -137,7 +142,7 @@ const PlanetProtectorGame: React.FC = () => {
 
       <div className="flex">
         {/* Game */}
-        <div className="relative w-[320px] h-[420px] bg-blue-100 border rounded p-2 overflow-hidden">
+        <div className="relative w-[40vw] h-[75vh] bg-blue-100 border-4 rounded-2xl p-4 overflow-hidden shadow-xl">
           <div className="flex justify-between mb-2">
             <div>🌟 {score}</div>
             <div>⏰ {timer}s</div>
@@ -166,23 +171,30 @@ const PlanetProtectorGame: React.FC = () => {
             ))}
 
           {/* Earth */}
-          <div className="absolute bottom-0 left-0 w-full h-[120px] overflow-hidden">
-            <div
-              className="text-center"
-              style={{
-                fontSize: "20rem",
-                lineHeight: "1",
-                transform: "translateY(10%)",
-              }}
-            >
-              🌍
-            </div>
-          </div>
+          <div
+  className="text-center select-none"
+  style={{
+    fontSize: "22rem",                 
+    lineHeight: "0.9",
+    transform: "translateY(100%) scaleX(2.2)", 
+    transformOrigin: "center bottom",  
+  }}
+>
+  🌍
+</div>
+
 
           {gameOver && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70">
-              <h2 className="text-xl font-bold">🎉 Game Over! 🎉</h2>
-              <p>Your Planet Score: {score}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+              <h2 className="text-2xl font-bold mb-2">🎉 Game Over! 🎉</h2>
+              <p className="mb-4 text-lg">Your Planet Score: {score}</p>
+
+              <button
+                onClick={resetGame}
+                className="bg-green-400 hover:bg-green-600 active:scale-95 transition text-white px-6 py-2 rounded-xl shadow-md"
+              >
+                Play Again 
+              </button>
             </div>
           )}
         </div>
