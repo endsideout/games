@@ -1,5 +1,5 @@
 import React from "react";
-import logoImg from "../assets/images/logos/EO_globe_vert_teal_transparent.png";
+import logoImg from "../assets/images/logos/EO_globe_vert_teal_transparent.webp";
 
 interface LogoProps {
   className?: string;
