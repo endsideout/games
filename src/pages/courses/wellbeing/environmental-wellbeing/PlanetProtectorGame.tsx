@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from "react";
+const EarthImage = new URL(
+  "/src/assets/images/games/environmentalwellbeing/earth.webp",
+  import.meta.url
+).href;
+
+
 
 type FallingItem = {
   id: number;
@@ -38,7 +44,7 @@ const PlanetProtectorGame: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
 
   const CONTAINER_HEIGHT = 420;
-  const EARTH_HEIGHT = 70;
+  const EARTH_HEIGHT = 5;
   const EARTH_TOP = CONTAINER_HEIGHT - EARTH_HEIGHT;
 
   // Spawn items
@@ -171,18 +177,16 @@ const PlanetProtectorGame: React.FC = () => {
             ))}
 
           {/* Earth */}
-          <div
-  className="text-center select-none"
-  style={{
-    fontSize: "22rem",                 
-    lineHeight: "0.9",
-    transform: "translateY(100%) scaleX(2.2)", 
-    transformOrigin: "center bottom",  
-  }}
->
-  🌍
-</div>
-
+         <div className="absolute translate-y-[75%] bottom-0 left-0 w-full overflow-hidden flex justify-center pointer-events-none">
+            <img
+              src={EarthImage}
+              style={{
+                width: "120vw",
+                height: "90vh",
+                display: "block"  
+              }}
+            />
+          </div>
 
           {gameOver && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
