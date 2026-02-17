@@ -130,7 +130,7 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
            `,
       }}
     >
-      <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-4 border-yellow-400 w-full max-w-7xl">
+      <div ref={gridRef} className="bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-4 border-yellow-400 w-full max-w-7xl">
         {/* Game Header with Stats */}
         <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-xl p-3 border-2 border-blue-300 shadow-lg">
           <div className="flex items-center gap-3">
@@ -170,7 +170,6 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
 
         {!completed && !gameOver ? (
           <div
-            ref={gridRef}
             className="w-full max-w-6xl mx-auto px-4"
             style={{
               display: "grid",
@@ -200,13 +199,13 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
                     <p
                       className="font-black text-gray-900 leading-tight break-words text-center"
                       style={{
-                        fontSize: "clamp(1rem, 3vw, 2.5rem)",
+                        fontSize: card.word.length > 8 ? "clamp(0.75rem, 1.5vw, 1.25rem)" : "clamp(1rem, 2vw, 1.75rem)",
                       }}
                     >
                       {card.word}
                     </p>
                   ) : (
-                    <p style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }} className="text-white">❓</p>
+                    <p style={{ fontSize: "clamp(1.5rem, 3vw, 3rem)" }} className="text-white">❓</p>
                   )}
                 </div>
               </div>
@@ -262,7 +261,7 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
                   <div className="text-center w-full px-2 flex items-center justify-center h-full">
                     <p
                       className="font-black text-gray-900 leading-tight break-words text-center"
-                      style={{ fontSize: "clamp(1rem, 3vw, 2.5rem)" }}
+                      style={{ fontSize: card.word.length > 8 ? "clamp(0.75rem, 1.5vw, 1.25rem)" : "clamp(1rem, 2vw, 1.75rem)" }}
                     >
                       {card.word}
                     </p>
