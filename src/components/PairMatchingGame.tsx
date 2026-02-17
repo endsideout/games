@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, PairMatchingGameProps } from "../types";
 import { Logo } from "./Logo";
 
@@ -24,6 +24,33 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
   const [timeLeft, setTimeLeft] = useState(gameConfig.time);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
+  const [gridCols, setGridCols] = useState(4);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Compute columns so total cards always divides evenly across rows
+  useEffect(() => {
+    const totalCards = gameConfig.pairs * 2;
+    const computeCols = (width: number): number => {
+      // Find the largest divisor of totalCards that fits cleanly
+      const candidates = [4, 3, 2, 1];
+      for (const cols of candidates) {
+        if (totalCards % cols === 0 && width >= cols * 140) return cols;
+      }
+      return 2;
+    };
+
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      setGridCols(computeCols(width));
+    });
+
+    if (gridRef.current) {
+      observer.observe(gridRef.current);
+      setGridCols(computeCols(gridRef.current.offsetWidth));
+    }
+
+    return () => observer.disconnect();
+  }, [gameConfig.pairs]);
 
   useEffect(() => {
     // Initialize cards
@@ -142,15 +169,23 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
         </div>
 
         {!completed && !gameOver ? (
-          <div className="grid grid-cols-4 gap-x-8 gap-y-12 w-full max-w-6xl mx-auto px-8">
+          <div
+            ref={gridRef}
+            className="w-full max-w-6xl mx-auto px-4"
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+              gap: "1.5rem",
+            }}
+          >
             {cards.map((card: Card) => (
               <div
                 key={card.id}
                 onClick={() => handleClick(card)}
                 className="flex items-center justify-center cursor-pointer transform transition-all duration-200 hover:scale-105 border-4 border-white shadow-2xl"
                 style={{
-                  width: "250px",
-                  height: "180px",
+                  aspectRatio: "4 / 3",
+                  width: "100%",
                   background:
                     card.flipped || card.matched
                       ? "linear-gradient(135deg, #4ade80 0%, #22c55e 100%)"
@@ -165,18 +200,13 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
                     <p
                       className="font-black text-gray-900 leading-tight break-words text-center"
                       style={{
-                        fontSize:
-                          card.word.length > 8
-                            ? "2.5rem"
-                            : card.word.length > 6
-                            ? "3rem"
-                            : "3.5rem",
+                        fontSize: "clamp(1rem, 3vw, 2.5rem)",
                       }}
                     >
                       {card.word}
                     </p>
                   ) : (
-                    <p className="text-8xl text-white">❓</p>
+                    <p style={{ fontSize: "clamp(2rem, 5vw, 5rem)" }} className="text-white">❓</p>
                   )}
                 </div>
               </div>
@@ -208,14 +238,21 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
         ) : (
           <>
             {/* Blurred background with cards */}
-            <div className="grid grid-cols-4 gap-x-8 gap-y-12 w-full max-w-6xl mx-auto px-8 opacity-30 blur-sm pointer-events-none">
+            <div
+              className="w-full max-w-6xl mx-auto px-4 opacity-30 blur-sm pointer-events-none"
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+                gap: "1.5rem",
+              }}
+            >
               {cards.map((card: Card) => (
                 <div
                   key={card.id}
                   className="flex items-center justify-center border-4 border-white shadow-2xl"
                   style={{
-                    width: "250px",
-                    height: "180px",
+                    aspectRatio: "4 / 3",
+                    width: "100%",
                     background:
                       "linear-gradient(135deg, #4ade80 0%, #22c55e 100%)",
                     borderRadius: "16px",
@@ -225,14 +262,7 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
                   <div className="text-center w-full px-2 flex items-center justify-center h-full">
                     <p
                       className="font-black text-gray-900 leading-tight break-words text-center"
-                      style={{
-                        fontSize:
-                          card.word.length > 8
-                            ? "2.5rem"
-                            : card.word.length > 6
-                            ? "3rem"
-                            : "3.5rem",
-                      }}
+                      style={{ fontSize: "clamp(1rem, 3vw, 2.5rem)" }}
                     >
                       {card.word}
                     </p>
