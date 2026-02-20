@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow anyone to create game_events (no auth required for Thinkific embeds)
+    // Restrict to only allow 'create' - no read, update, or delete from client
+    match /game_events/{document=**} {
+      allow create: if true;
+      // Allow reads only for authenticated admin users (@endsideout.org)
+      allow read: if request.auth != null && 
+                     request.auth.token.email != null && 
+                     request.auth.token.email.matches('.*@endsideout\\.org$');
+      allow update, delete: if false;
+    }
+  }
+}

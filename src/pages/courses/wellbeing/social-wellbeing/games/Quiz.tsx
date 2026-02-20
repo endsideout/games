@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 import type { QuizQuestion, ChallengeCard } from "../../../../../types";
 import { Logo } from "../../../../../components";
+import { useGameUser } from "../../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../../lib/sessionId";
 
 export interface QuizProps {
   // Support both data formats for future quiz types
@@ -8,6 +10,7 @@ export interface QuizProps {
   cards?: ChallengeCard[];
   title?: string;
   subtitle?: string;
+  gameId?: string; // Required for tracking
 }
 
 type Emotion = "neutral" | "happy" | "sad";
@@ -270,7 +273,12 @@ export function Quiz({
   cards,
   title,
   subtitle,
+  gameId,
 }: QuizProps): React.JSX.Element {
+  const { trackEvent } = useGameUser();
+  const sessionIdRef = useRef<string | null>(null);
+  const hasStartedRef = useRef<boolean>(false);
+  
   // Determine which data format we're using
   const isChallengeFormat = !!cards;
   const dataLength = isChallengeFormat ? cards!.length : questions!.length;
@@ -288,6 +296,18 @@ export function Quiz({
   const currentItem = isChallengeFormat ? cards![current] : questions![current];
 
   function handleAnswer(optionIndex: number): void {
+    // Track game start on first answer
+    if (!hasStartedRef.current && gameId) {
+      hasStartedRef.current = true;
+      const newSessionId = generateSessionId();
+      sessionIdRef.current = newSessionId;
+      trackEvent({
+        gameId,
+        event: "game_started",
+        sessionId: newSessionId,
+      });
+    }
+
     let correct: boolean;
 
     if (isChallengeFormat) {
@@ -314,11 +334,28 @@ export function Quiz({
       setCurrent((c) => c + 1);
     } else {
       setFinished(true);
+      // Track game completion
+      if (gameId && sessionIdRef.current) {
+        trackEvent({
+          gameId,
+          event: "game_completed",
+          sessionId: sessionIdRef.current,
+          score,
+          moves: dataLength,
+          metadata: {
+            totalQuestions: dataLength,
+            correctAnswers: score,
+          },
+        });
+      }
     }
     setLastCorrect(null);
   }
 
   function reset(): void {
+    // Reset session tracking
+    sessionIdRef.current = null;
+    hasStartedRef.current = false;
     setCurrent(0);
     setScore(0);
     setFinished(false);

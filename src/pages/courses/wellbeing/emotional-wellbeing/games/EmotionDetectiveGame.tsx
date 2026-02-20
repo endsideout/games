@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../../../../../components";
+import { useGameUser } from "../../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../../lib/sessionId";
 
 // Import scenario images
 import mayaBikeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Maya's bike was stolen from the school playground.webp";
@@ -148,7 +150,11 @@ const scenarios: Scenario[] = [
   },
 ];
 
+const GAME_ID = "emotion-detective-game";
+
 export function EmotionDetectiveGame(): React.JSX.Element {
+  const { trackEvent } = useGameUser();
+  const sessionIdRef = useRef<string | null>(null);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -159,6 +165,23 @@ export function EmotionDetectiveGame(): React.JSX.Element {
 
   const currentScenario = scenarios[currentScenarioIndex];
   const progress = ((currentScenarioIndex + 1) / scenarios.length) * 100;
+
+  // Track game completion when game completes
+  useEffect(() => {
+    if (gameComplete && sessionIdRef.current) {
+      trackEvent({
+        gameId: GAME_ID,
+        event: "game_completed",
+        sessionId: sessionIdRef.current,
+        score,
+        moves: scenarios.length,
+        metadata: {
+          totalScenarios: scenarios.length,
+          correctAnswers: Math.floor(score / 10), // Each correct answer is +10
+        },
+      });
+    }
+  }, [gameComplete, score, trackEvent]);
 
   // Timer effect
   useEffect(() => {
@@ -171,18 +194,23 @@ export function EmotionDetectiveGame(): React.JSX.Element {
       } else {
         // Time's up! Move to next question
         setFeedback("timeout");
-        setScore(Math.max(0, score - 5)); // Lose 5 points for timeout
-
-        setTimeout(() => {
-          if (currentScenarioIndex < scenarios.length - 1) {
-            setCurrentScenarioIndex(currentScenarioIndex + 1);
-            setFeedback(null);
-            setSelectedEmotion(null);
-            setTimeLeft(15); // Reset timer
-          } else {
-            setGameComplete(true);
-          }
-        }, 1500);
+        setScore((prev) => {
+          const newScore = Math.max(0, prev - 5); // Lose 5 points for timeout
+          
+          // Move to next question after delay
+          setTimeout(() => {
+            if (currentScenarioIndex < scenarios.length - 1) {
+              setCurrentScenarioIndex((idx) => idx + 1);
+              setFeedback(null);
+              setSelectedEmotion(null);
+              setTimeLeft(15); // Reset timer
+        } else {
+          setGameComplete(true);
+        }
+          }, 1500);
+          
+          return newScore;
+        });
       }
     }
   }, [timeLeft, showMenu, gameComplete, feedback, currentScenarioIndex, score]);
@@ -231,6 +259,15 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   };
 
   const handleStartGame = (): void => {
+    // Generate new sessionId and track game start
+    const newSessionId = generateSessionId();
+    sessionIdRef.current = newSessionId;
+    trackEvent({
+      gameId: GAME_ID,
+      event: "game_started",
+      sessionId: newSessionId,
+    });
+    
     setShowMenu(false);
     setCurrentScenarioIndex(0);
     setScore(0);
@@ -241,6 +278,15 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   };
 
   const handlePlayAgain = (): void => {
+    // Generate new sessionId and track game start
+    const newSessionId = generateSessionId();
+    sessionIdRef.current = newSessionId;
+    trackEvent({
+      gameId: GAME_ID,
+      event: "game_started",
+      sessionId: newSessionId,
+    });
+    
     setShowMenu(false);
     setCurrentScenarioIndex(0);
     setScore(0);
@@ -251,6 +297,8 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   };
 
   const handleBackToMenu = (): void => {
+    // Reset sessionId when returning to menu
+    sessionIdRef.current = null;
     setShowMenu(true);
     setCurrentScenarioIndex(0);
     setScore(0);

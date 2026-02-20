@@ -4,7 +4,6 @@ export { Home } from "./landing";
 // Course pages
 export { ThreeDWellness } from "./courses";
 export { SocialWellbeing, EmotionalWellbeing } from "./courses/wellbeing";
-export { default as PlanetProtectorGame } from "./courses/wellbeing/environmental-wellbeing/PlanetProtectorGame";
 
 // Games
 export {
@@ -16,3 +15,7 @@ export {
 export {
   EmotionDetectiveGame
 } from "./courses/wellbeing/emotional-wellbeing";
+
+export {
+  PlanetProtectorGame
+} from "./courses/wellbeing/environmental-wellbeing/games";
