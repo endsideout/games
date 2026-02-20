@@ -278,6 +278,7 @@ export function Quiz({
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
   const hasStartedRef = useRef<boolean>(false);
+  const completedEventSentRef = useRef<boolean>(false);
   
   // Determine which data format we're using
   const isChallengeFormat = !!cards;
@@ -334,8 +335,8 @@ export function Quiz({
       setCurrent((c) => c + 1);
     } else {
       setFinished(true);
-      // Track game completion
-      if (gameId && sessionIdRef.current) {
+      if (gameId && sessionIdRef.current && !completedEventSentRef.current) {
+        completedEventSentRef.current = true;
         trackEvent({
           gameId,
           event: "game_completed",
@@ -353,9 +354,9 @@ export function Quiz({
   }
 
   function reset(): void {
-    // Reset session tracking
     sessionIdRef.current = null;
     hasStartedRef.current = false;
+    completedEventSentRef.current = false;
     setCurrent(0);
     setScore(0);
     setFinished(false);

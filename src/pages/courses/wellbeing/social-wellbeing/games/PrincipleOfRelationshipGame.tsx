@@ -25,14 +25,13 @@ const GAME_ID = "principle-of-relationship-pair-matching-game";
 export function PrincipleOfRelationshipGame(): React.JSX.Element {
   const [currentView, setCurrentView] = useState<"menu" | "game">("menu");
   const { trackEvent } = useGameUser();
-  // Use ref to persist sessionId across renders without causing re-renders
   const sessionIdRef = useRef<string | null>(null);
+  const completedEventSentRef = useRef<boolean>(false);
 
   const handleStartGame = (): void => {
-    // Generate new sessionId when game starts
     const newSessionId = generateSessionId();
     sessionIdRef.current = newSessionId;
-    
+    completedEventSentRef.current = false;
     trackEvent({ 
       gameId: GAME_ID, 
       event: "game_started",
@@ -48,6 +47,8 @@ export function PrincipleOfRelationshipGame(): React.JSX.Element {
   };
 
   const handleGameComplete = (score: number, moves: number, timeRemaining: number): void => {
+    if (completedEventSentRef.current) return;
+    completedEventSentRef.current = true;
     trackEvent({
       gameId: GAME_ID,
       event: "game_completed",

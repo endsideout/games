@@ -155,6 +155,7 @@ const GAME_ID = "emotion-detective-game";
 export function EmotionDetectiveGame(): React.JSX.Element {
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
+  const completedEventSentRef = useRef<boolean>(false);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -166,9 +167,9 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   const currentScenario = scenarios[currentScenarioIndex];
   const progress = ((currentScenarioIndex + 1) / scenarios.length) * 100;
 
-  // Track game completion when game completes
   useEffect(() => {
-    if (gameComplete && sessionIdRef.current) {
+    if (gameComplete && sessionIdRef.current && !completedEventSentRef.current) {
+      completedEventSentRef.current = true;
       trackEvent({
         gameId: GAME_ID,
         event: "game_completed",
@@ -177,7 +178,7 @@ export function EmotionDetectiveGame(): React.JSX.Element {
         moves: scenarios.length,
         metadata: {
           totalScenarios: scenarios.length,
-          correctAnswers: Math.floor(score / 10), // Each correct answer is +10
+          correctAnswers: Math.floor(score / 10),
         },
       });
     }
@@ -259,9 +260,9 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   };
 
   const handleStartGame = (): void => {
-    // Generate new sessionId and track game start
     const newSessionId = generateSessionId();
     sessionIdRef.current = newSessionId;
+    completedEventSentRef.current = false;
     trackEvent({
       gameId: GAME_ID,
       event: "game_started",
@@ -278,9 +279,9 @@ export function EmotionDetectiveGame(): React.JSX.Element {
   };
 
   const handlePlayAgain = (): void => {
-    // Generate new sessionId and track game start
     const newSessionId = generateSessionId();
     sessionIdRef.current = newSessionId;
+    completedEventSentRef.current = false;
     trackEvent({
       gameId: GAME_ID,
       event: "game_started",

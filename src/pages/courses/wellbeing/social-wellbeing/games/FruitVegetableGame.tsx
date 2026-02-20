@@ -66,6 +66,7 @@ export function FruitVegetableGame(): React.JSX.Element {
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
   const movesRef = useRef<number>(0);
+  const completedEventSentRef = useRef<boolean>(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [currentItem, setCurrentItem] = useState<Item | null>(null);
   const [remainingItems, setRemainingItems] = useState<Item[]>([]);
@@ -95,6 +96,7 @@ export function FruitVegetableGame(): React.JSX.Element {
     const newSessionId = generateSessionId();
     sessionIdRef.current = newSessionId;
     movesRef.current = 0;
+    completedEventSentRef.current = false;
     trackEvent({
       gameId: GAME_ID,
       event: "game_started",
@@ -165,20 +167,20 @@ export function FruitVegetableGame(): React.JSX.Element {
         setCurrentItem(nextItems[0]);
         setRemainingItems(nextItems);
       } else {
-        // Game completed - all items sorted
+        // Game completed - all items sorted (send event once per session; ref guards against double-invoke e.g. Strict Mode)
         setGameOver(true);
-        // Track completion with updated score
-        setScore((currentScore) => {
+        if (!completedEventSentRef.current) {
+          completedEventSentRef.current = true;
+          const finalScore = score + (isCorrect ? 10 : 0);
           trackEvent({
             gameId: GAME_ID,
             event: "game_completed",
             sessionId: sessionIdRef.current || undefined,
-            score: currentScore,
+            score: finalScore,
             moves: movesRef.current,
             timeRemaining: timeLeft,
           });
-          return currentScore;
-        });
+        }
       }
     }, 500);
 
