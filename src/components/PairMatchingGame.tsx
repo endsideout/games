@@ -14,7 +14,14 @@ function shuffleArray(array: string[]): Card[] {
     }));
 }
 
-export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: PairMatchingGameProps): React.JSX.Element {
+export function PairMatchingGame({
+  onBackToMenu,
+  onGameComplete,
+  onGameOver,
+  words,
+  gameConfig,
+  title,
+}: PairMatchingGameProps): React.JSX.Element {
   const [cards, setCards] = useState<Card[]>([]);
   const [firstCard, setFirstCard] = useState<Card | null>(null);
   const [secondCard, setSecondCard] = useState<Card | null>(null);
@@ -93,6 +100,18 @@ export function PairMatchingGame({ onBackToMenu, words, gameConfig, title }: Pai
       setCompleted(true);
     }
   }, [cards]);
+
+  useEffect(() => {
+    if (completed) {
+      onGameComplete?.(score, moves, timeLeft);
+    }
+  }, [completed]);
+
+  useEffect(() => {
+    if (gameOver) {
+      onGameOver?.(score, moves);
+    }
+  }, [gameOver]);
 
   const handleClick = (card: Card) => {
     if (disabled || card.flipped || card.matched || gameOver) return;

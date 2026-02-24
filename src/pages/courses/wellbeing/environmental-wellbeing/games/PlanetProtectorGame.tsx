@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { GameMenu } from "../../../../../components";
+import { useGameUser } from "../../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../../lib/sessionId";
+
 const EarthImage = new URL(
   "/src/assets/images/games/environmentalwellbeing/earth.webp",
   import.meta.url
 ).href;
 
-
+const GAME_ID = "planet-protector-game";
 
 type FallingItem = {
   id: number;
@@ -37,7 +41,15 @@ const badItems = [
   "Pollution/smoke",
 ];
 
-const PlanetProtectorGame: React.FC = () => {
+const gameTitle = "Environmental Wellbeing\nPlanet Protector Game";
+const gameDescription = "Let good actions naturally reach Earth for +1 point and stop the bad actions for +1 point! Bonus: Drag good actions from the right onto bad actions to cancel out the bad for +2 points!";
+
+export function PlanetProtectorGame(): React.JSX.Element {
+  const { trackEvent } = useGameUser();
+  const sessionIdRef = useRef<string | null>(null);
+  const movesRef = useRef<number>(0);
+  const completionTrackedRef = useRef<boolean>(false);
+  const [currentView, setCurrentView] = useState<"menu" | "game">("menu");
   const [items, setItems] = useState<FallingItem[]>([]);
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(GAME_DURATION);
@@ -47,9 +59,56 @@ const PlanetProtectorGame: React.FC = () => {
   const EARTH_HEIGHT = 5;
   const EARTH_TOP = CONTAINER_HEIGHT - EARTH_HEIGHT;
 
+  // Track game completion when game completes
+  useEffect(() => {
+    if (gameOver && sessionIdRef.current && currentView === "game" && !completionTrackedRef.current) {
+      completionTrackedRef.current = true;
+      trackEvent({
+        gameId: GAME_ID,
+        event: "game_completed",
+        sessionId: sessionIdRef.current,
+        score,
+        moves: movesRef.current,
+        timeRemaining: 0,
+      });
+    }
+  }, [gameOver, score, currentView, trackEvent]);
+
+  const handleStartGame = (): void => {
+    // Generate new sessionId and track game start
+    const newSessionId = generateSessionId();
+    sessionIdRef.current = newSessionId;
+    movesRef.current = 0;
+    completionTrackedRef.current = false;
+    trackEvent({
+      gameId: GAME_ID,
+      event: "game_started",
+      sessionId: newSessionId,
+    });
+    
+    setCurrentView("game");
+    resetGame();
+  };
+
+  const handleBackToMenu = (): void => {
+    // Reset sessionId when returning to menu
+    sessionIdRef.current = null;
+    movesRef.current = 0;
+    completionTrackedRef.current = false;
+    setCurrentView("menu");
+    resetGame();
+  };
+
+  const resetGame = (): void => {
+    setItems([]);
+    setScore(0);
+    setTimer(GAME_DURATION);
+    setGameOver(false);
+  };
+
   // Spawn items
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || currentView !== "game") return;
     const spawnInterval = setInterval(() => {
       const id = Date.now();
       const type = Math.random() < 0.4 ? "good" : "bad";
@@ -63,11 +122,11 @@ const PlanetProtectorGame: React.FC = () => {
     }, ITEM_SPAWN_INTERVAL);
 
     return () => clearInterval(spawnInterval);
-  }, [gameOver]);
+  }, [gameOver, currentView]);
 
   // Falling animation + Earth collision
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || currentView !== "game") return;
 
     const interval = setInterval(() => {
       setItems((prev) =>
@@ -85,26 +144,21 @@ const PlanetProtectorGame: React.FC = () => {
     }, 50);
 
     return () => clearInterval(interval);
-  }, [gameOver]);
-  const resetGame = () => {
-    setItems([]);
-    setScore(0);
-    setTimer(GAME_DURATION);
-    setGameOver(false);
-  };
+  }, [gameOver, currentView]);
+
   // Timer
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || currentView !== "game") return;
     if (timer <= 0) {
       setGameOver(true);
       return;
     }
     const t = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(t);
-  }, [timer, gameOver]);
+  }, [timer, gameOver, currentView]);
 
   // Drag preview
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, text: string) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, text: string): void => {
     e.dataTransfer.setData("text/plain", text);
 
     const ghost = document.createElement("div");
@@ -127,21 +181,49 @@ const PlanetProtectorGame: React.FC = () => {
     setTimeout(() => document.body.removeChild(ghost), 0);
   };
 
-  const allowDrop = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
+  const allowDrop = (e: React.DragEvent<HTMLDivElement>): void => e.preventDefault();
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, id: number) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, id: number): void => {
     e.preventDefault();
+    movesRef.current += 1;
     setItems((prev) => prev.filter((i) => i.id !== id));
     setScore((s) => s + 2);
   };
 
+  const handlePlayAgain = (): void => {
+    // Generate new sessionId and track game start
+    const newSessionId = generateSessionId();
+    sessionIdRef.current = newSessionId;
+    movesRef.current = 0;
+    completionTrackedRef.current = false;
+    trackEvent({
+      gameId: GAME_ID,
+      event: "game_started",
+      sessionId: newSessionId,
+    });
+    
+    resetGame();
+  };
+
+  // Menu screen
+  if (currentView === "menu") {
+    return (
+      <GameMenu
+        onStartGame={handleStartGame}
+        title={gameTitle}
+        description={gameDescription}
+      />
+    );
+  }
+
+  // Game screen
   return (
     <div className="flex flex-col items-center min-h-screen bg-blue-50 p-4">
       {/* Header */}
       <h1 className="text-4xl font-bold mb-2">🌍 Environmental Wellbeing</h1>
       <p className="text-lg mb-2 text-center">
         Let good actions naturally reach Earth for +1 point and stop the bad actions for +1 point!  
-        </p>
+      </p>
       <p className="text-lg mb-4 text-center">
         Bonus: Drag good actions from the right onto bad actions to cancel out the bad for +2 points!
       </p>
@@ -166,6 +248,7 @@ const PlanetProtectorGame: React.FC = () => {
                   height: TILE_HEIGHT,
                 }}
                 onClick={() => {
+                  movesRef.current += 1;
                   if (item.type === "bad") setScore((s) => s + 1);
                   setItems((prev) => prev.filter((i) => i.id !== item.id));
                 }}
@@ -177,7 +260,7 @@ const PlanetProtectorGame: React.FC = () => {
             ))}
 
           {/* Earth */}
-         <div className="absolute translate-y-[75%] bottom-0 left-0 w-full overflow-hidden flex justify-center pointer-events-none">
+          <div className="absolute translate-y-[75%] bottom-0 left-0 w-full overflow-hidden flex justify-center pointer-events-none">
             <img
               src={EarthImage}
               style={{
@@ -185,6 +268,7 @@ const PlanetProtectorGame: React.FC = () => {
                 height: "90vh",
                 display: "block"  
               }}
+              alt="Earth"
             />
           </div>
 
@@ -193,12 +277,20 @@ const PlanetProtectorGame: React.FC = () => {
               <h2 className="text-2xl font-bold mb-2">🎉 Game Over! 🎉</h2>
               <p className="mb-4 text-lg">Your Planet Score: {score}</p>
 
-              <button
-                onClick={resetGame}
-                className="bg-green-400 hover:bg-green-600 active:scale-95 transition text-white px-6 py-2 rounded-xl shadow-md"
-              >
-                Play Again 
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={handlePlayAgain}
+                  className="bg-green-400 hover:bg-green-600 active:scale-95 transition text-white px-6 py-2 rounded-xl shadow-md"
+                >
+                  Play Again 
+                </button>
+                <button
+                  onClick={handleBackToMenu}
+                  className="bg-gray-500 hover:bg-gray-700 active:scale-95 transition text-white px-6 py-2 rounded-xl shadow-md"
+                >
+                  Back to Menu
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -220,6 +312,4 @@ const PlanetProtectorGame: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default PlanetProtectorGame;
+}

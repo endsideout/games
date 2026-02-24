@@ -20,6 +20,8 @@ export interface GameMenuProps {
 
 export interface PairMatchingGameProps {
   onBackToMenu: () => void;
+  onGameComplete?: (score: number, moves: number, timeRemaining: number) => void;
+  onGameOver?: (score: number, moves: number) => void;
   words: string[];
   gameConfig: GameConfig;
   title: string;

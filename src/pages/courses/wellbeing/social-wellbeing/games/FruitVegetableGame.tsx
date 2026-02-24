@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../../../../components";
+import { useGameUser } from "../../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../../lib/sessionId";
 
 // Import fruit images
 import appleImg from "../../../../../assets/images/games/fruits/apple.webp";
@@ -58,7 +60,13 @@ const vegetables: Item[] = [
   { id: 20, name: "Brinjal", type: "vegetable", image: brinjalImg },
 ];
 
+const GAME_ID = "fruit-vegetable-matching-game";
+
 export function FruitVegetableGame(): React.JSX.Element {
+  const { trackEvent } = useGameUser();
+  const sessionIdRef = useRef<string | null>(null);
+  const movesRef = useRef<number>(0);
+  const completedEventSentRef = useRef<boolean>(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [currentItem, setCurrentItem] = useState<Item | null>(null);
   const [remainingItems, setRemainingItems] = useState<Item[]>([]);
@@ -83,6 +91,17 @@ export function FruitVegetableGame(): React.JSX.Element {
     setFruitsColumn([]);
     setVegetablesColumn([]);
     setFeedback(null);
+    
+    // Generate new sessionId and track game start
+    const newSessionId = generateSessionId();
+    sessionIdRef.current = newSessionId;
+    movesRef.current = 0;
+    completedEventSentRef.current = false;
+    trackEvent({
+      gameId: GAME_ID,
+      event: "game_started",
+      sessionId: newSessionId,
+    });
   };
 
   // Timer effect
@@ -92,10 +111,18 @@ export function FruitVegetableGame(): React.JSX.Element {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && gameStarted) {
+    } else if (timeLeft === 0 && gameStarted && !gameOver) {
+      // Time ran out - game over
       setGameOver(true);
+      trackEvent({
+        gameId: GAME_ID,
+        event: "game_over",
+        sessionId: sessionIdRef.current || undefined,
+        score,
+        moves: movesRef.current,
+      });
     }
-  }, [gameStarted, gameOver, timeLeft]);
+  }, [gameStarted, gameOver, timeLeft, score, trackEvent]);
 
   // Handle drag start
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>): void => {
@@ -117,6 +144,7 @@ export function FruitVegetableGame(): React.JSX.Element {
     e.preventDefault();
     if (!draggedItem || !currentItem) return;
 
+    movesRef.current += 1;
     const isCorrect = draggedItem.type === dropZone;
 
     if (isCorrect) {
@@ -139,7 +167,20 @@ export function FruitVegetableGame(): React.JSX.Element {
         setCurrentItem(nextItems[0]);
         setRemainingItems(nextItems);
       } else {
+        // Game completed - all items sorted (send event once per session; ref guards against double-invoke e.g. Strict Mode)
         setGameOver(true);
+        if (!completedEventSentRef.current) {
+          completedEventSentRef.current = true;
+          const finalScore = score + (isCorrect ? 10 : 0);
+          trackEvent({
+            gameId: GAME_ID,
+            event: "game_completed",
+            sessionId: sessionIdRef.current || undefined,
+            score: finalScore,
+            moves: movesRef.current,
+            timeRemaining: timeLeft,
+          });
+        }
       }
     }, 500);
 
@@ -153,6 +194,9 @@ export function FruitVegetableGame(): React.JSX.Element {
 
   // Back to menu
   const backToMenu = (): void => {
+    // Reset sessionId when returning to menu
+    sessionIdRef.current = null;
+    movesRef.current = 0;
     setGameStarted(false);
     setGameOver(false);
   };
