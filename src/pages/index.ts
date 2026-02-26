@@ -3,7 +3,15 @@ export { Home } from "./landing";
 
 // Course pages
 export { ThreeDWellness } from "./courses";
-export { SocialWellbeing, EmotionalWellbeing } from "./courses/wellbeing";
+export {
+  SocialWellbeing,
+  EmotionalWellbeing,
+  EnvironmentalWellbeing,
+  IntellectualWellbeing,
+  OccupationalWellbeing,
+  PhysicalWellbeing,
+  SpiritualWellbeing
+} from "./courses/wellbeing";
 
 // Games
 export {
@@ -20,7 +28,8 @@ export {
   PlanetProtectorGame
 } from "./courses/wellbeing/environmental-wellbeing/games";
 
-// Financial Literacy Games
+// Financial Literacy
 export {
+  FinancialLiteracy,
   BankingWordSearch
 } from "./courses/financial-literacy";
