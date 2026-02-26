@@ -13,6 +13,7 @@ import {
   FruitVegetableGame,
   Quiz,
   EmotionDetectiveGame,
+  BankingWordSearch,
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -67,7 +68,8 @@ export default function App(): React.JSX.Element {
               <PlanetProtectorGame />
           }
         />
-        <Route path="/financial-literacy" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Financial Literacy</h1><p className="text-xl">Coming Soon!</p></div></div>} />
+        <Route path="/financial-literacy" element={<BankingWordSearch />} />
+        <Route path="/banking-word-search" element={<BankingWordSearch />} />
         <Route path="/intellectual-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Intellectual Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
         <Route path="/occupational-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Occupational Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />
         <Route path="/physical-wellbeing" element={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">Physical Wellbeing</h1><p className="text-xl">Coming Soon!</p></div></div>} />

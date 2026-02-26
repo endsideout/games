@@ -1,0 +1,1 @@
+export { BankingWordSearch } from "./games";

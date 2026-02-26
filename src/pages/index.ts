@@ -19,3 +19,8 @@ export {
 export {
   PlanetProtectorGame
 } from "./courses/wellbeing/environmental-wellbeing/games";
+
+// Financial Literacy Games
+export {
+  BankingWordSearch
+} from "./courses/financial-literacy";
