@@ -4,16 +4,18 @@ import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
 
-// Import scenario images
-import mayaBikeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Maya's bike was stolen from the school playground.webp";
+// Import new character images
+import mayaImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/maya.png";
+import tomImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/tom.png";
+import lisaImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/lisa.png";
+import alexImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/alex.png";
+import emmaImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/emma.png";
+import ninaImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/nina.png";
+
+// Import old scenario images for characters without new images
 import johnCakeImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/John's brother ate his piece of birthday cake.webp";
 import sarahMovieImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Sarah is watching a scary movie alone at night.webp";
-import tomPuppyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Tom got a puppy for his birthday.webp";
-import lisaFriendImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/One for this  Lisa's best friend is moving to another city.webp";
-import alexRaceImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Alex won first place in the school race.webp";
-import emmaToyImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Emma lost her favorite toy at the park.webp";
 import benNoiseImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Ben heard a loud noise outside his window at night.webp";
-import ninaGameImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/Nina's team lost the final game of the season.webp";
 import davidLunchImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/David's friend shared their lunch with him when he forgot his.webp";
 
 interface Scenario {
@@ -31,7 +33,7 @@ const scenarios: Scenario[] = [
   {
     id: 1,
     text: "Maya's bike was stolen from the school playground",
-    image: mayaBikeImg,
+    image: mayaImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😢", emotion: "Sad" },
@@ -67,7 +69,7 @@ const scenarios: Scenario[] = [
   {
     id: 4,
     text: "Tom got a puppy for his birthday",
-    image: tomPuppyImg,
+    image: tomImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😢", emotion: "Sad" },
@@ -79,7 +81,7 @@ const scenarios: Scenario[] = [
   {
     id: 5,
     text: "Lisa's best friend is moving to another city",
-    image: lisaFriendImg,
+    image: lisaImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😢", emotion: "Sad" },
@@ -91,7 +93,7 @@ const scenarios: Scenario[] = [
   {
     id: 6,
     text: "Alex won first place in the school race",
-    image: alexRaceImg,
+    image: alexImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😎", emotion: "Proud" },
@@ -103,7 +105,7 @@ const scenarios: Scenario[] = [
   {
     id: 7,
     text: "Emma lost her favorite toy at the park",
-    image: emmaToyImg,
+    image: emmaImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😢", emotion: "Sad" },
@@ -127,7 +129,7 @@ const scenarios: Scenario[] = [
   {
     id: 9,
     text: "Nina's team lost the final game of the season",
-    image: ninaGameImg,
+    image: ninaImg,
     options: [
       { emoji: "😊", emotion: "Happy" },
       { emoji: "😢", emotion: "Sad" },
