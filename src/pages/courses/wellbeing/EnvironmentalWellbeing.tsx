@@ -16,15 +16,15 @@ export function EnvironmentalWellbeing(): React.JSX.Element {
       comingSoon: false
     },
     {
-      title: "Recycling Sorter",
-      icon: "♻️",
-      description: "Coming Soon! Learn to sort waste into the right bins. Master recycling, composting, and proper disposal.",
-      route: "#",
+      title: "Eco Sort Challenge",
+      icon: "♻️✅",
+      description: "Sort items into Eco-Friendly or Not Eco-Friendly. Learn what helps or harms our planet!",
+      route: "/environmental-wellbeing/eco-fix-it",
       color: "from-blue-50 to-cyan-50",
       borderColor: "border-blue-300",
       buttonColor: "from-blue-400 to-cyan-500",
-      tags: ["Sorting", "Waste Management", "Learn"],
-      comingSoon: true
+      tags: ["Sorting", "Eco-Friendly", "Learning"],
+      comingSoon: false
     },
     {
       title: "Water Saver Challenge",

@@ -25,7 +25,8 @@ export {
 } from "./courses/wellbeing/emotional-wellbeing";
 
 export {
-  PlanetProtectorGame
+  PlanetProtectorGame,
+  EcoFixItGame
 } from "./courses/wellbeing/environmental-wellbeing/games";
 
 // Financial Literacy

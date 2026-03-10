@@ -14,6 +14,7 @@ import {
   PhysicalWellbeing,
   SpiritualWellbeing,
   PlanetProtectorGame,
+  EcoFixItGame,
   PrincipleOfRelationshipGame,
   FruitVegetableGame,
   Quiz,
@@ -70,6 +71,7 @@ export default function App(): React.JSX.Element {
         {/* Environmental Wellbeing routes */}
         <Route path="/environmental-wellbeing" element={<EnvironmentalWellbeing />} />
         <Route path="/environmental-wellbeing/planet-protector" element={<PlanetProtectorGame />} />
+        <Route path="/environmental-wellbeing/eco-fix-it" element={<EcoFixItGame />} />
         {/* Financial Literacy routes */}
         <Route path="/financial-literacy" element={<FinancialLiteracy />} />
         <Route path="/banking-word-search" element={<BankingWordSearch />} />
