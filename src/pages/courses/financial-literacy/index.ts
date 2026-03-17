@@ -1,2 +1,2 @@
 export { FinancialLiteracy } from "./FinancialLiteracy";
-export { BankingWordSearch } from "./games";
+export { BankingWordSearch, BudgetingGame } from "./games";

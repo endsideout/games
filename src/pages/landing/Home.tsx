@@ -47,21 +47,24 @@ export function Home(): React.JSX.Element {
               </div>
             </Link>
 
-            {/* Coming Soon 1 */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border-4 border-gray-300 shadow-lg opacity-75">
-              <div className="text-6xl mb-4">🚀</div>
-              <h2 className="text-3xl font-bold mb-4 text-gray-600">
-                Coming Soon
+            {/* Know Your Health */}
+            <Link
+              to="/know-your-health"
+              className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8 border-4 border-green-300 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 block"
+            >
+              <div className="text-6xl mb-4">🩺</div>
+              <h2 className="text-3xl font-bold mb-4 text-green-800">
+                Know Your Health
               </h2>
-              <p className="text-lg text-gray-500 mb-6">
-                Exciting new wellness programs are in development. Stay tuned!
+              <p className="text-lg text-gray-700 mb-6">
+                Discover the building blocks of a healthy life through fun, interactive games and learning experiences.
               </p>
               <div className="text-center">
-                <span className="inline-block px-6 py-3 bg-gray-300 text-gray-500 text-lg font-bold rounded-full shadow-lg cursor-not-allowed">
-                  Coming Soon
+                <span className="inline-block px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white text-lg font-bold rounded-full shadow-lg">
+                  Explore Now →
                 </span>
               </div>
-            </div>
+            </Link>
 
             {/* Coming Soon 2 */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border-4 border-gray-300 shadow-lg opacity-75">

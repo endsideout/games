@@ -2,7 +2,7 @@
 export { Home } from "./landing";
 
 // Course pages
-export { ThreeDWellness } from "./courses";
+export { ThreeDWellness, KnowYourHealth } from "./courses";
 export {
   SocialWellbeing,
   EmotionalWellbeing,
@@ -32,5 +32,6 @@ export {
 // Financial Literacy
 export {
   FinancialLiteracy,
-  BankingWordSearch
+  BankingWordSearch,
+  BudgetingGame
 } from "./courses/financial-literacy";

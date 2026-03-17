@@ -16,28 +16,6 @@ export function SocialWellbeing(): React.JSX.Element {
       route: "/principle-of-relationship-pair-matching-game"
     },
     {
-      name: "Fruit & Vegetable Matching Game",
-      icon: "🍎🥕",
-      description: "Test your knowledge! Drag fruits and vegetables to their correct columns",
-      tags: ["Fruits", "Vegetables", "Drag & Drop", "40 Seconds"],
-      color: "from-green-50 to-orange-50",
-      borderColor: "border-green-300",
-      textColor: "text-green-800",
-      buttonColor: "from-green-500 to-orange-600",
-      route: "/fruit-vegetable-matching-game"
-    },
-    {
-      name: "Fruit & Veggie Quiz",
-      icon: "🌳",
-      description: "Choose if it's a fruit or a vegetable. Each correct answer grows your tree!",
-      tags: ["Quiz", "Fun & Learn"],
-      color: "from-blue-50 to-green-50",
-      borderColor: "border-blue-300",
-      textColor: "text-blue-800",
-      buttonColor: "from-blue-500 to-green-600",
-      route: "/fruit-veggie-quiz"
-    },
-    {
       name: "Mental Health Challenge",
       icon: "🧠💚",
       description: "Test your emotional intelligence skills! Learn about empathy, boundaries, and mental wellness",

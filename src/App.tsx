@@ -6,6 +6,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import {
   Home,
   ThreeDWellness,
+  KnowYourHealth,
   SocialWellbeing,
   EmotionalWellbeing,
   EnvironmentalWellbeing,
@@ -21,6 +22,7 @@ import {
   EmotionDetectiveGame,
   FinancialLiteracy,
   BankingWordSearch,
+  BudgetingGame,
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -34,6 +36,7 @@ export default function App(): React.JSX.Element {
           <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/3d-wellness" element={<ThreeDWellness />} />
+        <Route path="/know-your-health" element={<KnowYourHealth />} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"
@@ -75,6 +78,7 @@ export default function App(): React.JSX.Element {
         {/* Financial Literacy routes */}
         <Route path="/financial-literacy" element={<FinancialLiteracy />} />
         <Route path="/banking-word-search" element={<BankingWordSearch />} />
+        <Route path="/budgeting-game" element={<BudgetingGame />} />
         {/* Other Wellbeing dimension routes */}
         <Route path="/intellectual-wellbeing" element={<IntellectualWellbeing />} />
         <Route path="/occupational-wellbeing" element={<OccupationalWellbeing />} />
