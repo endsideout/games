@@ -16,6 +16,17 @@ export function FinancialLiteracy(): React.JSX.Element {
       route: "/banking-word-search"
     },
     {
+      name: "Budgeting Jars",
+      icon: "🏺💰",
+      description: "Sort 10 items into Needs and Wants jars! Learn the difference between what you must have and what you'd like to have.",
+      tags: ["Sorting", "Needs vs Wants", "2 Minutes", "10 Items"],
+      color: "from-yellow-50 to-amber-50",
+      borderColor: "border-yellow-300",
+      textColor: "text-yellow-800",
+      buttonColor: "from-yellow-500 to-amber-600",
+      route: "/budgeting-game"
+    },
+    {
       name: "Bank vs Credit Union",
       icon: "🏛️🤝",
       description: "Coming Soon! Learn the difference between banks and credit unions.",
