@@ -61,6 +61,12 @@ interface GameStats {
   }>;
   eventsByDate: Array<{ date: string; started: number; completed: number }>;
   scoreDistribution: Array<{ range: string; count: number }>;
+  highestScoreSummary: {
+    score: number | null;
+    userName: string | null;
+    userEmail: string | null;
+    completedAt: string | null;
+  };
   userStats: Record<
     string,
     {
@@ -85,7 +91,12 @@ export function AdminDashboard(): React.JSX.Element {
   const [error, setError] = useState("");
   const [selectedGame, setSelectedGame] = useState<string>("all");
   const [selectedSchool, setSelectedSchool] = useState<string>("all");
+  const [dateRangeStart, setDateRangeStart] = useState<string>("");
+  const [dateRangeEnd, setDateRangeEnd] = useState<string>("");
+  const [recentEventsPage, setRecentEventsPage] = useState(1);
   const [allEvents, setAllEvents] = useState<GameEvent[]>([]);
+
+  const RECENT_EVENTS_PAGE_SIZE = 20;
 
   useEffect(() => {
     const db = getFirestoreDb();
@@ -108,7 +119,6 @@ export function AdminDashboard(): React.JSX.Element {
         })) as GameEvent[];
 
         setAllEvents(events);
-        calculateStats(events);
         setLoading(false);
       },
       (err) => {
@@ -133,9 +143,30 @@ export function AdminDashboard(): React.JSX.Element {
           (e) => (e.user.school ?? "") === schoolValue
         );
       }
+      // Filter by date range if set
+      if (dateRangeStart || dateRangeEnd) {
+        filteredEvents = filteredEvents.filter((e) => {
+          const eventDate = new Date(e.createdAt || e.timestamp);
+
+          // Build local start/end dates from yyyy-mm-dd to avoid UTC offset issues
+          if (dateRangeStart) {
+            const [sy, sm, sd] = dateRangeStart.split("-").map(Number);
+            const start = new Date(sy, (sm || 1) - 1, sd || 1, 0, 0, 0, 0);
+            if (eventDate < start) return false;
+          }
+          if (dateRangeEnd) {
+            const [ey, em, ed] = dateRangeEnd.split("-").map(Number);
+            const end = new Date(ey, (em || 1) - 1, ed || 1, 23, 59, 59, 999);
+            if (eventDate > end) return false;
+          }
+          return true;
+        });
+      }
 
       const gamesStarted = filteredEvents.filter((e) => e.event === "game_started").length;
-      const gamesCompleted = filteredEvents.filter((e) => e.event === "game_completed").length;
+      const gamesCompleted = filteredEvents.filter(
+        (e) => e.event === "game_completed" || e.event === "game_over"
+      ).length;
       const totalGames = gamesStarted;
 
       // Get unique sessionIds
@@ -147,7 +178,7 @@ export function AdminDashboard(): React.JSX.Element {
       );
       const completedSessionIds = new Set(
         filteredEvents
-          .filter((e) => e.event === "game_completed")
+          .filter((e) => e.event === "game_completed" || e.event === "game_over")
           .map((e) => e.sessionId)
           .filter(Boolean)
       );
@@ -157,7 +188,9 @@ export function AdminDashboard(): React.JSX.Element {
 
       const completionRate = gamesStarted > 0 ? (gamesCompleted / gamesStarted) * 100 : 0;
 
-      const completedEvents = filteredEvents.filter((e) => e.event === "game_completed");
+      const completedEvents = filteredEvents.filter(
+        (e) => e.event === "game_completed" || e.event === "game_over"
+      );
       const averageScore =
         completedEvents.length > 0
           ? completedEvents.reduce((sum, e) => sum + (e.score || 0), 0) / completedEvents.length
@@ -172,6 +205,32 @@ export function AdminDashboard(): React.JSX.Element {
             completedEvents.length
           : 0;
 
+      // Highest score across completed events
+      let highestScoreSummary: {
+        score: number | null;
+        userName: string | null;
+        userEmail: string | null;
+        completedAt: string | null;
+      } = {
+        score: null,
+        userName: null,
+        userEmail: null,
+        completedAt: null,
+      };
+
+      completedEvents.forEach((e) => {
+        const score = e.score ?? null;
+        if (score === null) return;
+        if (highestScoreSummary.score === null || score > highestScoreSummary.score) {
+          highestScoreSummary = {
+            score,
+            userName: e.user.name ?? null,
+            userEmail: e.user.email ?? null,
+            completedAt: (e.timestamp || e.createdAt) ?? null,
+          };
+        }
+      });
+
       // Games by gameId
       const gamesByGameId: Record<
         string,
@@ -183,7 +242,7 @@ export function AdminDashboard(): React.JSX.Element {
         }
         if (event.event === "game_started") {
           gamesByGameId[event.gameId].started++;
-        } else if (event.event === "game_completed") {
+        } else if (event.event === "game_completed" || event.event === "game_over") {
           gamesByGameId[event.gameId].completed++;
         }
       });
@@ -198,8 +257,8 @@ export function AdminDashboard(): React.JSX.Element {
         }
       });
 
-      // Recent events (last 20)
-      const recentEvents = filteredEvents.slice(0, 20).map((e) => ({
+      // Recent events (keep up to 1000 for pagination)
+      const recentEvents = filteredEvents.slice(0, 1000).map((e) => ({
         id: e.id,
         gameId: e.gameId,
         event: e.event,
@@ -220,7 +279,7 @@ export function AdminDashboard(): React.JSX.Element {
         const dayData = dateMap.get(date)!;
         if (event.event === "game_started") {
           dayData.started++;
-        } else if (event.event === "game_completed") {
+        } else if (event.event === "game_completed" || event.event === "game_over") {
           dayData.completed++;
         }
       });
@@ -240,21 +299,48 @@ export function AdminDashboard(): React.JSX.Element {
         });
       });
 
-      // Score distribution
-      const scoreRanges = [
-        { min: 0, max: 20, label: "0-20" },
-        { min: 21, max: 40, label: "21-40" },
-        { min: 41, max: 60, label: "41-60" },
-        { min: 61, max: 80, label: "61-80" },
-        { min: 81, max: 100, label: "81-100" },
-      ];
+      // Score distribution (dynamic ranges based on data)
+      let scoreDistribution: Array<{ range: string; count: number }>;
+      const scores = completedEvents
+        .map((e) => e.score)
+        .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
 
-      const scoreDistribution = scoreRanges.map((range) => ({
-        range: range.label,
-        count: completedEvents.filter(
-          (e) => (e.score || 0) >= range.min && (e.score || 0) <= range.max
-        ).length,
-      }));
+      if (scores.length === 0) {
+        scoreDistribution = [];
+      } else {
+        const minScore = Math.min(...scores);
+        const maxScore = Math.max(...scores);
+
+        // If all scores are the same, show a single bucket
+        if (minScore === maxScore) {
+          scoreDistribution = [
+            { range: `${minScore}`, count: scores.length },
+          ];
+        } else {
+          // Choose a reasonable number of buckets (3–6) depending on spread
+          const spread = maxScore - minScore;
+          const approxBucketSize = spread <= 20 ? 5 : spread <= 50 ? 10 : 20;
+          const bucketSize = Math.max(1, approxBucketSize);
+
+          const bucketMin = Math.floor(minScore / bucketSize) * bucketSize;
+          const bucketMax = Math.ceil(maxScore / bucketSize) * bucketSize;
+          const buckets: { min: number; max: number; label: string }[] = [];
+
+          for (let start = bucketMin; start <= bucketMax; start += bucketSize) {
+            const end = start + bucketSize - 1;
+            buckets.push({
+              min: start,
+              max: end,
+              label: `${start}-${end}`,
+            });
+          }
+
+          scoreDistribution = buckets.map((range) => ({
+            range: range.label,
+            count: scores.filter((s) => s >= range.min && s <= range.max).length,
+          }));
+        }
+      }
 
       // User-specific stats (from filtered events so table reflects current game/school filter)
       const userStats: Record<
@@ -286,7 +372,7 @@ export function AdminDashboard(): React.JSX.Element {
 
         if (event.event === "game_started") {
           userStats[userKey].gamesStarted++;
-        } else if (event.event === "game_completed") {
+        } else if (event.event === "game_completed" || event.event === "game_over") {
           userStats[userKey].gamesCompleted++;
           userStats[userKey].totalScore += event.score || 0;
         }
@@ -312,6 +398,7 @@ export function AdminDashboard(): React.JSX.Element {
         recentEvents,
         eventsByDate,
         scoreDistribution,
+        highestScoreSummary,
         userStats,
       });
     } catch (err) {
@@ -319,12 +406,17 @@ export function AdminDashboard(): React.JSX.Element {
     }
   };
 
-  // Recalculate stats when user filter changes
+  // Recalculate stats when filters or data change
   useEffect(() => {
     if (allEvents.length > 0) {
       calculateStats(allEvents);
     }
-  }, [selectedGame, selectedSchool]);
+  }, [selectedGame, selectedSchool, dateRangeStart, dateRangeEnd, allEvents]);
+
+  // Reset Recent Events to page 1 when filters change
+  useEffect(() => {
+    setRecentEventsPage(1);
+  }, [selectedGame, selectedSchool, dateRangeStart, dateRangeEnd]);
 
   const handleLogout = async (): Promise<void> => {
     await logout();
@@ -333,6 +425,18 @@ export function AdminDashboard(): React.JSX.Element {
 
   const exportToCSV = (): void => {
     if (!stats) return;
+
+    const highest = stats.highestScoreSummary;
+    const highestScoreDisplay =
+      highest.score !== null ? highest.score.toString() : "N/A";
+    const highestUserDisplay =
+      highest.score !== null
+        ? highest.userName || highest.userEmail || "N/A"
+        : "N/A";
+    const highestCompletedAtDisplay =
+      highest.score !== null && highest.completedAt
+        ? new Date(highest.completedAt).toISOString()
+        : "N/A";
 
     const csvData: string[][] = [
       ["Metric", "Value"],
@@ -343,6 +447,9 @@ export function AdminDashboard(): React.JSX.Element {
       ["Average Score", stats.averageScore.toFixed(1)],
       ["Average Moves", stats.averageMoves.toFixed(1)],
       ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
+      ["Highest Score", highestScoreDisplay],
+      ["Highest Score User", highestUserDisplay],
+      ["Highest Score Completed At", highestCompletedAtDisplay],
       [],
       ["Game", "Started", "Completed", "Avg Score"],
       ...Object.entries(stats.gamesByGameId).map(([gameId, data]) => [
@@ -374,6 +481,18 @@ export function AdminDashboard(): React.JSX.Element {
     const wb = XLSX.utils.book_new();
 
     // Overview sheet
+    const highest = stats.highestScoreSummary;
+    const highestScoreDisplay =
+      highest.score !== null ? highest.score.toString() : "N/A";
+    const highestUserDisplay =
+      highest.score !== null
+        ? highest.userName || highest.userEmail || "N/A"
+        : "N/A";
+    const highestCompletedAtDisplay =
+      highest.score !== null && highest.completedAt
+        ? new Date(highest.completedAt).toISOString()
+        : "N/A";
+
     const overviewData = [
       ["Metric", "Value"],
       ["Total Games Started", stats.gamesStarted],
@@ -383,6 +502,9 @@ export function AdminDashboard(): React.JSX.Element {
       ["Average Score", stats.averageScore.toFixed(1)],
       ["Average Moves", stats.averageMoves.toFixed(1)],
       ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
+      ["Highest Score", highestScoreDisplay],
+      ["Highest Score User", highestUserDisplay],
+      ["Highest Score Completed At", highestCompletedAtDisplay],
     ];
     const ws1 = XLSX.utils.aoa_to_sheet(overviewData);
     XLSX.utils.book_append_sheet(wb, ws1, "Overview");
@@ -484,9 +606,18 @@ export function AdminDashboard(): React.JSX.Element {
   }
 
   if (!stats) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <p className="text-gray-600">No data available</p>
-    </div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        {allEvents.length > 0 ? (
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Calculating statistics...</p>
+          </div>
+        ) : (
+          <p className="text-gray-600">No data available</p>
+        )}
+      </div>
+    );
   }
 
   // Prepare chart data
@@ -579,6 +710,42 @@ export function AdminDashboard(): React.JSX.Element {
                   ))}
                 </select>
               </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="date-start" className="text-sm font-medium text-gray-700">
+                  From
+                </label>
+                <input
+                  id="date-start"
+                  type="date"
+                  value={dateRangeStart}
+                  onChange={(e) => setDateRangeStart(e.target.value)}
+                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="date-end" className="text-sm font-medium text-gray-700">
+                  To
+                </label>
+                <input
+                  id="date-end"
+                  type="date"
+                  value={dateRangeEnd}
+                  onChange={(e) => setDateRangeEnd(e.target.value)}
+                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              {(dateRangeStart || dateRangeEnd) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateRangeStart("");
+                    setDateRangeEnd("");
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Clear dates
+                </button>
+              )}
             </div>
           </div>
           {selectedGame !== "all" && stats.gamesByGameId[selectedGame] && (
@@ -857,6 +1024,9 @@ export function AdminDashboard(): React.JSX.Element {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
+                    #
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Time
                   </th>
@@ -878,41 +1048,89 @@ export function AdminDashboard(): React.JSX.Element {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {stats.recentEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(event.timestamp).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {event.gameId.replace(/-/g, " ").substring(0, 30)}...
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          event.event === "game_started"
-                            ? "bg-blue-100 text-blue-800"
-                            : event.event === "game_completed"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-orange-100 text-orange-800"
-                        }`}
-                      >
-                        {event.event.replace("game_", "")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.user.name || event.user.email || "Anonymous"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.user.school ?? "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.score ?? "-"}
-                    </td>
-                  </tr>
-                ))}
+                {(() => {
+                  const totalEvents = stats.recentEvents.length;
+                  const totalPages = Math.max(1, Math.ceil(totalEvents / RECENT_EVENTS_PAGE_SIZE));
+                  const page = Math.min(recentEventsPage, totalPages);
+                  const start = (page - 1) * RECENT_EVENTS_PAGE_SIZE;
+                  const paginatedEvents = stats.recentEvents.slice(start, start + RECENT_EVENTS_PAGE_SIZE);
+                  return paginatedEvents.map((event, index) => (
+                    <tr key={event.id}>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                        {start + index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(event.timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {event.gameId.replace(/-/g, " ").substring(0, 30)}...
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            event.event === "game_started"
+                              ? "bg-blue-100 text-blue-800"
+                              : event.event === "game_completed"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
+                          }`}
+                        >
+                          {event.event.replace("game_", "")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {event.user.name || event.user.email || "Anonymous"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {event.user.school ?? "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {event.score ?? "-"}
+                      </td>
+                    </tr>
+                  ));
+                })()}
               </tbody>
             </table>
           </div>
+          {(() => {
+            const totalEvents = stats.recentEvents.length;
+            const totalPages = Math.max(1, Math.ceil(totalEvents / RECENT_EVENTS_PAGE_SIZE));
+            const page = Math.min(recentEventsPage, totalPages);
+            return totalEvents > RECENT_EVENTS_PAGE_SIZE ? (
+              <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+                <p className="text-sm text-gray-600">
+                  Showing {(page - 1) * RECENT_EVENTS_PAGE_SIZE + 1}–
+                  {Math.min(page * RECENT_EVENTS_PAGE_SIZE, totalEvents)} of {totalEvents} events
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRecentEventsPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRecentEventsPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ) : totalEvents > 0 ? (
+              <p className="mt-4 text-sm text-gray-500 border-t border-gray-200 pt-4">
+                {totalEvents} event{totalEvents !== 1 ? "s" : ""}
+              </p>
+            ) : null;
+          })()}
         </div>
       </main>
     </div>
