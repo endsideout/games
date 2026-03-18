@@ -25,6 +25,10 @@ export {
 } from "./courses/wellbeing/emotional-wellbeing";
 
 export {
+  StudyHabitsGame
+} from "./courses/wellbeing/intellectual-wellbeing";
+
+export {
   PlanetProtectorGame,
   EcoFixItGame
 } from "./courses/wellbeing/environmental-wellbeing/games";

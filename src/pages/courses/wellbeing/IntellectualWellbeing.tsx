@@ -5,25 +5,25 @@ import { Logo } from "../../../components";
 export function IntellectualWellbeing(): React.JSX.Element {
   const games = [
     {
+      title: "Study Habits Sort",
+      icon: "📚",
+      description: "Sort study habits into Good or Bad! Drag each habit to the right bucket before time runs out.",
+      route: "/study-habits-game",
+      color: "from-indigo-50 to-blue-50",
+      borderColor: "border-indigo-300",
+      buttonColor: "from-indigo-500 to-blue-600",
+      tags: ["Focus", "Learning", "Time Management"],
+      comingSoon: false
+    },
+    {
       title: "Brain Puzzles",
       icon: "🧩",
       description: "Coming Soon! Challenge your mind with fun puzzles that boost critical thinking and problem-solving skills.",
       route: "#",
-      color: "from-indigo-50 to-blue-50",
-      borderColor: "border-indigo-300",
-      buttonColor: "from-indigo-500 to-blue-600",
-      tags: ["Logic", "Problem Solving", "Critical Thinking"],
-      comingSoon: true
-    },
-    {
-      title: "Curiosity Quest",
-      icon: "🔬",
-      description: "Coming Soon! Explore science experiments and discover amazing facts about the world around us.",
-      route: "#",
       color: "from-purple-50 to-indigo-50",
       borderColor: "border-purple-300",
       buttonColor: "from-purple-400 to-indigo-500",
-      tags: ["Science", "Discovery", "Learning"],
+      tags: ["Logic", "Problem Solving", "Critical Thinking"],
       comingSoon: true
     },
     {

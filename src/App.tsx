@@ -23,6 +23,7 @@ import {
   FinancialLiteracy,
   BankingWordSearch,
   BudgetingGame,
+  StudyHabitsGame,
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -80,6 +81,7 @@ export default function App(): React.JSX.Element {
         <Route path="/banking-word-search" element={<BankingWordSearch />} />
         <Route path="/budgeting-game" element={<BudgetingGame />} />
         {/* Other Wellbeing dimension routes */}
+        <Route path="/study-habits-game" element={<StudyHabitsGame />} />
         <Route path="/intellectual-wellbeing" element={<IntellectualWellbeing />} />
         <Route path="/occupational-wellbeing" element={<OccupationalWellbeing />} />
         <Route path="/physical-wellbeing" element={<PhysicalWellbeing />} />
