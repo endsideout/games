@@ -5,13 +5,46 @@ import { Logo } from "../../../components";
 export function OccupationalWellbeing(): React.JSX.Element {
   const games = [
     {
+      title: "Job Path Maze",
+      icon: "🗺️",
+      description: "Navigate your character to their Dream Job! Answer questions at each checkpoint to move forward.",
+      route: "/job-path-maze",
+      color: "from-orange-50 to-amber-50",
+      borderColor: "border-orange-300",
+      buttonColor: "from-orange-500 to-amber-600",
+      tags: ["Careers", "Quiz", "3 Lives", "60s / Step"],
+      comingSoon: false
+    },
+    {
+      title: "Dream Job Builder",
+      icon: "🏗️",
+      description: "Answer 5 fun questions and discover which career matches your personality!",
+      route: "/dream-job-builder",
+      color: "from-yellow-50 to-amber-50",
+      borderColor: "border-yellow-300",
+      buttonColor: "from-yellow-500 to-amber-600",
+      tags: ["Personality Quiz", "5 Questions", "Career Match"],
+      comingSoon: false
+    },
+    {
+      title: "Skills & Jobs Sort",
+      icon: "🔧",
+      description: "Match skills like teamwork, math, and creativity to the careers that need them!",
+      route: "/skills-jobs-sort",
+      color: "from-lime-50 to-green-50",
+      borderColor: "border-lime-300",
+      buttonColor: "from-lime-500 to-green-600",
+      tags: ["Drag & Drop", "8 Skills", "4 Careers"],
+      comingSoon: false
+    },
+    {
       title: "Career Explorer",
       icon: "🎯",
       description: "Coming Soon! Discover different careers and find out what jobs match your interests and skills.",
       route: "#",
-      color: "from-orange-50 to-amber-50",
+      color: "from-orange-50 to-red-50",
       borderColor: "border-orange-300",
-      buttonColor: "from-orange-500 to-amber-600",
+      buttonColor: "from-orange-500 to-red-600",
       tags: ["Careers", "Interests", "Skills"],
       comingSoon: true
     },

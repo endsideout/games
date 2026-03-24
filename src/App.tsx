@@ -24,6 +24,9 @@ import {
   BankingWordSearch,
   BudgetingGame,
   StudyHabitsGame,
+  JobPathMaze,
+  DreamJobBuilder,
+  SkillsJobsSort,
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -84,6 +87,9 @@ export default function App(): React.JSX.Element {
         <Route path="/study-habits-game" element={<StudyHabitsGame />} />
         <Route path="/intellectual-wellbeing" element={<IntellectualWellbeing />} />
         <Route path="/occupational-wellbeing" element={<OccupationalWellbeing />} />
+        <Route path="/job-path-maze"    element={<JobPathMaze />} />
+        <Route path="/dream-job-builder" element={<DreamJobBuilder />} />
+        <Route path="/skills-jobs-sort"  element={<SkillsJobsSort />} />
         <Route path="/physical-wellbeing" element={<PhysicalWellbeing />} />
         <Route path="/spiritual-wellbeing" element={<SpiritualWellbeing />} />
         {/* Admin Routes */}

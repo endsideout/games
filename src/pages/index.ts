@@ -39,3 +39,9 @@ export {
   BankingWordSearch,
   BudgetingGame
 } from "./courses/financial-literacy";
+
+export {
+  JobPathMaze,
+  DreamJobBuilder,
+  SkillsJobsSort,
+} from "./courses/wellbeing/occupational-wellbeing";
