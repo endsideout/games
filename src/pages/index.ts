@@ -45,3 +45,7 @@ export {
   DreamJobBuilder,
   SkillsJobsSort,
 } from "./courses/wellbeing/occupational-wellbeing";
+
+export {
+  HealthyPlateGame,
+} from "./courses/wellbeing/physical-wellbeing";

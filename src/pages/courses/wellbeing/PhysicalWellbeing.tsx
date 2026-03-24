@@ -17,14 +17,14 @@ export function PhysicalWellbeing(): React.JSX.Element {
     },
     {
       title: "Healthy Plate Builder",
-      icon: "🥗",
-      description: "Coming Soon! Create balanced meals and learn about nutrition. Build the perfect healthy plate!",
-      route: "#",
+      icon: "🍽️",
+      description: "Build the perfect healthy plate! Drag 5 foods onto the plate and score based on how nutritious your choices are.",
+      route: "/healthy-plate",
       color: "from-green-50 to-lime-50",
       borderColor: "border-green-300",
       buttonColor: "from-green-400 to-lime-500",
-      tags: ["Nutrition", "Food Groups", "Healthy Eating"],
-      comingSoon: true
+      tags: ["Nutrition", "Drag & Drop", "5 Foods", "90s Timer"],
+      comingSoon: false
     },
     {
       title: "Sleep Stars",

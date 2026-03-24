@@ -1,0 +1,1 @@
+export { HealthyPlateGame } from "./HealthyPlateGame";
