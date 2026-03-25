@@ -1,0 +1,1 @@
+export { SuryaNamaskarGame } from "./SuryaNamaskarGame";

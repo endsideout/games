@@ -49,3 +49,7 @@ export {
 export {
   HealthyPlateGame,
 } from "./courses/wellbeing/physical-wellbeing";
+
+export {
+  SuryaNamaskarGame,
+} from "./courses/wellbeing/spiritual-wellbeing";

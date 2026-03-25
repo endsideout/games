@@ -5,15 +5,15 @@ import { Logo } from "../../../components";
 export function SpiritualWellbeing(): React.JSX.Element {
   const games = [
     {
-      title: "Mindful Moments",
-      icon: "🧘",
-      description: "Coming Soon! Practice mindfulness and meditation techniques to find inner peace and calm.",
-      route: "#",
-      color: "from-violet-50 to-purple-50",
-      borderColor: "border-violet-300",
-      buttonColor: "from-violet-500 to-purple-600",
-      tags: ["Mindfulness", "Meditation", "Calm"],
-      comingSoon: true
+      title: "Surya Namaskar",
+      icon: "🌅",
+      description: "Arrange the 8 Sun Salutation poses in the correct order! Learn the ancient sequence through a fun drag-and-drop challenge.",
+      route: "/surya-namaskar",
+      color: "from-yellow-50 to-amber-50",
+      borderColor: "border-yellow-300",
+      buttonColor: "from-yellow-500 to-amber-600",
+      tags: ["Yoga", "Sequence", "8 Poses", "2 Min"],
+      comingSoon: false
     },
     {
       title: "Gratitude Garden",

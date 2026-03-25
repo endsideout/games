@@ -28,6 +28,7 @@ import {
   DreamJobBuilder,
   SkillsJobsSort,
   HealthyPlateGame,
+  SuryaNamaskarGame,
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -93,6 +94,7 @@ export default function App(): React.JSX.Element {
         <Route path="/skills-jobs-sort"  element={<SkillsJobsSort />} />
         <Route path="/physical-wellbeing" element={<PhysicalWellbeing />} />
         <Route path="/healthy-plate" element={<HealthyPlateGame />} />
+        <Route path="/surya-namaskar" element={<SuryaNamaskarGame />} />
         <Route path="/spiritual-wellbeing" element={<SpiritualWellbeing />} />
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
