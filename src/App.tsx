@@ -7,6 +7,8 @@ import {
   Home,
   ThreeDWellness,
   KnowYourHealth,
+  KnowYourHealthModule1,
+  SometimesAnytimeGame,
   SocialWellbeing,
   EmotionalWellbeing,
   EnvironmentalWellbeing,
@@ -43,6 +45,8 @@ export default function App(): React.JSX.Element {
         <Route path="/" element={<Home />} />
         <Route path="/3d-wellness" element={<ThreeDWellness />} />
         <Route path="/know-your-health" element={<KnowYourHealth />} />
+        <Route path="/know-your-health/module-1" element={<KnowYourHealthModule1 />} />
+        <Route path="/sometimes-anytime-food" element={<SometimesAnytimeGame />} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"

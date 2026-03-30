@@ -17,7 +17,15 @@ export function Home(): React.JSX.Element {
            `,
       }}
     >
-      <div className="text-center p-12 bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl border-8 border-yellow-300 max-w-7xl w-full mx-4">
+      <div className="text-center p-12 bg-white bg-opacity-95 backdrop-blur-sm rounded-3xl shadow-2xl border-8 border-yellow-300 max-w-7xl w-full mx-4 relative">
+        {/* Admin button */}
+        <Link
+          to="/admin"
+          className="absolute top-4 right-4 px-6 py-3 bg-gray-800 text-white text-sm font-bold rounded-full shadow hover:bg-gray-900 transition-colors"
+        >
+          Admin
+        </Link>
+
         <div className="flex items-center justify-center mb-8">
           <Logo size="lg" className="mr-6" />
           <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
