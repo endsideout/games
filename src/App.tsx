@@ -8,7 +8,9 @@ import {
   ThreeDWellness,
   KnowYourHealth,
   KnowYourHealthModule1,
+  KnowYourHealthModule2,
   SometimesAnytimeGame,
+  LeastSugarGame,
   SocialWellbeing,
   EmotionalWellbeing,
   EnvironmentalWellbeing,
@@ -47,6 +49,8 @@ export default function App(): React.JSX.Element {
         <Route path="/know-your-health" element={<KnowYourHealth />} />
         <Route path="/know-your-health/module-1" element={<KnowYourHealthModule1 />} />
         <Route path="/sometimes-anytime-food" element={<SometimesAnytimeGame />} />
+        <Route path="/know-your-health/module-2" element={<KnowYourHealthModule2 />} />
+        <Route path="/least-sugar-game" element={<LeastSugarGame />} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"

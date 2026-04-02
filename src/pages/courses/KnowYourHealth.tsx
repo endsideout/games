@@ -4,7 +4,7 @@ import { Logo } from "../../components";
 
 const MODULES = [
   { label: "Module 1", route: "/know-your-health/module-1", comingSoon: false },
-  { label: "Module 2", comingSoon: true },
+  { label: "Module 2", route: "/know-your-health/module-2", comingSoon: false },
   { label: "Module 3", comingSoon: true },
   { label: "Module 4", comingSoon: true },
   { label: "Module 5", comingSoon: true },

@@ -2,7 +2,7 @@
 export { Home } from "./landing";
 
 // Course pages
-export { ThreeDWellness, KnowYourHealth, KnowYourHealthModule1 } from "./courses";
+export { ThreeDWellness, KnowYourHealth, KnowYourHealthModule1, KnowYourHealthModule2 } from "./courses";
 export {
   SocialWellbeing,
   EmotionalWellbeing,
@@ -56,4 +56,5 @@ export {
 
 export {
   SometimesAnytimeGame,
+  LeastSugarGame,
 } from "./courses/know-your-health";
