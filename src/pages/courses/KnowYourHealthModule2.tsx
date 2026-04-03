@@ -5,9 +5,9 @@ import { Logo } from "../../components";
 export function KnowYourHealthModule2(): React.JSX.Element {
   const games = [
     {
-      name: "Least Sugar!",
-      icon: "🍬🚫",
-      description: "Two foods appear — pick the one with less sugar! 5 rounds, 2 minutes on the clock.",
+      name: "Added vs. Natural Sugar",
+      icon: "🍃🍬",
+      description: "Each round asks a different question — natural sugar, added sugar, eat more or less? 5 rounds, 2 minutes!",
       color: "from-purple-50 to-pink-50",
       borderColor: "border-purple-300",
       textColor: "text-purple-800",

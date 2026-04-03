@@ -9,6 +9,7 @@ import {
   KnowYourHealth,
   KnowYourHealthModule1,
   KnowYourHealthModule2,
+  KnowYourHealthSet1,
   SometimesAnytimeGame,
   LeastSugarGame,
   SocialWellbeing,
@@ -50,6 +51,7 @@ export default function App(): React.JSX.Element {
         <Route path="/know-your-health/module-1" element={<KnowYourHealthModule1 />} />
         <Route path="/sometimes-anytime-food" element={<SometimesAnytimeGame />} />
         <Route path="/know-your-health/module-2" element={<KnowYourHealthModule2 />} />
+        <Route path="/know-your-health/set-1" element={<KnowYourHealthSet1 />} />
         <Route path="/least-sugar-game" element={<LeastSugarGame />} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route

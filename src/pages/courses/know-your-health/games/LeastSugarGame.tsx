@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
 
@@ -49,35 +49,62 @@ function playWrong() {
 interface FoodOption {
   name: string;
   emoji: string;
-  sugar: string; // display label e.g. "~9g sugar"
-  sugarG: number; // numeric for comparison
+  fact: string;  // shown after answer
 }
 
+type QuestionType = "natural" | "added" | "eat-more" | "eat-less";
+
 interface Round {
+  question: string;
+  questionType: QuestionType;
   left: FoodOption;
   right: FoodOption;
+  // which side is the correct answer
+  answer: "left" | "right";
+  // explanation shown after answer
+  explanation: string;
 }
 
 const ROUNDS: Round[] = [
   {
-    left:  { name: "Donut",      emoji: "🍩", sugar: "~12g sugar", sugarG: 12 },
-    right: { name: "Orange",     emoji: "🍊", sugar: "~9g sugar",  sugarG: 9  },
+    question: "Which one has NATURAL sugar? 🍃",
+    questionType: "natural",
+    left:  { name: "Donut",   emoji: "🍩", fact: "Made with added sugar & syrup" },
+    right: { name: "Orange",  emoji: "🍊", fact: "Natural sugar from fruit" },
+    answer: "right",
+    explanation: "Oranges have natural sugar that comes with vitamins & fibre!",
   },
   {
-    left:  { name: "Cookies",    emoji: "🍪", sugar: "~14g sugar", sugarG: 14 },
-    right: { name: "Cherries",   emoji: "🍒", sugar: "~8g sugar",  sugarG: 8  },
+    question: "Which has ADDED sugar? 🏭",
+    questionType: "added",
+    left:  { name: "Cookies",  emoji: "🍪", fact: "Packed with added sugar & fat" },
+    right: { name: "Cherries", emoji: "🍒", fact: "Only natural fruit sugars" },
+    answer: "left",
+    explanation: "Cookies are loaded with added sugar put in during manufacturing!",
   },
   {
-    left:  { name: "Grapes",     emoji: "🍇", sugar: "~15g sugar", sugarG: 15 },
-    right: { name: "Candy",      emoji: "🍬", sugar: "~20g sugar", sugarG: 20 },
+    question: "Which should you eat MORE of? 💪",
+    questionType: "eat-more",
+    left:  { name: "Grapes", emoji: "🍇", fact: "Natural sugars + antioxidants" },
+    right: { name: "Candy",  emoji: "🍬", fact: "Pure added sugar, no nutrients" },
+    answer: "left",
+    explanation: "Grapes have natural sugar with antioxidants — great for you!",
   },
   {
-    left:  { name: "Cereal",     emoji: "🥣", sugar: "~12g sugar", sugarG: 12 },
-    right: { name: "Oatmeal",    emoji: "🌾", sugar: "~1g sugar",  sugarG: 1  },
+    question: "Which should you eat LESS of? 🚫",
+    questionType: "eat-less",
+    left:  { name: "Cereal",  emoji: "🥣", fact: "Often has lots of added sugar" },
+    right: { name: "Oatmeal", emoji: "🌾", fact: "Barely any sugar, full of fibre" },
+    answer: "left",
+    explanation: "Most cereals are high in added sugar — oatmeal is the healthier swap!",
   },
   {
-    left:  { name: "Watermelon", emoji: "🍉", sugar: "~9g sugar",  sugarG: 9  },
-    right: { name: "Ice Cream",  emoji: "🍦", sugar: "~21g sugar", sugarG: 21 },
+    question: "Which has NATURAL sugar? 🍃",
+    questionType: "natural",
+    left:  { name: "Watermelon", emoji: "🍉", fact: "Natural fruit sugar + lots of water" },
+    right: { name: "Ice Cream",  emoji: "🍦", fact: "High in added sugar & fat" },
+    answer: "left",
+    explanation: "Watermelon is 92% water with natural sugar — super refreshing!",
   },
 ];
 
@@ -90,6 +117,10 @@ interface Answer {
 }
 
 export function LeastSugarGame(): React.JSX.Element {
+  const location = useLocation();
+  const fromSet1  = new URLSearchParams(location.search).get("from") === "set1";
+  const backTo    = fromSet1 ? "/know-your-health/set-1" : "/know-your-health/module-2";
+  const backLabel = fromSet1 ? "← Back to Set 1" : "← Back to Module 2";
   const [phase,       setPhase]       = useState<Phase>("start");
   const [roundIdx,    setRoundIdx]    = useState(0);
   const [answers,     setAnswers]     = useState<Answer[]>([]);
@@ -138,9 +169,7 @@ export function LeastSugarGame(): React.JSX.Element {
   function handlePick(side: "left" | "right") {
     if (picked || phase !== "playing") return;
     const round   = ROUNDS[roundIdx];
-    const chosen  = side === "left" ? round.left : round.right;
-    const other   = side === "left" ? round.right : round.left;
-    const correct = chosen.sugarG < other.sugarG;
+    const correct = side === round.answer;
 
     if (correct) { setScore(s => s + POINTS_CORRECT); playCorrect(); }
     else         { playWrong(); }
@@ -172,15 +201,16 @@ export function LeastSugarGame(): React.JSX.Element {
       <div className="bg-white/90 rounded-3xl shadow-2xl border-4 border-purple-300 p-10 max-w-lg w-full text-center">
         <Logo size="md" className="mx-auto mb-4" />
         <div className="text-6xl mb-3">🍬🚫</div>
-        <h1 className="text-3xl font-black text-gray-800 mb-2">Least Sugar!</h1>
+        <h1 className="text-3xl font-black text-gray-800 mb-2">Added vs. Natural Sugar 🍃</h1>
         <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-          Two foods appear — pick the one with <strong className="text-purple-600">less sugar</strong>!
-          Earn <strong className="text-yellow-600">10 points</strong> for each correct choice.
+          Each round asks a <strong className="text-purple-600">different question</strong> about sugar —
+          natural, added, eat more, or eat less!
         </p>
         <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 mb-6 text-sm text-left text-purple-900 space-y-1">
           <p className="font-black mb-1">How to play:</p>
-          <p>🍩 Two foods are shown side by side</p>
-          <p>👆 Tap the one with LESS sugar</p>
+          <p>🍩 Two foods shown — read the question carefully!</p>
+          <p>🍃 Some questions ask about natural vs. added sugar</p>
+          <p>💪 Others ask which to eat more or less of</p>
           <p>⏱️ You have <strong>2 minutes</strong> — 5 rounds!</p>
           <p>⭐ +{POINTS_CORRECT} points per correct answer</p>
         </div>
@@ -193,8 +223,8 @@ export function LeastSugarGame(): React.JSX.Element {
         </button>
       </div>
       <div className="mt-6">
-        <Link to="/know-your-health/module-2" className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
-          ← Back to Module 2
+        <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
+          {backLabel}
         </Link>
       </div>
     </div>
@@ -230,24 +260,22 @@ export function LeastSugarGame(): React.JSX.Element {
 
           {/* Round breakdown */}
           <div className="space-y-3 text-left mb-6">
-            {answers.map((a, i) => {
-              const low  = a.round.left.sugarG < a.round.right.sugarG ? a.round.left : a.round.right;
-              const high = a.round.left.sugarG < a.round.right.sugarG ? a.round.right : a.round.left;
-              return (
-                <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border-2"
-                  style={{ borderColor: a.correct ? "#22c55e" : "#ef4444" }}>
-                  <span className="text-2xl">{a.correct ? "✅" : "❌"}</span>
-                  <div className="flex-1 text-sm">
-                    <p className="font-black text-gray-800">
-                      {a.round.left.emoji} {a.round.left.name} vs {a.round.right.emoji} {a.round.right.name}
-                    </p>
-                    <p className="text-gray-500 text-xs">
-                      {low.emoji} <strong>{low.name}</strong> has less sugar ({low.sugar}) vs {high.emoji} {high.name} ({high.sugar})
-                    </p>
-                  </div>
+            {answers.map((a, i) => (
+              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-2xl px-4 py-3 border-2"
+                style={{ borderColor: a.correct ? "#22c55e" : "#ef4444" }}>
+                <span className="text-2xl mt-0.5">{a.correct ? "✅" : "❌"}</span>
+                <div className="flex-1 text-sm">
+                  <p className="font-black text-gray-500 text-xs uppercase tracking-wide">{a.round.question}</p>
+                  <p className="font-black text-gray-800 mt-0.5">
+                    {a.round.left.emoji} {a.round.left.name} vs {a.round.right.emoji} {a.round.right.name}
+                  </p>
+                  <p className="text-xs mt-1 italic"
+                    style={{ color: a.correct ? "#16a34a" : "#dc2626" }}>
+                    {a.round.explanation}
+                  </p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
           <div className="flex gap-3 justify-center">
@@ -256,7 +284,7 @@ export function LeastSugarGame(): React.JSX.Element {
               style={{ background: "linear-gradient(135deg, #a855f7, #ec4899)" }}>
               Play Again 🔄
             </button>
-            <Link to="/know-your-health/module-2"
+            <Link to={backTo}
               className="px-6 py-3 rounded-full font-black text-white shadow hover:scale-105 transition-transform text-sm inline-block"
               style={{ background: "linear-gradient(135deg, #6b7280, #374151)" }}>
               ← Back
@@ -268,8 +296,8 @@ export function LeastSugarGame(): React.JSX.Element {
   }
 
   /* ── PLAYING ── */
-  const round        = ROUNDS[roundIdx];
-  const correctSide  = round.left.sugarG < round.right.sugarG ? "left" : "right";
+  const round       = ROUNDS[roundIdx];
+  const correctSide = round.answer;
 
   function cardStyle(side: "left" | "right"): React.CSSProperties {
     if (!picked) return {
@@ -305,8 +333,8 @@ export function LeastSugarGame(): React.JSX.Element {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/60 backdrop-blur-sm border-b border-white/40 flex-shrink-0">
-        <Link to="/know-your-health/module-2" className="text-gray-500 hover:text-gray-700 font-semibold text-sm">← Exit</Link>
-        <span className="font-black text-gray-700">🍬 Least Sugar!</span>
+        <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">← Exit</Link>
+        <span className="font-black text-gray-700">🍃 Added vs. Natural Sugar</span>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-yellow-100 border-2 border-yellow-400 rounded-full px-3 py-1">
             <span className="text-sm">⭐</span>
@@ -334,7 +362,7 @@ export function LeastSugarGame(): React.JSX.Element {
           <p className="text-base font-bold text-gray-400 uppercase tracking-widest mb-3">
             Round {roundIdx + 1} of {ROUNDS.length}
           </p>
-          <h2 className="text-5xl font-black text-gray-800">Which has less sugar? 🍬</h2>
+          <h2 className="text-5xl font-black text-gray-800">{round.question}</h2>
         </div>
 
         {/* Food cards */}
@@ -353,18 +381,16 @@ export function LeastSugarGame(): React.JSX.Element {
                 <div style={{ fontSize: 160, lineHeight: 1 }}>{food.emoji}</div>
                 <p className="font-black text-gray-800 text-3xl mt-7">{food.name}</p>
 
-                {/* Sugar reveal after pick */}
+                {/* Reveal after pick */}
                 {picked && (
-                  <div className="mt-4 text-center">
-                    <p className="text-lg font-bold"
-                      style={{ color: side === correctSide ? "#16a34a" : "#dc2626" }}>
-                      {food.sugar}
-                    </p>
-                    {isCorrect && <p className="text-green-600 font-black text-base mt-1">✅ Less sugar!</p>}
-                    {isWrong   && <p className="text-red-500 font-black text-base mt-1">❌ More sugar</p>}
+                  <div className="mt-4 text-center px-2">
+                    <p className="text-sm font-semibold italic text-gray-500">{food.fact}</p>
+                    {isCorrect && <p className="text-green-600 font-black text-base mt-2">✅ Correct!</p>}
+                    {isWrong   && <p className="text-red-500 font-black text-base mt-2">❌ Not quite!</p>}
                   </div>
                 )}
 
+                {/* Explanation below both cards */}
                 {!picked && (
                   <p className="text-gray-400 text-sm mt-4 font-semibold">Tap to choose</p>
                 )}
@@ -372,6 +398,17 @@ export function LeastSugarGame(): React.JSX.Element {
             );
           })}
         </div>
+
+        {/* Explanation banner */}
+        {picked && (
+          <div className="w-full max-w-3xl rounded-2xl px-6 py-4 text-center"
+            style={{
+              background: answers[answers.length - 1]?.correct ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.10)",
+              border: `2px solid ${answers[answers.length - 1]?.correct ? "#22c55e" : "#ef4444"}`,
+            }}>
+            <p className="font-black text-gray-700 text-base">{round.explanation}</p>
+          </div>
+        )}
 
         {/* Progress dots */}
         <div className="flex gap-3">

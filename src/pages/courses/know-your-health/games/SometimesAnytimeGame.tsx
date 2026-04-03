@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
 
@@ -248,6 +248,10 @@ function FlashOverlay({ food, mode }: { food: FoodItem; mode: Mode }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export function SometimesAnytimeGame(): React.JSX.Element {
+  const location = useLocation();
+  const fromSet1 = new URLSearchParams(location.search).get("from") === "set1";
+  const backTo   = fromSet1 ? "/know-your-health/set-1" : "/know-your-health/module-1";
+  const backLabel = fromSet1 ? "← Back to Set 1" : "← Back to Module 1";
   const [phase,           setPhase]           = useState<Phase>("mode-select");
   const [mode,            setMode]            = useState<Mode>("mode1");
   const [queue,           setQueue]           = useState<FoodItem[]>([]);
@@ -360,8 +364,8 @@ export function SometimesAnytimeGame(): React.JSX.Element {
           </button>
         </div>
       </div>
-      <Link to="/know-your-health/module-1" className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
-        ← Back to Module 1
+      <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
+        {backLabel}
       </Link>
     </div>
   );
@@ -434,7 +438,7 @@ export function SometimesAnytimeGame(): React.JSX.Element {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/60 backdrop-blur-sm border-b border-white/40 flex-shrink-0">
-        <Link to="/know-your-health/module-1" className="text-gray-500 hover:text-gray-700 font-semibold text-sm">← Exit</Link>
+        <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">← Exit</Link>
         <span className="font-black text-gray-700">🍎 Sometimes or Anytime?</span>
         <div className="flex items-center gap-4">
           {/* Score */}
