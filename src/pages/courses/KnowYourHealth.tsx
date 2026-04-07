@@ -6,8 +6,8 @@ import { SET1_GAMES } from "./KnowYourHealthSet1";
 const MODULES = [
   { label: "Module 1", route: "/know-your-health/module-1", comingSoon: false },
   { label: "Module 2", route: "/know-your-health/module-2", comingSoon: false },
-  { label: "Module 3", comingSoon: true },
-  { label: "Module 4", comingSoon: true },
+  { label: "Module 3", route: "/know-your-health/module-3", comingSoon: false },
+  { label: "Module 4", route: "/know-your-health/module-4", comingSoon: false },
   { label: "Module 5", comingSoon: true },
   { label: "Module 6", comingSoon: true },
   { label: "Module 7", comingSoon: true },

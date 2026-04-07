@@ -1,1 +1,1 @@
-export { SometimesAnytimeGame, LeastSugarGame } from "./games";
+export { SometimesAnytimeGame, LeastSugarGame, BrainHealthGame, WaterGlassGame } from "./games";

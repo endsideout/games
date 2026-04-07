@@ -28,6 +28,30 @@ export const SET1_GAMES = [
     text: "text-purple-800",
     btnBg: "linear-gradient(135deg, #a855f7, #ec4899)",
   },
+  {
+    number: 3,
+    name: "Help Flame-man!",
+    description: "Help our superhero make smart choices for his brain health across 5 real-life scenarios!",
+    icon: "🦸🔥",
+    route: "/brain-health-game",
+    module: "Module 3",
+    color: "from-blue-50 to-indigo-50",
+    border: "border-blue-400",
+    text: "text-blue-900",
+    btnBg: "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+  },
+  {
+    number: 4,
+    name: "Fill the Glass!",
+    description: "Answer questions about water and healthy drinks to fill up the glass — every correct answer adds water!",
+    icon: "💧🥤",
+    route: "/water-glass-game",
+    module: "Module 4",
+    color: "from-sky-50 to-blue-50",
+    border: "border-sky-400",
+    text: "text-sky-900",
+    btnBg: "linear-gradient(135deg, #0369a1, #0ea5e9)",
+  },
 ];
 
 // Route suffix appended so games know to navigate back to Set 1
