@@ -8,7 +8,7 @@ const MODULES = [
   { label: "Module 2", route: "/know-your-health/module-2", comingSoon: false },
   { label: "Module 3", route: "/know-your-health/module-3", comingSoon: false },
   { label: "Module 4", route: "/know-your-health/module-4", comingSoon: false },
-  { label: "Module 5", comingSoon: true },
+  { label: "Module 5", route: "/know-your-health/module-5", comingSoon: false },
   { label: "Module 6", comingSoon: true },
   { label: "Module 7", comingSoon: true },
 ];

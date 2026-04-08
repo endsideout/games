@@ -52,6 +52,18 @@ export const SET1_GAMES = [
     text: "text-sky-900",
     btnBg: "linear-gradient(135deg, #0369a1, #0ea5e9)",
   },
+  {
+    number: 5,
+    name: "Finish the Race!",
+    description: "Answer questions about healthy habits and race to the finish line — every correct answer moves your runner closer!",
+    icon: "🏃🏁",
+    route: "/finish-race-game",
+    module: "Module 5",
+    color: "from-green-50 to-emerald-50",
+    border: "border-green-400",
+    text: "text-green-900",
+    btnBg: "linear-gradient(135deg, #059669, #10b981)",
+  },
 ];
 
 // Route suffix appended so games know to navigate back to Set 1

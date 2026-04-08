@@ -12,10 +12,12 @@ import {
   KnowYourHealthSet1,
   KnowYourHealthModule3,
   KnowYourHealthModule4,
+  KnowYourHealthModule5,
   SometimesAnytimeGame,
   LeastSugarGame,
   BrainHealthGame,
   WaterGlassGame,
+  FinishRaceGame,
   SocialWellbeing,
   EmotionalWellbeing,
   EnvironmentalWellbeing,
@@ -61,6 +63,8 @@ export default function App(): React.JSX.Element {
         <Route path="/brain-health-game" element={<BrainHealthGame />} />
         <Route path="/know-your-health/module-4" element={<KnowYourHealthModule4 />} />
         <Route path="/water-glass-game" element={<WaterGlassGame />} />
+        <Route path="/know-your-health/module-5" element={<KnowYourHealthModule5 />} />
+        <Route path="/finish-race-game" element={<FinishRaceGame />} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"
