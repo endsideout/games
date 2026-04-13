@@ -6,3 +6,5 @@ export { KnowYourHealthSet1 } from "./KnowYourHealthSet1";
 export { KnowYourHealthModule3 } from "./KnowYourHealthModule3";
 export { KnowYourHealthModule4 } from "./KnowYourHealthModule4";
 export { KnowYourHealthModule5 } from "./KnowYourHealthModule5";
+export { KnowYourHealthModule6 } from "./KnowYourHealthModule6";
+export { KnowYourHealthModule7 } from "./KnowYourHealthModule7";

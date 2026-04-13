@@ -64,6 +64,30 @@ export const SET1_GAMES = [
     text: "text-green-900",
     btnBg: "linear-gradient(135deg, #059669, #10b981)",
   },
+  {
+    number: 6,
+    name: "Guard Your Health!",
+    description: "Let good habits fall on you and drag bad habits away — protect your body from disease!",
+    icon: "🛡️🏃",
+    route: "/habit-guard-game",
+    module: "Module 6",
+    color: "from-violet-50 to-purple-50",
+    border: "border-violet-400",
+    text: "text-violet-900",
+    btnBg: "linear-gradient(135deg, #6d28d9, #a78bfa)",
+  },
+  {
+    number: 7,
+    name: "Positive or Negative?",
+    description: "Read body image statements and decide if each one is positive or negative — build a healthy self-image!",
+    icon: "🪞💜",
+    route: "/body-image-game",
+    module: "Module 7",
+    color: "from-purple-50 to-pink-50",
+    border: "border-purple-400",
+    text: "text-purple-900",
+    btnBg: "linear-gradient(135deg, #7c3aed, #db2777)",
+  },
 ];
 
 // Route suffix appended so games know to navigate back to Set 1

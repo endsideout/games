@@ -2,7 +2,7 @@
 export { Home } from "./landing";
 
 // Course pages
-export { ThreeDWellness, KnowYourHealth, KnowYourHealthModule1, KnowYourHealthModule2, KnowYourHealthModule3, KnowYourHealthModule4, KnowYourHealthModule5, KnowYourHealthSet1 } from "./courses";
+export { ThreeDWellness, KnowYourHealth, KnowYourHealthModule1, KnowYourHealthModule2, KnowYourHealthModule3, KnowYourHealthModule4, KnowYourHealthModule5, KnowYourHealthModule6, KnowYourHealthModule7, KnowYourHealthSet1 } from "./courses";
 export {
   SocialWellbeing,
   EmotionalWellbeing,
@@ -60,4 +60,6 @@ export {
   BrainHealthGame,
   WaterGlassGame,
   FinishRaceGame,
+  HabitGuardGame,
+  BodyImageGame,
 } from "./courses/know-your-health";
