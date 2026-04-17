@@ -4,8 +4,7 @@ import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
 
 const GAME_ID    = "habit-guard-game";
-const ITEM_W      = 173;
-const ITEM_H      = 153;
+const ITEM_SIZE   = 215; // circle diameter (+25% from prev 173×153)
 const MAX_PIMPLES = 5;
 const SPAWN_MS   = 2100;
 const SPEED_MIN  = 68;
@@ -46,7 +45,6 @@ function playTone(freqs: number[], type: OscillatorType = "sine") {
 }
 const playGood = () => playTone([523, 659, 784]);
 const playBad  = () => playTone([220, 170], "sawtooth");
-const playSave = () => playTone([440, 554, 659]);
 
 // ── Character SVG — white skin, yellow top, pimples ──────────────────────────
 function CharacterSVG({
@@ -257,7 +255,7 @@ export function HabitGuardGame(): React.JSX.Element {
   const phaseRef         = useRef<"playing" | "ended">("playing");
   const spawnQueueRef    = useRef<ItemDef[]>([]);
   const nextSpawnRef     = useRef(0);
-  const charTimerRef     = useRef<ReturnType<typeof setTimeout>>();
+  const charTimerRef     = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const modeRef          = useRef<"prek" | "older">("prek");
 
   function flashChar(s: "happy" | "hurt") {
@@ -292,7 +290,7 @@ export function HabitGuardGame(): React.JSX.Element {
     spawnQueueRef.current = [...items].sort(() => Math.random() - 0.5);
     nextSpawnRef.current = 0;
 
-    speak("Drag good habits to the character. Keep bad habits away!");
+    speak("Habits are falling! Drag good habits to the character to heal pimples. Drag bad habits away!");
     setPhase("playing");
   }, []);
 
@@ -314,13 +312,22 @@ export function HabitGuardGame(): React.JSX.Element {
       if (spawnQueueRef.current.length > 0 && ts >= nextSpawnRef.current) {
         const def = spawnQueueRef.current.shift()!;
         const pad = 14;
+        // Spawn close to the character but just outside its hit zone (32%–68%).
+        // Item right edge stops ~10px before charLeft; item left edge starts ~10px after charRight.
+        // Random ±25px variation so items feel natural, not robotic.
+        const GAP      = 10;
+        const jitter   = Math.random() * 25;
+        const spawnLeft = Math.random() < 0.5;
+        const leftX    = Math.max(pad, cw * 0.32 - ITEM_SIZE - GAP - jitter);
+        const rightX   = Math.min(cw - ITEM_SIZE - pad, cw * 0.68 + GAP + jitter);
+        const spawnX   = spawnLeft ? leftX : rightX;
         itemsRef.current = [
           ...itemsRef.current,
           {
             ...def,
             id: ++idCtrRef.current,
-            x: pad + Math.random() * (cw - ITEM_W - pad * 2),
-            y: -ITEM_H - 8,
+            x: spawnX,
+            y: -ITEM_SIZE - 8,
             speed: SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN),
             isDragging: false, dragOffX: 0, dragOffY: 0, removed: false,
           },
@@ -344,7 +351,7 @@ export function HabitGuardGame(): React.JSX.Element {
       if (allSpawned && allGone) {
         phaseRef.current = "ended";
         setPhase("end");
-        trackEvent(GAME_ID, "completed", { score: scoreRef.current, mode: modeRef.current });
+        trackEvent({ gameId: GAME_ID, event: "game_completed", score: scoreRef.current });
         speak(pimpleRef.current === 0
           ? "Amazing! You have a clear, healthy face!"
           : "Good try! Drag more good habits to heal your pimples next time!");
@@ -384,49 +391,42 @@ export function HabitGuardGame(): React.JSX.Element {
     forceRender(n => n + 1);
   }
 
-  function onPtrUp(e: React.PointerEvent, id: number) {
+  function onPtrUp(_e: React.PointerEvent, id: number) {
     const container = containerRef.current;
     if (!container) return;
     const cw = container.offsetWidth, ch = container.offsetHeight;
 
-    // Character occupies bottom 50%, centered horizontally
-    // Approximate hit box width = 35% of viewport height (proportional to SVG)
-    const charHalfW = Math.min(cw * 0.22, ch * 0.175);
-    const charTopY  = ch * 0.48;
+    // Character occupies center — hit zone: middle 36% wide, middle 62% tall
+    const charLeft   = cw * 0.32;
+    const charRight  = cw * 0.68;
+    const charTop    = ch * 0.19;
+    const charBottom = ch * 0.81;
 
     itemsRef.current = itemsRef.current.map(it => {
       if (it.id !== id || !it.isDragging) return it;
 
-      const cx = it.x + ITEM_W / 2;
-      const cy = it.y + ITEM_H / 2;
+      const cx = it.x + ITEM_SIZE / 2;
+      const cy = it.y + ITEM_SIZE / 2;
 
-      // Check if dropped ON the character
-      const onChar =
-        Math.abs(cx - cw / 2) < charHalfW && cy > charTopY && cy < ch;
+      const onCharacter = cx > charLeft && cx < charRight && cy > charTop && cy < charBottom;
 
-      if (onChar) {
-        if (it.type === "bad") {
-          // Dropped bad habit on character → pimple appears
-          addPimple(); flashChar("hurt"); playBad();
-          speak("Oh no! A bad habit — you got a pimple!");
-        } else {
-          // Dropped good habit on character → heals pimple + score
+      if (onCharacter) {
+        if (it.type === "good") {
           scoreRef.current += 10;
           setScore(scoreRef.current);
           goodCollectedRef.current++;
           setGoodCollected(goodCollectedRef.current);
-          removePimple(); flashChar("happy"); playGood();
-          speak("Great! Good habit — pimple healed!");
+          removePimple();
+          flashChar("happy"); playGood();
+          speak("Great! That good habit keeps you healthy!");
+        } else {
+          addPimple(); flashChar("hurt"); playBad();
+          speak("Oh no! That bad habit caused a pimple! Drag it away next time!");
         }
         return { ...it, isDragging: false, removed: true };
       }
 
-      // Dragged off screen — just disappear silently
-      const off = cx < 0 || cx > cw || cy < -20 || cy > ch + 20;
-      if (off) {
-        return { ...it, isDragging: false, removed: true };
-      }
-
+      // Released off character — stays in play, resumes falling
       return { ...it, isDragging: false };
     });
     forceRender(n => n + 1);
@@ -444,15 +444,16 @@ export function HabitGuardGame(): React.JSX.Element {
           <div style={{ fontSize: "3.5rem" }}>🛡️</div>
           <h1 className="text-3xl font-black text-gray-800 mb-1 mt-1">Guard Your Health!</h1>
           <p className="text-gray-600 mb-3 text-sm leading-relaxed">
-            Let <span className="text-green-600 font-bold">good habits</span> fall and reach you for points.
-            Drag <span className="text-red-500 font-bold">bad habits</span> off the screen — or they'll cause pimples!
+            Habits fall from the sky on both sides!<br />
+            <span className="text-green-600 font-bold">🟢 Drag good habits</span> onto the character to earn points and heal pimples.<br />
+            <span className="text-red-500 font-bold">🔴 Drag bad habits</span> away from the character — or they cause pimples!
           </p>
           <div className="flex gap-3 justify-center mb-5 text-sm flex-wrap">
             <div className="flex items-center gap-1 bg-green-50 rounded-xl px-3 py-2 border border-green-300">
-              <span>🟢</span><span className="text-green-700 font-semibold">Let fall = good</span>
+              <span>🟢</span><span className="text-green-700 font-semibold">Drag to character = heals</span>
             </div>
             <div className="flex items-center gap-1 bg-red-50 rounded-xl px-3 py-2 border border-red-300">
-              <span>🔴</span><span className="text-red-700 font-semibold">Drag away = bad</span>
+              <span>🔴</span><span className="text-red-700 font-semibold">Drops on character = pimple</span>
             </div>
           </div>
           <div className="flex flex-col gap-3">
@@ -570,74 +571,71 @@ export function HabitGuardGame(): React.JSX.Element {
         </div>
       ))}
 
-      {/* HUD */}
+      {/* HUD — top center */}
       <div
         style={{
           position: "absolute",
-          top: 10, left: 14, right: 14,
+          top: 10,
+          left: "50%",
+          transform: "translateX(-50%)",
           display: "flex",
-          justifyContent: "space-between",
+          gap: 10,
           alignItems: "center",
           zIndex: 10,
           pointerEvents: "none",
+          whiteSpace: "nowrap",
         }}
       >
-        {/* Score */}
         <div
           style={{
-            background: "rgba(255,255,255,0.92)",
-            borderRadius: 12,
-            padding: "5px 12px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: 14,
+            padding: "6px 14px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
           }}
         >
-          <div style={{ fontSize: "1.2rem", fontWeight: 900, color: "#1e3a5f" }}>{score} pts</div>
-          <div style={{ fontSize: "0.66rem", color: "#374151", fontWeight: 700 }}>
-            ✅ {goodCollected}/{goodTotal}
+          <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#1e3a5f" }}>{score} pts</div>
+          <div style={{ fontSize: "0.78rem", color: "#374151", fontWeight: 700 }}>
+            ✅ {goodCollected}/{goodTotal} good
           </div>
         </div>
-
-        {/* Pimple count */}
         <div
           style={{
-            background: "rgba(255,255,255,0.92)",
-            borderRadius: 12,
-            padding: "5px 12px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: 14,
+            padding: "6px 14px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: "1.2rem", fontWeight: 900, color: "#be123c" }}>
-            🔴 {pimpleCount}
-          </div>
-          <div style={{ fontSize: "0.66rem", color: "#374151", fontWeight: 700 }}>pimples</div>
+          <div style={{ fontSize: "1.3rem", fontWeight: 900, color: "#be123c" }}>🔴 {pimpleCount}</div>
+          <div style={{ fontSize: "0.78rem", color: "#374151", fontWeight: 700 }}>pimples</div>
         </div>
-
-        {/* Hint */}
         <div
           style={{
             background: "rgba(255,255,255,0.9)",
-            borderRadius: 10,
-            padding: "5px 10px",
-            fontSize: "0.68rem",
-            color: "#374151",
+            borderRadius: 12,
+            padding: "6px 10px",
+            fontSize: "0.78rem",
+            color: "#1f2937",
             fontWeight: 700,
-            textAlign: "right",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+            textAlign: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
+            lineHeight: 1.5,
           }}
         >
-          <div>🟢 Drag to heal</div>
-          <div>🔴 Avoid dropping</div>
+          <div>🟢 Drag <b>good</b> → character</div>
+          <div>🔴 Drag <b>bad</b> → away!</div>
         </div>
       </div>
 
-      {/* Character at bottom center, occupies bottom 50% */}
+      {/* Character — vertically centered */}
       <div
         style={{
           position: "absolute",
-          bottom: 0,
+          top: "50%",
           left: "50%",
-          transform: "translateX(-50%)",
+          transform: "translate(-50%, -50%)",
           zIndex: 5,
           pointerEvents: "none",
           display: "flex",
@@ -646,15 +644,6 @@ export function HabitGuardGame(): React.JSX.Element {
         }}
       >
         <CharacterSVG state={charState} pimpleCount={pimpleCount} />
-        {/* Ground strip */}
-        <div
-          style={{
-            width: "120%",
-            height: 10,
-            background: "linear-gradient(90deg, #4ade80, #16a34a, #4ade80)",
-            borderRadius: "60% 60% 0 0",
-          }}
-        />
       </div>
 
       {/* Falling items */}
@@ -670,21 +659,22 @@ export function HabitGuardGame(): React.JSX.Element {
               position: "absolute",
               left: it.x,
               top: it.y,
-              width: ITEM_W,
-              height: ITEM_H,
+              width: ITEM_SIZE,
+              height: ITEM_SIZE,
               background:
                 it.type === "good"
                   ? "linear-gradient(135deg, #d1fae5, #a7f3d0)"
                   : "linear-gradient(135deg, #fee2e2, #fca5a5)",
-              border: `3px solid ${it.type === "good" ? "#16a34a" : "#dc2626"}`,
-              borderRadius: 20,
+              border: `4px solid ${it.type === "good" ? "#16a34a" : "#dc2626"}`,
+              borderRadius: "50%",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 5,
+              gap: 4,
+              overflow: "hidden",
               boxShadow: it.isDragging
-                ? `0 16px 36px rgba(0,0,0,0.4), 0 0 0 4px ${it.type === "good" ? "#16a34a" : "#dc2626"}`
+                ? `0 16px 36px rgba(0,0,0,0.4), 0 0 0 5px ${it.type === "good" ? "#16a34a" : "#dc2626"}`
                 : "0 5px 16px rgba(0,0,0,0.24)",
               transform: it.isDragging ? "scale(1.13) rotate(4deg)" : "none",
               transition: it.isDragging ? "none" : "box-shadow 0.2s",
@@ -693,41 +683,37 @@ export function HabitGuardGame(): React.JSX.Element {
               touchAction: "none",
             }}
           >
-            <div style={{ fontSize: "3.25rem", pointerEvents: "none" }}>{it.emoji}</div>
+            <div style={{ fontSize: "3.5rem", lineHeight: 1, pointerEvents: "none" }}>{it.emoji}</div>
             <div
               style={{
-                fontSize: "0.85rem",
-                fontWeight: 800,
+                fontSize: "1.0rem",
+                fontWeight: 900,
                 color: it.type === "good" ? "#14532d" : "#7f1d1d",
                 textAlign: "center",
-                padding: "0 10px",
+                maxWidth: "72%",
                 lineHeight: 1.25,
                 pointerEvents: "none",
+                letterSpacing: "-0.01em",
               }}
             >
               {it.label}
             </div>
-            {/* Type badge */}
+            {/* Badge inside circle at bottom */}
             <div
               style={{
-                position: "absolute",
-                top: -12,
-                right: -12,
-                width: 33,
-                height: 33,
-                borderRadius: "50%",
+                padding: "2px 12px",
+                borderRadius: 20,
                 background: it.type === "good" ? "#16a34a" : "#dc2626",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "0.88rem",
+                fontSize: "0.72rem",
                 color: "white",
                 fontWeight: 900,
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                letterSpacing: "0.05em",
                 pointerEvents: "none",
+                whiteSpace: "nowrap",
+                marginTop: 2,
               }}
             >
-              {it.type === "good" ? "✓" : "✕"}
+              {it.type === "good" ? "GOOD" : "BAD"}
             </div>
           </div>
         ))}

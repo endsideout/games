@@ -8,16 +8,31 @@ const GAME_DURATION  = 90;
 const POINTS_CORRECT = 10;
 
 // ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
+// Module-level ref prevents Chrome from GC-ing the utterance mid-speech
+let _utterance: SpeechSynthesisUtterance | null = null;
+
+function speak(text: string, onEnd?: () => void) {
+  if (!("speechSynthesis" in window)) {
+    // No TTS support — fire callback immediately so the game still advances
+    setTimeout(() => onEnd?.(), 100);
+    return;
+  }
   try {
-    if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const u   = new SpeechSynthesisUtterance(text);
-    u.rate    = 0.9;
-    u.pitch   = 1.05;
-    u.volume  = 1.0;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
+    _utterance = null;
+    setTimeout(() => {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        _utterance  = u;     // keep-alive: prevents Chrome GC bug
+        u.rate      = 0.92;
+        u.pitch     = 1.05;
+        u.volume    = 1.0;
+        u.onend     = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
+        u.onerror   = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
+        window.speechSynthesis.speak(u);
+      } catch (_) { onEnd?.(); }
+    }, 100);
+  } catch (_) { onEnd?.(); }
 }
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
@@ -312,10 +327,12 @@ export function BrainHealthGame(): React.JSX.Element {
   const sessionIdRef = useRef("");
   const scoreRef     = useRef(0);
   const answersRef   = useRef<Answer[]>([]);
+  const phaseRef     = useRef<Phase>("start");
   const { trackEvent } = useGameUser();
 
   useEffect(() => { scoreRef.current   = score;   }, [score]);
   useEffect(() => { answersRef.current = answers; }, [answers]);
+  useEffect(() => { phaseRef.current   = phase;   }, [phase]);
 
   // ── Timer ──
   useEffect(() => {
@@ -324,6 +341,7 @@ export function BrainHealthGame(): React.JSX.Element {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(id);
+          try { window.speechSynthesis?.cancel(); } catch (_) {}
           trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
           setPhase("result");
           return 0;
@@ -362,27 +380,35 @@ export function BrainHealthGame(): React.JSX.Element {
 
   function handlePick(side: "left" | "right") {
     if (picked || phase !== "playing") return;
-    const scenario = SCENARIOS[idx];
-    const correct  = side === scenario.answer;
+    const scenario   = SCENARIOS[idx];
+    const correct    = side === scenario.answer;
+    const currentIdx = idx; // capture for closure
 
     if (correct) {
-      setScore(s => s + POINTS_CORRECT);
+      const newScore = scoreRef.current + POINTS_CORRECT;
+      scoreRef.current = newScore;
+      setScore(newScore);
       setFlameLevel(l => Math.min(l + 1, SCENARIOS.length));
       setShowLevelUp(true);
       setTimeout(() => setShowLevelUp(false), 1600);
       playCorrect();
-      speak(`Correct! ${scenario.explanation}`);
     } else {
       playWrong();
-      speak(`Not quite. ${scenario.explanation}`);
     }
 
     setPicked(side);
-    const newAnswers = [...answersRef.current, { scenario, chosen: side, correct }];
-    setAnswers(newAnswers);
+    setAnswers(prev => [...prev, { scenario, chosen: side, correct }]);
 
-    setTimeout(() => {
-      const next = idx + 1;
+    const feedbackText = correct
+      ? `Correct! ${scenario.explanation}`
+      : `Not quite. ${scenario.explanation}`;
+
+    // Advance to next question only AFTER voice-over fully finishes
+    speak(feedbackText, () => {
+      // Guard: timer may have ended the game while voice was playing
+      if (phaseRef.current !== "playing") return;
+
+      const next = currentIdx + 1;
       if (next >= SCENARIOS.length) {
         trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
         setPhase("result");
@@ -390,7 +416,7 @@ export function BrainHealthGame(): React.JSX.Element {
         setIdx(next);
         setPicked(null);
       }
-    }, 2200);
+    });
   }
 
   const bg         = { background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 40%, #7c3aed 100%)" };

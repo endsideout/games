@@ -295,7 +295,7 @@ export function BodyImageGame(): React.JSX.Element {
       speak(score + POINTS_CORRECT >= STATEMENTS.length * POINTS_CORRECT * 0.8
         ? "Amazing work! You have a great understanding of body image!"
         : "Good try! Keep learning about positive body image!");
-      trackEvent(GAME_ID, "completed", { score });
+      trackEvent({ gameId: GAME_ID, event: "game_completed", score });
     } else {
       setCurrent(c => c + 1);
       setPhase("playing");
