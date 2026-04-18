@@ -120,9 +120,9 @@ const STATEMENTS: Statement[] = [
   {
     id: 5,
     text: "I feel comfortable in my body.",
-    answer: "negative",
+    answer: "positive",
     explanation:
-      "Many people struggle to feel comfortable in their bodies. Recognizing this feeling is the first step to building a healthier body image.",
+      "Feeling comfortable in your body is a sign of positive body image. It means you accept and appreciate yourself just as you are!",
   },
 ];
 
