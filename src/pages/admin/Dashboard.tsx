@@ -4,6 +4,7 @@ import { collection, query, onSnapshot, orderBy, limit, where } from "firebase/f
 import { getFirestoreDb } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { Logo } from "../../components";
+import { isStagingEnvironment } from "../../lib/environment";
 import * as XLSX from "xlsx";
 import {
   LineChart,
@@ -26,7 +27,14 @@ interface GameEvent {
   gameId: string;
   event: string;
   sessionId?: string;
-  user: { email: string | null; name: string | null; school?: string | null };
+  user: {
+    email: string | null;
+    name: string | null;
+    grade?: string | null;
+    teacherName?: string | null;
+    schoolName?: string | null;
+    school?: string | null;
+  };
   score?: number;
   moves?: number;
   timeRemaining?: number;
@@ -55,7 +63,14 @@ interface GameStats {
     id: string;
     gameId: string;
     event: string;
-    user: { email: string | null; name: string | null; school?: string | null };
+    user: {
+      email: string | null;
+      name: string | null;
+      grade?: string | null;
+      teacherName?: string | null;
+      schoolName?: string | null;
+      school?: string | null;
+    };
     score?: number;
     timestamp: string;
   }>;
@@ -72,6 +87,8 @@ interface GameStats {
     {
       email: string | null;
       name: string | null;
+      grade: string | null;
+      teacherName: string | null;
       school: string | null;
       gamesStarted: number;
       gamesCompleted: number;
@@ -126,6 +143,7 @@ function formatHourLabel(hour: number): string {
 }
 
 export function AdminDashboard(): React.JSX.Element {
+  const stagingMode = isStagingEnvironment();
   const { user, logout, isWhesReportUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -139,6 +157,12 @@ export function AdminDashboard(): React.JSX.Element {
   const [allEvents, setAllEvents] = useState<GameEvent[]>([]);
 
   const RECENT_EVENTS_PAGE_SIZE = 20;
+
+  useEffect(() => {
+    document.title = stagingMode
+      ? "STAGING - EndsideOut Admin Dashboard"
+      : "EndsideOut Admin Dashboard";
+  }, [stagingMode]);
 
   useEffect(() => {
     if (isWhesReportUser && selectedSchool !== WHES_SCHOOL_CODE) {
@@ -411,6 +435,8 @@ export function AdminDashboard(): React.JSX.Element {
         {
           email: string | null;
           name: string | null;
+          grade: string | null;
+          teacherName: string | null;
           school: string | null;
           gamesStarted: number;
           gamesCompleted: number;
@@ -425,7 +451,9 @@ export function AdminDashboard(): React.JSX.Element {
           userStats[userKey] = {
             email: event.user.email,
             name: event.user.name,
-            school: event.user.school ?? null,
+            grade: event.user.grade ?? null,
+            teacherName: event.user.teacherName ?? null,
+            school: event.user.schoolName ?? event.user.school ?? null,
             gamesStarted: 0,
             gamesCompleted: 0,
             avgScore: 0,
@@ -623,10 +651,12 @@ export function AdminDashboard(): React.JSX.Element {
 
     // User Stats sheet
     const userData = [
-      ["User", "Email", "School", "Games Started", "Games Completed", "Avg Score"],
+      ["User", "Email", "Grade", "Teacher Name", "School", "Games Started", "Games Completed", "Avg Score"],
       ...Object.entries(stats.userStats).map(([key, data]) => [
         data.name || data.email || "Anonymous",
         data.email || "",
+        data.grade || "",
+        data.teacherName || "",
         data.school || "",
         data.gamesStarted,
         data.gamesCompleted,
@@ -638,13 +668,15 @@ export function AdminDashboard(): React.JSX.Element {
 
     // Recent Events sheet
     const recentData = [
-      ["Timestamp", "Game", "Event", "User", "School", "Score"],
+      ["Timestamp", "Game", "Event", "User", "Grade", "Teacher Name", "School", "Score"],
       ...stats.recentEvents.map((e) => [
         new Date(e.timestamp).toLocaleString(),
         e.gameId,
         e.event,
         e.user.name || e.user.email || "Anonymous",
-        e.user.school || "",
+        e.user.grade || "",
+        e.user.teacherName || "",
+        e.user.schoolName || e.user.school || "",
         e.score || "",
       ]),
     ];
@@ -767,9 +799,11 @@ export function AdminDashboard(): React.JSX.Element {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Logo size="sm" />
-              <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {stagingMode ? "STAGING Admin Dashboard" : "Admin Dashboard"}
+              </h1>
               <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full font-semibold">
-                Live
+                {stagingMode ? "Staging Live" : "Live"}
               </span>
             </div>
             <div className="flex items-center gap-4">

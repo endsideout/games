@@ -3,6 +3,7 @@ import React, {
   useContext,
   useMemo,
   useCallback,
+  useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { saveGameEventToFirebase } from "../lib/gameTracking";
@@ -10,6 +11,9 @@ import { saveGameEventToFirebase } from "../lib/gameTracking";
 export interface GameUser {
   email: string | null;
   name: string | null;
+  grade: string | null;
+  teacherName: string | null;
+  schoolName: string | null;
   school: string | null;
 }
 
@@ -26,10 +30,42 @@ export interface GameTrackingEvent {
 interface GameUserContextValue {
   user: GameUser;
   isIdentified: boolean;
+  isProfileComplete: boolean;
+  setPlayerProfile: (profile: {
+    name: string;
+    grade: string;
+    teacherName: string;
+    schoolName: string;
+  }) => void;
   trackEvent: (event: GameTrackingEvent) => void;
 }
 
 const GameUserContext = createContext<GameUserContextValue | null>(null);
+const PLAYER_PROFILE_STORAGE_KEY = "endsideout-player-profile";
+
+function getStoredProfile(): Partial<GameUser> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const rawProfile = window.localStorage.getItem(PLAYER_PROFILE_STORAGE_KEY);
+  if (!rawProfile) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(rawProfile) as Partial<GameUser>;
+    return {
+      name: parsed.name ?? null,
+      grade: parsed.grade ?? null,
+      teacherName: parsed.teacherName ?? null,
+      schoolName: parsed.schoolName ?? null,
+      school: parsed.schoolName ?? parsed.school ?? null,
+    };
+  } catch {
+    return {};
+  }
+}
 
 function parseUserFromSearchParams(searchParams: URLSearchParams): GameUser {
   const email = searchParams.get("email") || null;
@@ -38,9 +74,12 @@ function parseUserFromSearchParams(searchParams: URLSearchParams): GameUser {
     searchParams.get("name") ||
     searchParams.get("firstName") ||
     null;
-  const school = searchParams.get("school") || null;
+  const grade = searchParams.get("grade") || null;
+  const teacherName = searchParams.get("teacherName") || null;
+  const schoolName = searchParams.get("schoolName") || searchParams.get("school") || null;
+  const school = schoolName;
 
-  return { email, name, school };
+  return { email, name, grade, teacherName, schoolName, school };
 }
 
 export function GameUserProvider({
@@ -49,13 +88,59 @@ export function GameUserProvider({
   children: React.ReactNode;
 }): React.JSX.Element {
   const [searchParams] = useSearchParams();
+  const [storedProfile, setStoredProfile] = useState<Partial<GameUser>>(getStoredProfile);
 
-  const user = useMemo(
+  const searchParamUser = useMemo(
     () => parseUserFromSearchParams(searchParams),
     [searchParams]
   );
 
+  const user = useMemo<GameUser>(() => {
+    const mergedUser = {
+      ...searchParamUser,
+      name: searchParamUser.name ?? storedProfile.name ?? null,
+      grade: searchParamUser.grade ?? storedProfile.grade ?? null,
+      teacherName: searchParamUser.teacherName ?? storedProfile.teacherName ?? null,
+      schoolName: searchParamUser.schoolName ?? storedProfile.schoolName ?? storedProfile.school ?? null,
+    };
+
+    return {
+      ...mergedUser,
+      school: mergedUser.schoolName ?? searchParamUser.school ?? storedProfile.school ?? null,
+    };
+  }, [searchParamUser, storedProfile]);
+
   const isIdentified = Boolean(user.email || user.name);
+  const isProfileComplete = Boolean(
+    user.name?.trim() &&
+    user.grade?.trim() &&
+    user.teacherName?.trim() &&
+    user.schoolName?.trim()
+  );
+
+  const setPlayerProfile = useCallback((profile: {
+    name: string;
+    grade: string;
+    teacherName: string;
+    schoolName: string;
+  }) => {
+    const normalizedProfile: Partial<GameUser> = {
+      name: profile.name.trim(),
+      grade: profile.grade.trim(),
+      teacherName: profile.teacherName.trim(),
+      schoolName: profile.schoolName.trim(),
+      school: profile.schoolName.trim(),
+    };
+
+    setStoredProfile(normalizedProfile);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        PLAYER_PROFILE_STORAGE_KEY,
+        JSON.stringify(normalizedProfile)
+      );
+    }
+  }, []);
 
   const trackEvent = useCallback((event: GameTrackingEvent): void => {
     const payload = {
@@ -75,9 +160,11 @@ export function GameUserProvider({
     () => ({
       user,
       isIdentified,
+      isProfileComplete,
+      setPlayerProfile,
       trackEvent,
     }),
-    [user, isIdentified, trackEvent]
+    [user, isIdentified, isProfileComplete, setPlayerProfile, trackEvent]
   );
 
   return (
