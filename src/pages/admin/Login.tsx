@@ -9,15 +9,15 @@ export function AdminLogin(): React.JSX.Element {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { login, loginWithGoogle, user, isAdmin } = useAuth();
+  const { login, loginWithGoogle, user, canAccessDashboard } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in as admin
+  // Redirect if already authenticated for dashboard access
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && canAccessDashboard) {
       navigate("/admin", { replace: true });
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, canAccessDashboard, navigate]);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -65,7 +65,7 @@ export function AdminLogin(): React.JSX.Element {
             Admin Dashboard
           </h1>
           <p className="text-gray-600">
-            Sign in with your @endsideout.org email
+            Sign in with your @endsideout.org or @whes.org email
           </p>
         </div>
 

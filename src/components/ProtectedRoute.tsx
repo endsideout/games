@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Element {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, canAccessDashboard } = useAuth();
 
   if (loading) {
     return (
@@ -20,7 +20,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Ele
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user || !canAccessDashboard) {
     return <Navigate to="/admin/login" replace />;
   }
 
