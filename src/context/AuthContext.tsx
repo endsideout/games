@@ -14,8 +14,14 @@ import {
   type User,
 } from "firebase/auth";
 import { getAuthInstance } from "../lib/firebase";
+import {
+  getStagingAdminAllowlist,
+  isAllowedStagingAdminEmail,
+  isStagingEnvironment,
+} from "../lib/environment";
 
 const ADMIN_DOMAIN = "@endsideout.org";
+const WHES_REPORT_DOMAIN = "@whes.org";
 
 interface AuthContextValue {
   user: User | null;
@@ -24,6 +30,8 @@ interface AuthContextValue {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  canAccessDashboard: boolean;
+  isWhesReportUser: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -31,6 +39,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const canUseDashboardEmail = useCallback((email?: string | null): boolean => {
+    const normalized = email?.toLowerCase() ?? "";
+    if (isStagingEnvironment()) {
+      const allowlist = getStagingAdminAllowlist();
+      if (allowlist.length === 0) {
+        return false;
+      }
+      return isAllowedStagingAdminEmail(normalized);
+    }
+    return normalized.endsWith(ADMIN_DOMAIN) || normalized.endsWith(WHES_REPORT_DOMAIN);
+  }, []);
 
   useEffect(() => {
     const auth = getAuthInstance();
@@ -53,13 +72,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       throw new Error("Firebase not configured");
     }
 
-    // Check if email is from admin domain
-    if (!email.endsWith(ADMIN_DOMAIN)) {
-      throw new Error(`Only ${ADMIN_DOMAIN} emails are allowed`);
+    // Restrict dashboard access based on environment policy.
+    if (!canUseDashboardEmail(email)) {
+      if (isStagingEnvironment()) {
+        throw new Error(
+          "This staging dashboard is restricted to allowlisted emails. Contact the admin to be added."
+        );
+      }
+      throw new Error(`Only ${ADMIN_DOMAIN} or ${WHES_REPORT_DOMAIN} emails are allowed`);
     }
 
     await signInWithEmailAndPassword(auth, email, password);
-  }, []);
+  }, [canUseDashboardEmail]);
 
   const loginWithGoogle = useCallback(async (): Promise<void> => {
     const auth = getAuthInstance();
@@ -70,12 +94,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     
-    // Check if email is from admin domain
-    if (!result.user.email?.endsWith(ADMIN_DOMAIN)) {
+    // Restrict dashboard access based on environment policy.
+    if (!canUseDashboardEmail(result.user.email)) {
       await signOut(auth);
-      throw new Error(`Only ${ADMIN_DOMAIN} emails are allowed`);
+      if (isStagingEnvironment()) {
+        throw new Error(
+          "This staging dashboard is restricted to allowlisted emails. Contact the admin to be added."
+        );
+      }
+      throw new Error(`Only ${ADMIN_DOMAIN} or ${WHES_REPORT_DOMAIN} emails are allowed`);
     }
-  }, []);
+  }, [canUseDashboardEmail]);
 
   const logout = useCallback(async (): Promise<void> => {
     const auth = getAuthInstance();
@@ -83,7 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     await signOut(auth);
   }, []);
 
-  const isAdmin = Boolean(user && user.email?.endsWith(ADMIN_DOMAIN));
+  const normalizedEmail = user?.email?.toLowerCase() ?? "";
+  const isAdmin = isStagingEnvironment()
+    ? isAllowedStagingAdminEmail(normalizedEmail)
+    : Boolean(normalizedEmail.endsWith(ADMIN_DOMAIN));
+  const isWhesReportUser = isStagingEnvironment()
+    ? false
+    : Boolean(normalizedEmail.endsWith(WHES_REPORT_DOMAIN));
+  const canAccessDashboard = Boolean(user && (isAdmin || isWhesReportUser));
 
   const value = {
     user,
@@ -92,6 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     loginWithGoogle,
     logout,
     isAdmin,
+    canAccessDashboard,
+    isWhesReportUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

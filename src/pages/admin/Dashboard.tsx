@@ -4,6 +4,7 @@ import { collection, query, onSnapshot, orderBy, limit, where } from "firebase/f
 import { getFirestoreDb } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { Logo } from "../../components";
+import { isStagingEnvironment } from "../../lib/environment";
 import * as XLSX from "xlsx";
 import {
   LineChart,
@@ -26,7 +27,14 @@ interface GameEvent {
   gameId: string;
   event: string;
   sessionId?: string;
-  user: { email: string | null; name: string | null; school?: string | null };
+  user: {
+    email: string | null;
+    name: string | null;
+    grade?: string | null;
+    teacherName?: string | null;
+    schoolName?: string | null;
+    school?: string | null;
+  };
   score?: number;
   moves?: number;
   timeRemaining?: number;
@@ -55,7 +63,14 @@ interface GameStats {
     id: string;
     gameId: string;
     event: string;
-    user: { email: string | null; name: string | null; school?: string | null };
+    user: {
+      email: string | null;
+      name: string | null;
+      grade?: string | null;
+      teacherName?: string | null;
+      schoolName?: string | null;
+      school?: string | null;
+    };
     score?: number;
     timestamp: string;
   }>;
@@ -72,6 +87,8 @@ interface GameStats {
     {
       email: string | null;
       name: string | null;
+      grade: string | null;
+      teacherName: string | null;
       school: string | null;
       gamesStarted: number;
       gamesCompleted: number;
@@ -79,17 +96,60 @@ interface GameStats {
       totalScore: number;
     }
   >;
+  /** Per-game score bucket counts (completed games with a numeric score). */
+  gamesByResult: Record<string, Array<{ range: string; count: number }>>;
 }
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#8dd1e1", "#d084d0"];
+const WHES_SCHOOL_CODE = "WHES";
+
+/** Buckets completed-game scores into ranges for export and charts. */
+function buildScoreDistributionFromScores(
+  scores: number[]
+): Array<{ range: string; count: number }> {
+  if (scores.length === 0) return [];
+  const minScore = Math.min(...scores);
+  const maxScore = Math.max(...scores);
+  if (minScore === maxScore) {
+    return [{ range: `${minScore}`, count: scores.length }];
+  }
+  const spread = maxScore - minScore;
+  const approxBucketSize = spread <= 20 ? 5 : spread <= 50 ? 10 : 20;
+  const bucketSize = Math.max(1, approxBucketSize);
+  const bucketMin = Math.floor(minScore / bucketSize) * bucketSize;
+  const bucketMax = Math.ceil(maxScore / bucketSize) * bucketSize;
+  const buckets: { min: number; max: number; label: string }[] = [];
+  for (let start = bucketMin; start <= bucketMax; start += bucketSize) {
+    const end = start + bucketSize - 1;
+    buckets.push({
+      min: start,
+      max: end,
+      label: `${start}-${end}`,
+    });
+  }
+  return buckets.map((range) => ({
+    range: range.label,
+    count: scores.filter((s) => s >= range.min && s <= range.max).length,
+  }));
+}
+
+function parseLocalDateInput(value: string): Date {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
+}
+
+function formatHourLabel(hour: number): string {
+  return `${hour.toString().padStart(2, "0")}:00`;
+}
 
 export function AdminDashboard(): React.JSX.Element {
-  const { user, logout } = useAuth();
+  const stagingMode = isStagingEnvironment();
+  const { user, logout, isWhesReportUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [error, setError] = useState("");
-  const [selectedGame, setSelectedGame] = useState<string>("all");
+  const [selectedGames, setSelectedGames] = useState<string[]>([]);
   const [selectedSchool, setSelectedSchool] = useState<string>("all");
   const [dateRangeStart, setDateRangeStart] = useState<string>("");
   const [dateRangeEnd, setDateRangeEnd] = useState<string>("");
@@ -97,6 +157,18 @@ export function AdminDashboard(): React.JSX.Element {
   const [allEvents, setAllEvents] = useState<GameEvent[]>([]);
 
   const RECENT_EVENTS_PAGE_SIZE = 20;
+
+  useEffect(() => {
+    document.title = stagingMode
+      ? "STAGING - EndsideOut Admin Dashboard"
+      : "EndsideOut Admin Dashboard";
+  }, [stagingMode]);
+
+  useEffect(() => {
+    if (isWhesReportUser && selectedSchool !== WHES_SCHOOL_CODE) {
+      setSelectedSchool(WHES_SCHOOL_CODE);
+    }
+  }, [isWhesReportUser, selectedSchool]);
 
   useEffect(() => {
     const db = getFirestoreDb();
@@ -134,13 +206,15 @@ export function AdminDashboard(): React.JSX.Element {
     try {
       // Filter by selected game and school if not "all"
       let filteredEvents = events;
-      if (selectedGame !== "all") {
-        filteredEvents = filteredEvents.filter((e) => e.gameId === selectedGame);
+      if (selectedGames.length > 0) {
+        const selectedGameSet = new Set(selectedGames);
+        filteredEvents = filteredEvents.filter((e) => selectedGameSet.has(e.gameId));
       }
       if (selectedSchool !== "all") {
         const schoolValue = selectedSchool === "__none__" ? "" : selectedSchool;
+        const normalizedSchoolValue = schoolValue.toLowerCase();
         filteredEvents = filteredEvents.filter(
-          (e) => (e.user.school ?? "") === schoolValue
+          (e) => (e.user.school ?? "").toLowerCase() === normalizedSchoolValue
         );
       }
       // Filter by date range if set
@@ -267,80 +341,93 @@ export function AdminDashboard(): React.JSX.Element {
         timestamp: e.timestamp || e.createdAt,
       }));
 
-      // Events by date (last 7 days)
+      // Events by date/hour (selected range, otherwise last 7 days)
       const eventsByDate: Array<{ date: string; started: number; completed: number }> = [];
-      const dateMap = new Map<string, { started: number; completed: number }>();
-
-      filteredEvents.forEach((event) => {
-        const date = new Date(event.createdAt || event.timestamp).toLocaleDateString();
-        if (!dateMap.has(date)) {
-          dateMap.set(date, { started: 0, completed: 0 });
-        }
-        const dayData = dateMap.get(date)!;
-        if (event.event === "game_started") {
-          dayData.started++;
-        } else if (event.event === "game_completed" || event.event === "game_over") {
-          dayData.completed++;
-        }
-      });
-
-      // Get last 7 days
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
-        return date.toLocaleDateString();
-      });
-
-      last7Days.forEach((date) => {
-        eventsByDate.push({
-          date: date,
-          started: dateMap.get(date)?.started || 0,
-          completed: dateMap.get(date)?.completed || 0,
+      const selectedSingleDay =
+        Boolean(dateRangeStart) && Boolean(dateRangeEnd) && dateRangeStart === dateRangeEnd;
+      if (selectedSingleDay) {
+        const hourMap = new Map<string, { started: number; completed: number }>();
+        filteredEvents.forEach((event) => {
+          const eventDate = new Date(event.createdAt || event.timestamp);
+          const label = formatHourLabel(eventDate.getHours());
+          if (!hourMap.has(label)) {
+            hourMap.set(label, { started: 0, completed: 0 });
+          }
+          const hourData = hourMap.get(label)!;
+          if (event.event === "game_started") {
+            hourData.started++;
+          } else if (event.event === "game_completed" || event.event === "game_over") {
+            hourData.completed++;
+          }
         });
-      });
 
-      // Score distribution (dynamic ranges based on data)
-      let scoreDistribution: Array<{ range: string; count: number }>;
+        for (let hour = 0; hour < 24; hour++) {
+          const label = formatHourLabel(hour);
+          eventsByDate.push({
+            date: label,
+            started: hourMap.get(label)?.started || 0,
+            completed: hourMap.get(label)?.completed || 0,
+          });
+        }
+      } else {
+        const dateMap = new Map<string, { started: number; completed: number }>();
+        filteredEvents.forEach((event) => {
+          const date = new Date(event.createdAt || event.timestamp).toLocaleDateString();
+          if (!dateMap.has(date)) {
+            dateMap.set(date, { started: 0, completed: 0 });
+          }
+          const dayData = dateMap.get(date)!;
+          if (event.event === "game_started") {
+            dayData.started++;
+          } else if (event.event === "game_completed" || event.event === "game_over") {
+            dayData.completed++;
+          }
+        });
+
+        const dateLabels: string[] = [];
+        if (dateRangeStart || dateRangeEnd) {
+          const start = dateRangeStart ? parseLocalDateInput(dateRangeStart) : new Date();
+          const end = dateRangeEnd ? parseLocalDateInput(dateRangeEnd) : new Date();
+          start.setHours(0, 0, 0, 0);
+          end.setHours(0, 0, 0, 0);
+
+          if (start <= end) {
+            const cursor = new Date(start);
+            while (cursor <= end) {
+              dateLabels.push(cursor.toLocaleDateString());
+              cursor.setDate(cursor.getDate() + 1);
+            }
+          }
+        } else {
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dateLabels.push(date.toLocaleDateString());
+          }
+        }
+
+        dateLabels.forEach((date) => {
+          eventsByDate.push({
+            date: date,
+            started: dateMap.get(date)?.started || 0,
+            completed: dateMap.get(date)?.completed || 0,
+          });
+        });
+      }
+
       const scores = completedEvents
         .map((e) => e.score)
         .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
+      const scoreDistribution = buildScoreDistributionFromScores(scores);
 
-      if (scores.length === 0) {
-        scoreDistribution = [];
-      } else {
-        const minScore = Math.min(...scores);
-        const maxScore = Math.max(...scores);
-
-        // If all scores are the same, show a single bucket
-        if (minScore === maxScore) {
-          scoreDistribution = [
-            { range: `${minScore}`, count: scores.length },
-          ];
-        } else {
-          // Choose a reasonable number of buckets (3–6) depending on spread
-          const spread = maxScore - minScore;
-          const approxBucketSize = spread <= 20 ? 5 : spread <= 50 ? 10 : 20;
-          const bucketSize = Math.max(1, approxBucketSize);
-
-          const bucketMin = Math.floor(minScore / bucketSize) * bucketSize;
-          const bucketMax = Math.ceil(maxScore / bucketSize) * bucketSize;
-          const buckets: { min: number; max: number; label: string }[] = [];
-
-          for (let start = bucketMin; start <= bucketMax; start += bucketSize) {
-            const end = start + bucketSize - 1;
-            buckets.push({
-              min: start,
-              max: end,
-              label: `${start}-${end}`,
-            });
-          }
-
-          scoreDistribution = buckets.map((range) => ({
-            range: range.label,
-            count: scores.filter((s) => s >= range.min && s <= range.max).length,
-          }));
-        }
-      }
+      const gamesByResult: Record<string, Array<{ range: string; count: number }>> = {};
+      Object.keys(gamesByGameId).forEach((gameId) => {
+        const gameScores = completedEvents
+          .filter((e) => e.gameId === gameId)
+          .map((e) => e.score)
+          .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
+        gamesByResult[gameId] = buildScoreDistributionFromScores(gameScores);
+      });
 
       // User-specific stats (from filtered events so table reflects current game/school filter)
       const userStats: Record<
@@ -348,6 +435,8 @@ export function AdminDashboard(): React.JSX.Element {
         {
           email: string | null;
           name: string | null;
+          grade: string | null;
+          teacherName: string | null;
           school: string | null;
           gamesStarted: number;
           gamesCompleted: number;
@@ -362,7 +451,9 @@ export function AdminDashboard(): React.JSX.Element {
           userStats[userKey] = {
             email: event.user.email,
             name: event.user.name,
-            school: event.user.school ?? null,
+            grade: event.user.grade ?? null,
+            teacherName: event.user.teacherName ?? null,
+            school: event.user.schoolName ?? event.user.school ?? null,
             gamesStarted: 0,
             gamesCompleted: 0,
             avgScore: 0,
@@ -400,6 +491,7 @@ export function AdminDashboard(): React.JSX.Element {
         scoreDistribution,
         highestScoreSummary,
         userStats,
+        gamesByResult,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to calculate statistics");
@@ -411,12 +503,12 @@ export function AdminDashboard(): React.JSX.Element {
     if (allEvents.length > 0) {
       calculateStats(allEvents);
     }
-  }, [selectedGame, selectedSchool, dateRangeStart, dateRangeEnd, allEvents]);
+  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd, allEvents]);
 
   // Reset Recent Events to page 1 when filters change
   useEffect(() => {
     setRecentEventsPage(1);
-  }, [selectedGame, selectedSchool, dateRangeStart, dateRangeEnd]);
+  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd]);
 
   const handleLogout = async (): Promise<void> => {
     await logout();
@@ -458,6 +550,20 @@ export function AdminDashboard(): React.JSX.Element {
         data.completed.toString(),
         data.avgScore.toFixed(1),
       ]),
+      [],
+      ["Games by Result", "", ""],
+      ["Game", "Score Range", "Count"],
+      ...Object.keys(stats.gamesByResult)
+        .sort()
+        .flatMap((gameId) =>
+          stats.gamesByResult[gameId].length > 0
+            ? stats.gamesByResult[gameId].map((row) => [
+                gameId,
+                row.range,
+                row.count.toString(),
+              ])
+            : [[gameId, "No scored completions", "0"]]
+        ),
       [],
       ["Date", "Started", "Completed"],
       ...stats.eventsByDate.map((d) => [d.date, d.started.toString(), d.completed.toString()]),
@@ -522,6 +628,19 @@ export function AdminDashboard(): React.JSX.Element {
     const ws2 = XLSX.utils.aoa_to_sheet(gamesData);
     XLSX.utils.book_append_sheet(wb, ws2, "Games by Type");
 
+    const gamesByResultData = [
+      ["Game", "Score Range", "Count"],
+      ...Object.keys(stats.gamesByResult)
+        .sort()
+        .flatMap((gameId) =>
+          stats.gamesByResult[gameId].length > 0
+            ? stats.gamesByResult[gameId].map((row) => [gameId, row.range, row.count])
+            : [[gameId, "No scored completions", 0]]
+        ),
+    ];
+    const wsGamesByResult = XLSX.utils.aoa_to_sheet(gamesByResultData);
+    XLSX.utils.book_append_sheet(wb, wsGamesByResult, "Games by Result");
+
     // Events by Date sheet
     const eventsData = [
       ["Date", "Started", "Completed"],
@@ -532,10 +651,12 @@ export function AdminDashboard(): React.JSX.Element {
 
     // User Stats sheet
     const userData = [
-      ["User", "Email", "School", "Games Started", "Games Completed", "Avg Score"],
+      ["User", "Email", "Grade", "Teacher Name", "School", "Games Started", "Games Completed", "Avg Score"],
       ...Object.entries(stats.userStats).map(([key, data]) => [
         data.name || data.email || "Anonymous",
         data.email || "",
+        data.grade || "",
+        data.teacherName || "",
         data.school || "",
         data.gamesStarted,
         data.gamesCompleted,
@@ -547,13 +668,15 @@ export function AdminDashboard(): React.JSX.Element {
 
     // Recent Events sheet
     const recentData = [
-      ["Timestamp", "Game", "Event", "User", "School", "Score"],
+      ["Timestamp", "Game", "Event", "User", "Grade", "Teacher Name", "School", "Score"],
       ...stats.recentEvents.map((e) => [
         new Date(e.timestamp).toLocaleString(),
         e.gameId,
         e.event,
         e.user.name || e.user.email || "Anonymous",
-        e.user.school || "",
+        e.user.grade || "",
+        e.user.teacherName || "",
+        e.user.schoolName || e.user.school || "",
         e.score || "",
       ]),
     ];
@@ -563,13 +686,53 @@ export function AdminDashboard(): React.JSX.Element {
     XLSX.writeFile(wb, `game-analytics-${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
+  // Game options must come from raw events, not from filtered stats — otherwise picking one game
+  // removes every other game from the list and breaks multi-select.
   const uniqueGames = useMemo(() => {
-    if (!stats) return [];
-    return Object.keys(stats.gamesByGameId).map((gameId) => ({
-      value: gameId,
-      label: gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-    }));
-  }, [stats]);
+    let events = allEvents;
+    if (selectedSchool !== "all") {
+      const schoolValue = selectedSchool === "__none__" ? "" : selectedSchool;
+      const normalizedSchoolValue = schoolValue.toLowerCase();
+      events = events.filter(
+        (e) => (e.user.school ?? "").toLowerCase() === normalizedSchoolValue
+      );
+    }
+    const ids = new Set(events.map((e) => e.gameId));
+    return Array.from(ids)
+      .sort()
+      .map((gameId) => ({
+        value: gameId,
+        label: gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      }));
+  }, [allEvents, selectedSchool]);
+
+  useEffect(() => {
+    const valid = new Set(uniqueGames.map((g) => g.value));
+    setSelectedGames((prev) => {
+      const next = prev.filter((id) => valid.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [uniqueGames]);
+
+  const selectedGamesSummary = useMemo(() => {
+    if (!stats || selectedGames.length === 0) return null;
+
+    let started = 0;
+    let completed = 0;
+    let weightedScoreSum = 0;
+    selectedGames.forEach((gameId) => {
+      const gameStats = stats.gamesByGameId[gameId];
+      if (!gameStats) return;
+      started += gameStats.started;
+      completed += gameStats.completed;
+      weightedScoreSum += gameStats.avgScore * gameStats.completed;
+    });
+
+    const avgScore = completed > 0 ? weightedScoreSum / completed : 0;
+    const completionRate = started > 0 ? (completed / started) * 100 : 0;
+
+    return { started, completed, avgScore, completionRate };
+  }, [stats, selectedGames]);
 
   const uniqueSchools = useMemo(() => {
     const schools = new Set<string>();
@@ -626,6 +789,7 @@ export function AdminDashboard(): React.JSX.Element {
     started: data.started,
     completed: data.completed,
   }));
+  const isSingleDayRange = Boolean(dateRangeStart && dateRangeEnd && dateRangeStart === dateRangeEnd);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -635,9 +799,11 @@ export function AdminDashboard(): React.JSX.Element {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Logo size="sm" />
-              <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {stagingMode ? "STAGING Admin Dashboard" : "Admin Dashboard"}
+              </h1>
               <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full font-semibold">
-                Live
+                {stagingMode ? "Staging Live" : "Live"}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -674,23 +840,59 @@ export function AdminDashboard(): React.JSX.Element {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <h2 className="text-xl font-bold text-gray-800">Filters</h2>
             <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label htmlFor="game-filter" className="text-sm font-medium text-gray-700">
-                  Game
-                </label>
-                <select
+              <div className="flex flex-col gap-2 sm:max-w-xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span id="game-filter-label" className="text-sm font-medium text-gray-700">
+                    Games
+                  </span>
+                  {selectedGames.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGames([])}
+                      className="text-sm font-medium text-purple-600 hover:text-purple-800"
+                    >
+                      Clear selection (show all)
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Check multiple games to filter the dashboard and exports. Leave none checked to include
+                  all games.
+                </p>
+                <div
                   id="game-filter"
-                  value={selectedGame}
-                  onChange={(e) => setSelectedGame(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  role="group"
+                  aria-labelledby="game-filter-label"
+                  className="flex flex-wrap gap-x-4 gap-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
                 >
-                  <option value="all">All Games</option>
-                  {uniqueGames.map((game) => (
-                    <option key={game.value} value={game.value}>
-                      {game.label}
-                    </option>
-                  ))}
-                </select>
+                  {uniqueGames.length === 0 ? (
+                    <span className="text-sm text-gray-500">No games in current data.</span>
+                  ) : (
+                    uniqueGames.map((game) => {
+                      const checked = selectedGames.includes(game.value);
+                      return (
+                        <label
+                          key={game.value}
+                          className="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-800"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            checked={checked}
+                            onChange={() =>
+                              setSelectedGames((prev) =>
+                                prev.includes(game.value)
+                                  ? prev.filter((id) => id !== game.value)
+                                  : [...prev, game.value]
+                              )
+                            }
+                          />
+                          {game.label}
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <label htmlFor="school-filter" className="text-sm font-medium text-gray-700">
@@ -700,14 +902,22 @@ export function AdminDashboard(): React.JSX.Element {
                   id="school-filter"
                   value={selectedSchool}
                   onChange={(e) => setSelectedSchool(e.target.value)}
+                  disabled={isWhesReportUser}
                   className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="all">All Schools</option>
-                  {uniqueSchools.map((school) => (
+                  {!isWhesReportUser && <option value="all">All Schools</option>}
+                  {isWhesReportUser && <option value={WHES_SCHOOL_CODE}>{WHES_SCHOOL_CODE}</option>}
+                  {uniqueSchools
+                    .filter((school) =>
+                      isWhesReportUser
+                        ? school.value.toLowerCase() !== WHES_SCHOOL_CODE.toLowerCase()
+                        : true
+                    )
+                    .map((school) => (
                     <option key={school.value} value={school.value}>
                       {school.label}
                     </option>
-                  ))}
+                    ))}
                 </select>
               </div>
               <div className="flex items-center gap-2">
@@ -748,36 +958,30 @@ export function AdminDashboard(): React.JSX.Element {
               )}
             </div>
           </div>
-          {selectedGame !== "all" && stats.gamesByGameId[selectedGame] && (
+          {selectedGamesSummary && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-sm text-blue-600 font-medium">Games Started</p>
                 <p className="text-2xl font-bold text-blue-800">
-                  {stats.gamesByGameId[selectedGame].started}
+                  {selectedGamesSummary.started}
                 </p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="text-sm text-green-600 font-medium">Games Completed</p>
                 <p className="text-2xl font-bold text-green-800">
-                  {stats.gamesByGameId[selectedGame].completed}
+                  {selectedGamesSummary.completed}
                 </p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="text-sm text-purple-600 font-medium">Avg Score</p>
                 <p className="text-2xl font-bold text-purple-800">
-                  {stats.gamesByGameId[selectedGame].avgScore.toFixed(1)}
+                  {selectedGamesSummary.avgScore.toFixed(1)}
                 </p>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg">
                 <p className="text-sm text-yellow-600 font-medium">Completion Rate</p>
                 <p className="text-2xl font-bold text-yellow-800">
-                  {stats.gamesByGameId[selectedGame].started > 0
-                    ? (
-                        (stats.gamesByGameId[selectedGame].completed /
-                          stats.gamesByGameId[selectedGame].started) *
-                        100
-                      ).toFixed(1)
-                    : 0}
+                  {selectedGamesSummary.completionRate.toFixed(1)}
                   %
                 </p>
               </div>
@@ -834,7 +1038,9 @@ export function AdminDashboard(): React.JSX.Element {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Events Over Time */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Events Over Time (Last 7 Days)</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              {isSingleDayRange ? "Events Over Time (Hourly)" : "Events Over Time"}
+            </h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={stats.eventsByDate}>
                 <CartesianGrid strokeDasharray="3 3" />

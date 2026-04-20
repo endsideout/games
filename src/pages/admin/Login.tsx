@@ -2,22 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Logo } from "../../components";
+import { isStagingEnvironment } from "../../lib/environment";
 
 export function AdminLogin(): React.JSX.Element {
+  const stagingMode = isStagingEnvironment();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { login, loginWithGoogle, user, isAdmin } = useAuth();
+  const { login, loginWithGoogle, user, canAccessDashboard } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in as admin
+  // Redirect if already authenticated for dashboard access
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && canAccessDashboard) {
       navigate("/admin", { replace: true });
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, canAccessDashboard, navigate]);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -62,10 +64,12 @@ export function AdminLogin(): React.JSX.Element {
         <div className="text-center mb-6">
           <Logo size="md" className="mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Admin Dashboard
+            {stagingMode ? "STAGING Admin Dashboard" : "Admin Dashboard"}
           </h1>
           <p className="text-gray-600">
-            Sign in with your @endsideout.org email
+            {stagingMode
+              ? "Sign in using an allowlisted staging email"
+              : "Sign in with your @endsideout.org or @whes.org email"}
           </p>
         </div>
 
