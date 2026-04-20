@@ -142,6 +142,26 @@ function formatHourLabel(hour: number): string {
   return `${hour.toString().padStart(2, "0")}:00`;
 }
 
+function normalizeGameId(value: unknown): string {
+  if (typeof value !== "string") return "unknown";
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : "unknown";
+}
+
+function normalizeEventType(value: unknown): string {
+  if (typeof value !== "string") return "unknown_event";
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : "unknown_event";
+}
+
+function formatGameLabel(gameId: string): string {
+  return gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+function formatEventLabel(eventType: string): string {
+  return eventType.replace("game_", "");
+}
+
 export function AdminDashboard(): React.JSX.Element {
   const stagingMode = isStagingEnvironment();
   const { user, logout, isWhesReportUser } = useAuth();
@@ -185,10 +205,15 @@ export function AdminDashboard(): React.JSX.Element {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const events = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as GameEvent[];
+        const events = snapshot.docs.map((doc) => {
+          const data = doc.data() as Partial<GameEvent>;
+          return {
+            ...data,
+            id: doc.id,
+            gameId: normalizeGameId(data.gameId),
+            event: normalizeEventType(data.event),
+          };
+        }) as GameEvent[];
 
         setAllEvents(events);
         setLoading(false);
@@ -702,7 +727,7 @@ export function AdminDashboard(): React.JSX.Element {
       .sort()
       .map((gameId) => ({
         value: gameId,
-        label: gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+        label: formatGameLabel(gameId),
       }));
   }, [allEvents, selectedSchool]);
 
@@ -785,7 +810,7 @@ export function AdminDashboard(): React.JSX.Element {
 
   // Prepare chart data
   const gamesByTypeData = Object.entries(stats.gamesByGameId).map(([gameId, data]) => ({
-    name: gameId.replace(/-/g, " ").substring(0, 20),
+    name: formatGameLabel(gameId).substring(0, 20),
     started: data.started,
     completed: data.completed,
   }));
@@ -1140,7 +1165,7 @@ export function AdminDashboard(): React.JSX.Element {
                 {Object.entries(stats.gamesByGameId).map(([gameId, data]) => (
                   <tr key={gameId}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                      {formatGameLabel(gameId)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {data.started}
@@ -1269,7 +1294,7 @@ export function AdminDashboard(): React.JSX.Element {
                         {new Date(event.timestamp).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {event.gameId.replace(/-/g, " ").substring(0, 30)}...
+                        {formatGameLabel(event.gameId).substring(0, 30)}...
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -1281,7 +1306,7 @@ export function AdminDashboard(): React.JSX.Element {
                               : "bg-orange-100 text-orange-800"
                           }`}
                         >
-                          {event.event.replace("game_", "")}
+                          {formatEventLabel(event.event)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
