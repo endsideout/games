@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
@@ -107,6 +107,10 @@ function matchCareers(traits: Record<TraitKey, number>) {
 type Phase = "menu" | "quiz" | "reveal";
 
 export function DreamJobBuilder(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/occupational-wellbeing";
   const [phase,       setPhase]       = useState<Phase>("menu");
   const [currentQ,   setCurrentQ]    = useState(0);
   const [traits,     setTraits]      = useState<Record<TraitKey, number>>({ analytical: 0, creative: 0, caring: 0, physical: 0, social: 0 });
@@ -190,7 +194,7 @@ export function DreamJobBuilder(): React.JSX.Element {
           Build My Dream Job! 🚀
         </button>
         <div className="mt-4">
-          <Link to="/occupational-wellbeing" className="text-orange-400 hover:text-orange-600 font-semibold text-sm">← Back</Link>
+          <Link to={backTo} className="text-orange-400 hover:text-orange-600 font-semibold text-sm">← Back</Link>
         </div>
       </div>
     </div>
@@ -241,7 +245,7 @@ export function DreamJobBuilder(): React.JSX.Element {
             <button onClick={startGame} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg rounded-full shadow-lg hover:scale-105 transition-transform">
               Try Again 🔄
             </button>
-            <Link to="/occupational-wellbeing" className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">
+            <Link to={backTo} className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">
               ← Back
             </Link>
           </div>
@@ -259,7 +263,7 @@ export function DreamJobBuilder(): React.JSX.Element {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/10 backdrop-blur-sm">
-        <Link to="/occupational-wellbeing" className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
+        <Link to={backTo} className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
         <div className="flex gap-1">
           {QUESTIONS.map((_, i) => (
             <div key={i} className="w-8 h-2 rounded-full transition-all duration-500"

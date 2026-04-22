@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
@@ -105,6 +105,10 @@ function FoodCard({ food, placed }: FoodCardProps) {
 type Phase = "menu" | "playing" | "finished";
 
 export function HealthyPlateGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/physical-wellbeing";
   const [phase,      setPhase]      = useState<Phase>("menu");
   const [foods,      setFoods]      = useState<FoodItem[]>([]);
   const [plateFoods, setPlateFoods] = useState<FoodItem[]>([]);
@@ -203,7 +207,7 @@ export function HealthyPlateGame(): React.JSX.Element {
           Build My Plate! 🍽️
         </button>
         <div className="mt-4">
-          <Link to="/physical-wellbeing" className="text-green-600 hover:text-green-800 font-semibold text-sm">← Back</Link>
+          <Link to={backTo} className="text-green-600 hover:text-green-800 font-semibold text-sm">← Back</Link>
         </div>
       </div>
     </div>
@@ -252,7 +256,7 @@ export function HealthyPlateGame(): React.JSX.Element {
           </div>
           <div className="flex gap-3 justify-center pb-4">
             <button onClick={startGame} className="px-8 py-3 bg-gradient-to-r from-green-500 to-lime-500 text-white font-black text-lg rounded-full shadow-lg hover:scale-105 transition-transform">Try Again 🔄</button>
-            <Link to="/physical-wellbeing" className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">← Back</Link>
+            <Link to={backTo} className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">← Back</Link>
           </div>
         </div>
       </div>
@@ -265,7 +269,7 @@ export function HealthyPlateGame(): React.JSX.Element {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/10 backdrop-blur-sm flex-shrink-0">
-        <Link to="/physical-wellbeing" className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
+        <Link to={backTo} className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
         <span className="text-white font-black text-lg">🍽️ Healthy Plate</span>
         <span className="text-white/80 text-sm font-semibold">{plateFoods.length} / {MAX_PLATE} filled</span>
       </div>

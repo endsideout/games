@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../lib/sessionId";
@@ -45,6 +45,10 @@ interface PlacedItem extends BudgetItem {
 }
 
 export function BudgetingGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/financial-literacy";
   const [phase, setPhase] = useState<GamePhase>("menu");
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -196,7 +200,7 @@ export function BudgetingGame(): React.JSX.Element {
             🎮 Start Game!
           </button>
           <div className="mt-6">
-            <Link to="/financial-literacy" className="text-gray-400 hover:text-gray-600 underline text-sm">
+            <Link to={backTo} className="text-gray-400 hover:text-gray-600 underline text-sm">
               ← Back to Financial Literacy
             </Link>
           </div>
@@ -223,7 +227,7 @@ export function BudgetingGame(): React.JSX.Element {
               <button onClick={startGame} className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-all">
                 🔄 Play Again
               </button>
-              <Link to="/financial-literacy" className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-all inline-block">
+              <Link to={backTo} className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-all inline-block">
                 ← Back
               </Link>
             </div>

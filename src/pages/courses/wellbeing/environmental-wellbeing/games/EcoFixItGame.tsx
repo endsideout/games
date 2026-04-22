@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
@@ -44,6 +44,10 @@ const notEcoFriendlyItems: EcoItem[] = [
 ];
 
 export function EcoFixItGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/environmental-wellbeing";
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
   const movesRef = useRef<number>(0);
@@ -271,7 +275,7 @@ export function EcoFixItGame(): React.JSX.Element {
               </button>
 
               <Link
-                to="/environmental-wellbeing"
+                to={backTo}
                 className="inline-block px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-center"
               >
                 ← Back to Environmental Wellbeing
@@ -372,7 +376,7 @@ export function EcoFixItGame(): React.JSX.Element {
                   📋 Back to Menu
                 </button>
                 <Link
-                  to="/environmental-wellbeing"
+                  to={backTo}
                   className="inline-block px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-lg font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
                   ← Back to Environmental Wellbeing

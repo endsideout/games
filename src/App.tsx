@@ -8,6 +8,7 @@ import {
   Home,
   PlayerInfoForm,
   ThreeDWellness,
+  ThreeDWellnessSet1,
   KnowYourHealth,
   KnowYourHealthModule1,
   KnowYourHealthModule2,
@@ -65,6 +66,7 @@ export default function App(): React.JSX.Element {
         <Route path="/" element={<Home />} />
         <Route path="/player-info" element={<PlayerInfoForm />} />
         <Route path="/3d-wellness" element={<ThreeDWellness />} />
+        <Route path="/3d-wellness/set-1" element={<ThreeDWellnessSet1 />} />
         <Route path="/know-your-health" element={<KnowYourHealth />} />
         <Route path="/know-your-health/module-1" element={<KnowYourHealthModule1 />} />
         <Route path="/sometimes-anytime-food" element={withPlayerInfoGate(<SometimesAnytimeGame />)} />

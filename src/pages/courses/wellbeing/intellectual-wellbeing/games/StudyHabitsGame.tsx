@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
@@ -56,6 +56,10 @@ type GamePhase = "menu" | "playing" | "finished";
 interface Pt { x: number; y: number; }
 
 export function StudyHabitsGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/intellectual-wellbeing";
   const [phase,       setPhase]       = useState<GamePhase>("menu");
   const [habits,      setHabits]      = useState<StudyHabit[]>([]);
   const [connections, setConnections] = useState<Record<number, "good" | "bad">>({});
@@ -251,7 +255,7 @@ export function StudyHabitsGame(): React.JSX.Element {
           Let's Study! 📖
         </button>
         <div className="mt-4">
-          <Link to="/intellectual-wellbeing" className="text-indigo-400 hover:text-indigo-600 font-semibold text-sm">← Back</Link>
+          <Link to={backTo} className="text-indigo-400 hover:text-indigo-600 font-semibold text-sm">← Back</Link>
         </div>
       </div>
     </div>
@@ -274,7 +278,7 @@ export function StudyHabitsGame(): React.JSX.Element {
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button onClick={startGame} className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-lg font-black rounded-full shadow-lg hover:scale-105 transition-transform">Play Again 🔄</button>
-              <Link to="/intellectual-wellbeing" className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-lg font-bold rounded-full shadow-lg hover:scale-105 transition-transform inline-block">← Back</Link>
+              <Link to={backTo} className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-lg font-bold rounded-full shadow-lg hover:scale-105 transition-transform inline-block">← Back</Link>
             </div>
           </div>
           <div className="bg-white/90 rounded-3xl border-4 border-indigo-200 p-6 shadow-xl">
@@ -308,7 +312,7 @@ export function StudyHabitsGame(): React.JSX.Element {
     <div className="min-h-screen flex flex-col" style={bgStyle}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/10 backdrop-blur-sm flex-shrink-0">
-        <Link to="/intellectual-wellbeing" className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
+        <Link to={backTo} className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
         <div className="flex items-center gap-4">
           <div className="bg-indigo-900/60 border border-indigo-400 rounded-xl px-4 py-1.5 font-bold text-white text-sm">✅ {score} / {habits.length}</div>
           <div className="font-black text-2xl px-5 py-1.5 rounded-xl border-2" style={{ color: timerColor, borderColor: timerColor, background: "rgba(0,0,0,0.3)" }}>

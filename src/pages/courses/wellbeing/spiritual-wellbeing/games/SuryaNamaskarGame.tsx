@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
@@ -261,6 +261,10 @@ type Phase = "menu" | "playing" | "result";
 type DragSrc = { from: "pool"; idx: number } | { from: "slot"; idx: number } | null;
 
 export function SuryaNamaskarGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/spiritual-wellbeing";
   const [phase,    setPhase]    = useState<Phase>("menu");
   const [pool,     setPool]     = useState<Pose[]>([]);
   const [slots,    setSlots]    = useState<(Pose | null)[]>(Array(8).fill(null));
@@ -406,7 +410,7 @@ export function SuryaNamaskarGame(): React.JSX.Element {
           Start! 🌞
         </button>
         <div className="mt-4">
-          <Link to="/spiritual-wellbeing" className="text-orange-500 hover:text-orange-700 font-semibold text-sm">← Back</Link>
+          <Link to={backTo} className="text-orange-500 hover:text-orange-700 font-semibold text-sm">← Back</Link>
         </div>
       </div>
     </div>
@@ -474,7 +478,7 @@ export function SuryaNamaskarGame(): React.JSX.Element {
             <button onClick={startGame} className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg rounded-full shadow-lg hover:scale-105 transition-transform">
               Try Again 🔄
             </button>
-            <Link to="/spiritual-wellbeing" className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">
+            <Link to={backTo} className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-bold text-lg rounded-full shadow-lg hover:scale-105 transition-transform inline-block">
               ← Back
             </Link>
           </div>
@@ -489,7 +493,7 @@ export function SuryaNamaskarGame(): React.JSX.Element {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 bg-white/15 backdrop-blur-sm flex-shrink-0">
-        <Link to="/spiritual-wellbeing" className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
+        <Link to={backTo} className="text-white/70 hover:text-white font-semibold text-sm">← Exit</Link>
         <span className="text-white font-black text-lg">🌅 Surya Namaskar</span>
         <span className="text-white/80 text-sm font-semibold">
           {slots.filter(Boolean).length} / 8 placed
