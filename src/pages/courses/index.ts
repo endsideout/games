@@ -1,4 +1,5 @@
 export { ThreeDWellness } from "./ThreeDWellness";
+export { ThreeDWellnessSet1 } from "./ThreeDWellnessSet1";
 export { KnowYourHealth } from "./KnowYourHealth";
 export { KnowYourHealthModule1 } from "./KnowYourHealthModule1";
 export { KnowYourHealthModule2 } from "./KnowYourHealthModule2";

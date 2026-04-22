@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { GameMenu, PairMatchingGame } from "../../../../../components";
 import { GameConfig } from "../../../../../types";
 import { useGameUser } from "../../../../../context/GameUserContext";
@@ -23,6 +24,10 @@ const gameDescription = "Match the relationship principles and learn while you p
 const GAME_ID = "principle-of-relationship-pair-matching-game";
 
 export function PrincipleOfRelationshipGame(): React.JSX.Element {
+  const location = useLocation();
+  const backTo = new URLSearchParams(location.search).get("from") === "3dw-set1"
+    ? "/3d-wellness/set-1"
+    : "/social-wellbeing";
   const [currentView, setCurrentView] = useState<"menu" | "game">("menu");
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
@@ -72,11 +77,27 @@ export function PrincipleOfRelationshipGame(): React.JSX.Element {
   return (
     <div>
       {currentView === "menu" && (
-        <GameMenu
-          onStartGame={handleStartGame}
-          title={gameTitle}
-          description={gameDescription}
-        />
+        <div style={{ position: "relative" }}>
+          <GameMenu
+            onStartGame={handleStartGame}
+            title={gameTitle}
+            description={gameDescription}
+          />
+          <Link
+            to={backTo}
+            style={{
+              position: "absolute",
+              top: 16,
+              left: 16,
+              color: "rgba(255,255,255,0.85)",
+              fontWeight: 700,
+              fontSize: "0.9rem",
+              textDecoration: "none",
+            }}
+          >
+            ← Back
+          </Link>
+        </div>
       )}
       {currentView === "game" && (
         <PairMatchingGame

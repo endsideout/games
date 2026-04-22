@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../../components";
+import { TDW_SET1_GAMES } from "./ThreeDWellnessSet1";
 
 export function ThreeDWellness(): React.JSX.Element {
   const wellnessDimensions = [
@@ -115,6 +116,47 @@ export function ThreeDWellness(): React.JSX.Element {
             </p>
           </div>
         </div>
+
+        {/* Set 1 — featured playlist */}
+        <div className="mb-10">
+          <h2 className="text-white font-black text-2xl mb-4 text-center drop-shadow">🎯 Game Sets</h2>
+          <Link
+            to="/3d-wellness/set-1"
+            className="block bg-white/95 rounded-3xl shadow-2xl border-4 border-blue-300 p-6 hover:scale-[1.02] transition-transform duration-200"
+          >
+            <div className="flex items-center gap-5">
+              <div
+                className="flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg"
+                style={{ background: "linear-gradient(135deg, #6366f1, #a855f7, #ec4899)" }}
+              >
+                S1
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-black text-gray-800">Set 1</h3>
+                  <span className="text-xs font-bold text-purple-600 bg-purple-100 rounded-full px-2 py-0.5">
+                    {TDW_SET1_GAMES.length} games
+                  </span>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {TDW_SET1_GAMES.map((g, i) => (
+                    <span key={i} className="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5 font-semibold">
+                      {i + 1}. {g.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div
+                className="flex-shrink-0 px-5 py-3 text-white font-black rounded-full shadow-lg text-sm"
+                style={{ background: "linear-gradient(135deg, #6366f1, #a855f7)" }}
+              >
+                ▶ Play All
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <h2 className="text-white font-black text-2xl mb-4 text-center drop-shadow">🌈 Wellness Dimensions</h2>
 
         {/* Wellness Dimensions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
