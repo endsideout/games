@@ -328,6 +328,7 @@ export function BrainHealthGame(): React.JSX.Element {
   const scoreRef     = useRef(0);
   const answersRef   = useRef<Answer[]>([]);
   const phaseRef     = useRef<Phase>("start");
+  const advanceRef   = useRef<(() => void) | null>(null);
   const { trackEvent } = useGameUser();
 
   useEffect(() => { scoreRef.current   = score;   }, [score]);
@@ -382,7 +383,7 @@ export function BrainHealthGame(): React.JSX.Element {
     if (picked || phase !== "playing") return;
     const scenario   = SCENARIOS[idx];
     const correct    = side === scenario.answer;
-    const currentIdx = idx; // capture for closure
+    const currentIdx = idx;
 
     if (correct) {
       const newScore = scoreRef.current + POINTS_CORRECT;
@@ -403,11 +404,13 @@ export function BrainHealthGame(): React.JSX.Element {
       ? `Correct! ${scenario.explanation}`
       : `Not quite. ${scenario.explanation}`;
 
-    // Advance to next question only AFTER voice-over fully finishes
-    speak(feedbackText, () => {
-      // Guard: timer may have ended the game while voice was playing
+    // Shared advance function — safe to call from speech onEnd OR Next button.
+    // Local `advanced` flag prevents double-fire if both fire around the same time.
+    let advanced = false;
+    const advance = () => {
+      if (advanced) return;
+      advanced = true;
       if (phaseRef.current !== "playing") return;
-
       const next = currentIdx + 1;
       if (next >= SCENARIOS.length) {
         trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
@@ -416,7 +419,10 @@ export function BrainHealthGame(): React.JSX.Element {
         setIdx(next);
         setPicked(null);
       }
-    });
+    };
+
+    advanceRef.current = advance;
+    speak(feedbackText, advance);
   }
 
   const bg         = { background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 40%, #7c3aed 100%)" };
@@ -661,12 +667,21 @@ export function BrainHealthGame(): React.JSX.Element {
             })}
           </div>
 
-          {/* Explanation banner */}
+          {/* Explanation banner + Next button */}
           {picked && (
-            <div className="w-full rounded-2xl px-5 py-3 bg-white/10 border border-white/20">
-              <p className="text-white font-semibold text-sm text-center leading-relaxed">
-                {scenario.explanation}
-              </p>
+            <div className="w-full flex flex-col items-center gap-3">
+              <div className="w-full rounded-2xl px-5 py-3 bg-white/10 border border-white/20">
+                <p className="text-white font-semibold text-sm text-center leading-relaxed">
+                  {scenario.explanation}
+                </p>
+              </div>
+              <button
+                onClick={() => advanceRef.current?.()}
+                className="px-8 py-3 rounded-full font-black text-white text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                style={{ background: "linear-gradient(135deg, #1d4ed8, #7c3aed)" }}
+              >
+                {idx + 1 >= SCENARIOS.length ? "See Results 🏆" : "Next →"}
+              </button>
             </div>
           )}
 
