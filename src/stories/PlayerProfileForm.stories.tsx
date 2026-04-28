@@ -39,7 +39,7 @@ export const PrefilledValues: Story = {
   args: {
     initialValues: {
       name: "Maya Johnson",
-      grade: "5",
+      grade: "5th Grade",
       teacherName: "Ms. Parker",
       schoolName: "Westside Elementary",
     },
@@ -56,7 +56,7 @@ export const SubmitsValidData: Story = {
     );
     await userEvent.selectOptions(
       canvas.getByRole("combobox", { name: /grade/i }),
-      "4"
+      "4th Grade"
     );
     await userEvent.type(
       canvas.getByRole("textbox", { name: /teacher name/i }),
@@ -73,7 +73,7 @@ export const SubmitsValidData: Story = {
 
     expect(args.onSubmit).toHaveBeenCalledWith({
       name: "Jordan Lee",
-      grade: "4",
+      grade: "4th Grade",
       teacherName: "Mr. Chen",
       schoolName: "Riverside School",
     });

@@ -18,7 +18,7 @@ let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 let auth: Auth | null = null;
 
-export function getFirebaseApp(): FirebaseApp | null {
+function getFirebaseApp(): FirebaseApp | null {
   if (!firebaseConfig.projectId) return null;
   if (!app) {
     app = initializeApp(firebaseConfig);
@@ -42,6 +42,6 @@ export function getAuthInstance(): Auth | null {
   return auth;
 }
 
-export function isFirebaseConfigured(): boolean {
+function isFirebaseConfigured(): boolean {
   return Boolean(firebaseConfig.projectId && firebaseConfig.apiKey);
 }

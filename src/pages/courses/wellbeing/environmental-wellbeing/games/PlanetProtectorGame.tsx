@@ -60,6 +60,7 @@ export function PlanetProtectorGame(): React.JSX.Element {
   const EARTH_TOP = CONTAINER_HEIGHT - EARTH_HEIGHT;
 
   // Track game completion when game completes
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; motion loop effect intentionally tied to view/game state.
   useEffect(() => {
     if (gameOver && sessionIdRef.current && currentView === "game" && !completionTrackedRef.current) {
       completionTrackedRef.current = true;

@@ -1,21 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { MemoryRouter } from "react-router-dom";
 import { ThreeDWellness } from "../pages/courses/ThreeDWellness";
+import { routedFullscreenPageMeta } from "./storyShell";
 
 const meta = {
   title: "Pages/ThreeDWellness",
   component: ThreeDWellness,
-  parameters: {
-    layout: "fullscreen",
-  },
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    ),
-  ],
+  ...routedFullscreenPageMeta,
 } satisfies Meta<typeof ThreeDWellness>;
 
 export default meta;

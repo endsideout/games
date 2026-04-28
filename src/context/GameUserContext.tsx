@@ -6,37 +6,15 @@ import React, {
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
-import { saveGameEventToFirebase } from "../lib/gameTracking";
-
-export interface GameUser {
-  email: string | null;
-  name: string | null;
-  grade: string | null;
-  teacherName: string | null;
-  schoolName: string | null;
-  school: string | null;
-}
-
-export interface GameTrackingEvent {
-  gameId: string;
-  event: "game_started" | "game_completed" | "game_over";
-  sessionId?: string; // Correlation ID to link events from the same game session
-  score?: number;
-  moves?: number;
-  timeRemaining?: number;
-  metadata?: Record<string, unknown>;
-}
+import { sendGameTrackingEvent } from "../lib/analyticsAdapter";
+import { isPlayerProfileComplete } from "../lib/playerProfilePolicy";
+import type { GameTrackingEvent, GameUser, PlayerProfile } from "../types";
 
 interface GameUserContextValue {
   user: GameUser;
   isIdentified: boolean;
   isProfileComplete: boolean;
-  setPlayerProfile: (profile: {
-    name: string;
-    grade: string;
-    teacherName: string;
-    schoolName: string;
-  }) => void;
+  setPlayerProfile: (profile: PlayerProfile) => void;
   trackEvent: (event: GameTrackingEvent) => void;
 }
 
@@ -111,19 +89,9 @@ export function GameUserProvider({
   }, [searchParamUser, storedProfile]);
 
   const isIdentified = Boolean(user.email || user.name);
-  const isProfileComplete = Boolean(
-    user.name?.trim() &&
-    user.grade?.trim() &&
-    user.teacherName?.trim() &&
-    user.schoolName?.trim()
-  );
+  const isProfileComplete = isPlayerProfileComplete(user);
 
-  const setPlayerProfile = useCallback((profile: {
-    name: string;
-    grade: string;
-    teacherName: string;
-    schoolName: string;
-  }) => {
+  const setPlayerProfile = useCallback((profile: PlayerProfile) => {
     const normalizedProfile: Partial<GameUser> = {
       name: profile.name.trim(),
       grade: profile.grade.trim(),
@@ -143,17 +111,7 @@ export function GameUserProvider({
   }, []);
 
   const trackEvent = useCallback((event: GameTrackingEvent): void => {
-    const payload = {
-      ...event,
-      user,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (import.meta.env.DEV) {
-      console.log("[Game Tracking]", payload);
-    }
-
-    void saveGameEventToFirebase(payload);
+    void sendGameTrackingEvent(event, user);
   }, [user]);
 
   const value = useMemo<GameUserContextValue>(
@@ -184,6 +142,6 @@ export function useGameUser(): GameUserContextValue {
  * Optional: use when provider may not wrap the component (e.g. outside Router)
  * Returns null if no provider.
  */
-export function useGameUserOptional(): GameUserContextValue | null {
+function useGameUserOptional(): GameUserContextValue | null {
   return useContext(GameUserContext);
 }

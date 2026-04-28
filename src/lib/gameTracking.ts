@@ -1,14 +1,8 @@
 import { collection, addDoc } from "firebase/firestore";
 import { getFirestoreDb } from "./firebase";
-import type { GameUser } from "../context/GameUserContext";
-import type { GameTrackingEvent } from "../context/GameUserContext";
+import type { GameEventPayload } from "../types";
 
 const COLLECTION_NAME = "game_events";
-
-export interface GameEventPayload extends GameTrackingEvent {
-  user: GameUser;
-  timestamp: string;
-}
 
 export async function saveGameEventToFirebase(
   payload: GameEventPayload

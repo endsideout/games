@@ -2,51 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../lib/sessionId";
+import { playCorrect, playWrong, speak } from "./gameAudio";
 
 const GAME_ID        = "finish-race-game";
 const GAME_DURATION  = 120;
 const POINTS_CORRECT = 10;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
-}
-
-// ── Sound effects ─────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.15], [784, 0.3]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.35);
-    });
-    setTimeout(() => ctx.close(), 1000);
-  } catch (_) {}
-}
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-    setTimeout(() => ctx.close(), 700);
-  } catch (_) {}
-}
 
 // ── Runner SVG — matches PDF style (dark suit + trailing scarf) ───────────────
 function RunnerFigure({
@@ -367,12 +328,12 @@ export function FinishRaceGame(): React.JSX.Element {
     : ALL_QUESTIONS;
   const totalQ    = questions.length;
   const position  = correct / totalQ;          // 0 → 1
-  const finished  = correct === totalQ && phase === "result";
 
   useEffect(() => { scoreRef.current   = score;   }, [score]);
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
   // Timer
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer completion tracking is intentionally phase-scoped.
   useEffect(() => {
     if (phase !== "playing") return;
     const id = setInterval(() => {
@@ -390,6 +351,7 @@ export function FinishRaceGame(): React.JSX.Element {
   }, [phase]);
 
   // Speak question on change
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; speech effect intentionally follows idx/phase only.
   useEffect(() => {
     if (phase !== "playing") return;
     const t = setTimeout(() => speak(questions[idx].question), 400);
@@ -398,7 +360,7 @@ export function FinishRaceGame(): React.JSX.Element {
 
   // Cleanup voice
   useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch (_) {} };
+    return () => { try { window.speechSynthesis?.cancel(); } catch {} };
   }, []);
 
   function startGame(m: Mode) {
@@ -407,7 +369,7 @@ export function FinishRaceGame(): React.JSX.Element {
     scoreRef.current = 0; answersRef.current = [];
     setPicked(null); setTimeLeft(GAME_DURATION);
     setPhase("playing");
-    sessionIdRef.current = `${GAME_ID}-${Date.now().toString(36)}`;
+    sessionIdRef.current = generateSessionId();
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current, score: 0 });
     speak("Answer each question to move your runner closer to the finish line!");
   }

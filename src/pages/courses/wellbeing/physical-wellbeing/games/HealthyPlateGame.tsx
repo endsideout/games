@@ -134,6 +134,7 @@ export function HealthyPlateGame(): React.JSX.Element {
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current });
   }
 
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer/finalization effect intentionally keyed to phase.
   useEffect(() => {
     if (phase !== "playing") return;
     const interval = setInterval(() => {

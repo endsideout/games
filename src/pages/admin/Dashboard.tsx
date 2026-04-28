@@ -1,10 +1,21 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, query, onSnapshot, orderBy, limit, where } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 import { getFirestoreDb } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { Logo } from "../../components";
 import { isStagingEnvironment } from "../../lib/environment";
+import {
+  buildOverviewExportRows,
+  calculateDashboardStats,
+  formatEventLabel,
+  formatGameLabel,
+  normalizeEventType,
+  normalizeGameId,
+  type DashboardGameEvent as GameEvent,
+  type DashboardGameStats as GameStats,
+} from "../../lib/dashboardStats";
+import { DashboardChartCard } from "./DashboardChartCard";
 import * as XLSX from "xlsx";
 import {
   LineChart,
@@ -22,145 +33,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-interface GameEvent {
-  id: string;
-  gameId: string;
-  event: string;
-  sessionId?: string;
-  user: {
-    email: string | null;
-    name: string | null;
-    grade?: string | null;
-    teacherName?: string | null;
-    schoolName?: string | null;
-    school?: string | null;
-  };
-  score?: number;
-  moves?: number;
-  timeRemaining?: number;
-  timestamp: string;
-  createdAt: string;
-}
-
-interface GameStats {
-  totalGames: number;
-  gamesStarted: number;
-  gamesCompleted: number;
-  gamesAbandoned: number;
-  completionRate: number;
-  averageScore: number;
-  averageMoves: number;
-  averageTimeRemaining: number;
-  gamesByGameId: Record<
-    string,
-    {
-      started: number;
-      completed: number;
-      avgScore: number;
-    }
-  >;
-  recentEvents: Array<{
-    id: string;
-    gameId: string;
-    event: string;
-    user: {
-      email: string | null;
-      name: string | null;
-      grade?: string | null;
-      teacherName?: string | null;
-      schoolName?: string | null;
-      school?: string | null;
-    };
-    score?: number;
-    timestamp: string;
-  }>;
-  eventsByDate: Array<{ date: string; started: number; completed: number }>;
-  scoreDistribution: Array<{ range: string; count: number }>;
-  highestScoreSummary: {
-    score: number | null;
-    userName: string | null;
-    userEmail: string | null;
-    completedAt: string | null;
-  };
-  userStats: Record<
-    string,
-    {
-      email: string | null;
-      name: string | null;
-      grade: string | null;
-      teacherName: string | null;
-      school: string | null;
-      gamesStarted: number;
-      gamesCompleted: number;
-      avgScore: number;
-      totalScore: number;
-    }
-  >;
-  /** Per-game score bucket counts (completed games with a numeric score). */
-  gamesByResult: Record<string, Array<{ range: string; count: number }>>;
-}
-
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#8dd1e1", "#d084d0"];
 const WHES_SCHOOL_CODE = "WHES";
-
-/** Buckets completed-game scores into ranges for export and charts. */
-function buildScoreDistributionFromScores(
-  scores: number[]
-): Array<{ range: string; count: number }> {
-  if (scores.length === 0) return [];
-  const minScore = Math.min(...scores);
-  const maxScore = Math.max(...scores);
-  if (minScore === maxScore) {
-    return [{ range: `${minScore}`, count: scores.length }];
-  }
-  const spread = maxScore - minScore;
-  const approxBucketSize = spread <= 20 ? 5 : spread <= 50 ? 10 : 20;
-  const bucketSize = Math.max(1, approxBucketSize);
-  const bucketMin = Math.floor(minScore / bucketSize) * bucketSize;
-  const bucketMax = Math.ceil(maxScore / bucketSize) * bucketSize;
-  const buckets: { min: number; max: number; label: string }[] = [];
-  for (let start = bucketMin; start <= bucketMax; start += bucketSize) {
-    const end = start + bucketSize - 1;
-    buckets.push({
-      min: start,
-      max: end,
-      label: `${start}-${end}`,
-    });
-  }
-  return buckets.map((range) => ({
-    range: range.label,
-    count: scores.filter((s) => s >= range.min && s <= range.max).length,
-  }));
-}
-
-function parseLocalDateInput(value: string): Date {
-  const [y, m, d] = value.split("-").map(Number);
-  return new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
-}
-
-function formatHourLabel(hour: number): string {
-  return `${hour.toString().padStart(2, "0")}:00`;
-}
-
-function normalizeGameId(value: unknown): string {
-  if (typeof value !== "string") return "unknown";
-  const normalized = value.trim();
-  return normalized.length > 0 ? normalized : "unknown";
-}
-
-function normalizeEventType(value: unknown): string {
-  if (typeof value !== "string") return "unknown_event";
-  const normalized = value.trim();
-  return normalized.length > 0 ? normalized : "unknown_event";
-}
-
-function formatGameLabel(gameId: string): string {
-  return gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-}
-
-function formatEventLabel(eventType: string): string {
-  return eventType.replace("game_", "");
-}
 
 export function AdminDashboard(): React.JSX.Element {
   const stagingMode = isStagingEnvironment();
@@ -227,308 +101,26 @@ export function AdminDashboard(): React.JSX.Element {
     return () => unsubscribe();
   }, []);
 
-  const calculateStats = (events: GameEvent[]): void => {
+  const calculateStats = useCallback((events: GameEvent[]): void => {
     try {
-      // Filter by selected game and school if not "all"
-      let filteredEvents = events;
-      if (selectedGames.length > 0) {
-        const selectedGameSet = new Set(selectedGames);
-        filteredEvents = filteredEvents.filter((e) => selectedGameSet.has(e.gameId));
-      }
-      if (selectedSchool !== "all") {
-        const schoolValue = selectedSchool === "__none__" ? "" : selectedSchool;
-        const normalizedSchoolValue = schoolValue.toLowerCase();
-        filteredEvents = filteredEvents.filter(
-          (e) => (e.user.school ?? "").toLowerCase() === normalizedSchoolValue
-        );
-      }
-      // Filter by date range if set
-      if (dateRangeStart || dateRangeEnd) {
-        filteredEvents = filteredEvents.filter((e) => {
-          const eventDate = new Date(e.createdAt || e.timestamp);
-
-          // Build local start/end dates from yyyy-mm-dd to avoid UTC offset issues
-          if (dateRangeStart) {
-            const [sy, sm, sd] = dateRangeStart.split("-").map(Number);
-            const start = new Date(sy, (sm || 1) - 1, sd || 1, 0, 0, 0, 0);
-            if (eventDate < start) return false;
-          }
-          if (dateRangeEnd) {
-            const [ey, em, ed] = dateRangeEnd.split("-").map(Number);
-            const end = new Date(ey, (em || 1) - 1, ed || 1, 23, 59, 59, 999);
-            if (eventDate > end) return false;
-          }
-          return true;
-        });
-      }
-
-      const gamesStarted = filteredEvents.filter((e) => e.event === "game_started").length;
-      const gamesCompleted = filteredEvents.filter(
-        (e) => e.event === "game_completed" || e.event === "game_over"
-      ).length;
-      const totalGames = gamesStarted;
-
-      // Get unique sessionIds
-      const startedSessionIds = new Set(
-        filteredEvents
-          .filter((e) => e.event === "game_started")
-          .map((e) => e.sessionId)
-          .filter(Boolean)
-      );
-      const completedSessionIds = new Set(
-        filteredEvents
-          .filter((e) => e.event === "game_completed" || e.event === "game_over")
-          .map((e) => e.sessionId)
-          .filter(Boolean)
-      );
-      const gamesAbandoned = Array.from(startedSessionIds).filter(
-        (id) => !completedSessionIds.has(id)
-      ).length;
-
-      const completionRate = gamesStarted > 0 ? (gamesCompleted / gamesStarted) * 100 : 0;
-
-      const completedEvents = filteredEvents.filter(
-        (e) => e.event === "game_completed" || e.event === "game_over"
-      );
-      const averageScore =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.score || 0), 0) / completedEvents.length
-          : 0;
-      const averageMoves =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.moves || 0), 0) / completedEvents.length
-          : 0;
-      const averageTimeRemaining =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.timeRemaining || 0), 0) /
-            completedEvents.length
-          : 0;
-
-      // Highest score across completed events
-      let highestScoreSummary: {
-        score: number | null;
-        userName: string | null;
-        userEmail: string | null;
-        completedAt: string | null;
-      } = {
-        score: null,
-        userName: null,
-        userEmail: null,
-        completedAt: null,
-      };
-
-      completedEvents.forEach((e) => {
-        const score = e.score ?? null;
-        if (score === null) return;
-        if (highestScoreSummary.score === null || score > highestScoreSummary.score) {
-          highestScoreSummary = {
-            score,
-            userName: e.user.name ?? null,
-            userEmail: e.user.email ?? null,
-            completedAt: (e.timestamp || e.createdAt) ?? null,
-          };
-        }
+      const nextStats = calculateDashboardStats(events, {
+        selectedGames,
+        selectedSchool,
+        dateRangeStart,
+        dateRangeEnd,
       });
-
-      // Games by gameId
-      const gamesByGameId: Record<
-        string,
-        { started: number; completed: number; avgScore: number }
-      > = {};
-      filteredEvents.forEach((event) => {
-        if (!gamesByGameId[event.gameId]) {
-          gamesByGameId[event.gameId] = { started: 0, completed: 0, avgScore: 0 };
-        }
-        if (event.event === "game_started") {
-          gamesByGameId[event.gameId].started++;
-        } else if (event.event === "game_completed" || event.event === "game_over") {
-          gamesByGameId[event.gameId].completed++;
-        }
-      });
-
-      // Calculate average scores per game
-      Object.keys(gamesByGameId).forEach((gameId) => {
-        const gameCompletedEvents = completedEvents.filter((e) => e.gameId === gameId);
-        if (gameCompletedEvents.length > 0) {
-          gamesByGameId[gameId].avgScore =
-            gameCompletedEvents.reduce((sum, e) => sum + (e.score || 0), 0) /
-            gameCompletedEvents.length;
-        }
-      });
-
-      // Recent events (keep up to 1000 for pagination)
-      const recentEvents = filteredEvents.slice(0, 1000).map((e) => ({
-        id: e.id,
-        gameId: e.gameId,
-        event: e.event,
-        user: e.user,
-        score: e.score,
-        timestamp: e.timestamp || e.createdAt,
-      }));
-
-      // Events by date/hour (selected range, otherwise last 7 days)
-      const eventsByDate: Array<{ date: string; started: number; completed: number }> = [];
-      const selectedSingleDay =
-        Boolean(dateRangeStart) && Boolean(dateRangeEnd) && dateRangeStart === dateRangeEnd;
-      if (selectedSingleDay) {
-        const hourMap = new Map<string, { started: number; completed: number }>();
-        filteredEvents.forEach((event) => {
-          const eventDate = new Date(event.createdAt || event.timestamp);
-          const label = formatHourLabel(eventDate.getHours());
-          if (!hourMap.has(label)) {
-            hourMap.set(label, { started: 0, completed: 0 });
-          }
-          const hourData = hourMap.get(label)!;
-          if (event.event === "game_started") {
-            hourData.started++;
-          } else if (event.event === "game_completed" || event.event === "game_over") {
-            hourData.completed++;
-          }
-        });
-
-        for (let hour = 0; hour < 24; hour++) {
-          const label = formatHourLabel(hour);
-          eventsByDate.push({
-            date: label,
-            started: hourMap.get(label)?.started || 0,
-            completed: hourMap.get(label)?.completed || 0,
-          });
-        }
-      } else {
-        const dateMap = new Map<string, { started: number; completed: number }>();
-        filteredEvents.forEach((event) => {
-          const date = new Date(event.createdAt || event.timestamp).toLocaleDateString();
-          if (!dateMap.has(date)) {
-            dateMap.set(date, { started: 0, completed: 0 });
-          }
-          const dayData = dateMap.get(date)!;
-          if (event.event === "game_started") {
-            dayData.started++;
-          } else if (event.event === "game_completed" || event.event === "game_over") {
-            dayData.completed++;
-          }
-        });
-
-        const dateLabels: string[] = [];
-        if (dateRangeStart || dateRangeEnd) {
-          const start = dateRangeStart ? parseLocalDateInput(dateRangeStart) : new Date();
-          const end = dateRangeEnd ? parseLocalDateInput(dateRangeEnd) : new Date();
-          start.setHours(0, 0, 0, 0);
-          end.setHours(0, 0, 0, 0);
-
-          if (start <= end) {
-            const cursor = new Date(start);
-            while (cursor <= end) {
-              dateLabels.push(cursor.toLocaleDateString());
-              cursor.setDate(cursor.getDate() + 1);
-            }
-          }
-        } else {
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            dateLabels.push(date.toLocaleDateString());
-          }
-        }
-
-        dateLabels.forEach((date) => {
-          eventsByDate.push({
-            date: date,
-            started: dateMap.get(date)?.started || 0,
-            completed: dateMap.get(date)?.completed || 0,
-          });
-        });
-      }
-
-      const scores = completedEvents
-        .map((e) => e.score)
-        .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
-      const scoreDistribution = buildScoreDistributionFromScores(scores);
-
-      const gamesByResult: Record<string, Array<{ range: string; count: number }>> = {};
-      Object.keys(gamesByGameId).forEach((gameId) => {
-        const gameScores = completedEvents
-          .filter((e) => e.gameId === gameId)
-          .map((e) => e.score)
-          .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
-        gamesByResult[gameId] = buildScoreDistributionFromScores(gameScores);
-      });
-
-      // User-specific stats (from filtered events so table reflects current game/school filter)
-      const userStats: Record<
-        string,
-        {
-          email: string | null;
-          name: string | null;
-          grade: string | null;
-          teacherName: string | null;
-          school: string | null;
-          gamesStarted: number;
-          gamesCompleted: number;
-          avgScore: number;
-          totalScore: number;
-        }
-      > = {};
-
-      filteredEvents.forEach((event) => {
-        const userKey = event.user.email || event.user.name || "anonymous";
-        if (!userStats[userKey]) {
-          userStats[userKey] = {
-            email: event.user.email,
-            name: event.user.name,
-            grade: event.user.grade ?? null,
-            teacherName: event.user.teacherName ?? null,
-            school: event.user.schoolName ?? event.user.school ?? null,
-            gamesStarted: 0,
-            gamesCompleted: 0,
-            avgScore: 0,
-            totalScore: 0,
-          };
-        }
-
-        if (event.event === "game_started") {
-          userStats[userKey].gamesStarted++;
-        } else if (event.event === "game_completed" || event.event === "game_over") {
-          userStats[userKey].gamesCompleted++;
-          userStats[userKey].totalScore += event.score || 0;
-        }
-      });
-
-      // Calculate average scores per user
-      Object.keys(userStats).forEach((key) => {
-        if (userStats[key].gamesCompleted > 0) {
-          userStats[key].avgScore = userStats[key].totalScore / userStats[key].gamesCompleted;
-        }
-      });
-
-      setStats({
-        totalGames,
-        gamesStarted,
-        gamesCompleted,
-        gamesAbandoned,
-        completionRate,
-        averageScore,
-        averageMoves,
-        averageTimeRemaining,
-        gamesByGameId,
-        recentEvents,
-        eventsByDate,
-        scoreDistribution,
-        highestScoreSummary,
-        userStats,
-        gamesByResult,
-      });
+      setStats(nextStats);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to calculate statistics");
     }
-  };
+  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd]);
 
   // Recalculate stats when filters or data change
   useEffect(() => {
     if (allEvents.length > 0) {
       calculateStats(allEvents);
     }
-  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd, allEvents]);
+  }, [allEvents, calculateStats]);
 
   // Reset Recent Events to page 1 when filters change
   useEffect(() => {
@@ -543,30 +135,11 @@ export function AdminDashboard(): React.JSX.Element {
   const exportToCSV = (): void => {
     if (!stats) return;
 
-    const highest = stats.highestScoreSummary;
-    const highestScoreDisplay =
-      highest.score !== null ? highest.score.toString() : "N/A";
-    const highestUserDisplay =
-      highest.score !== null
-        ? highest.userName || highest.userEmail || "N/A"
-        : "N/A";
-    const highestCompletedAtDisplay =
-      highest.score !== null && highest.completedAt
-        ? new Date(highest.completedAt).toISOString()
-        : "N/A";
+    const overviewRows = buildOverviewExportRows(stats);
 
     const csvData: string[][] = [
       ["Metric", "Value"],
-      ["Total Games Started", stats.gamesStarted.toString()],
-      ["Games Completed", stats.gamesCompleted.toString()],
-      ["Games Abandoned", stats.gamesAbandoned.toString()],
-      ["Completion Rate", `${stats.completionRate.toFixed(1)}%`],
-      ["Average Score", stats.averageScore.toFixed(1)],
-      ["Average Moves", stats.averageMoves.toFixed(1)],
-      ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
-      ["Highest Score", highestScoreDisplay],
-      ["Highest Score User", highestUserDisplay],
-      ["Highest Score Completed At", highestCompletedAtDisplay],
+      ...overviewRows.map((r) => [r.label, String(r.excelValue)]),
       [],
       ["Game", "Started", "Completed", "Avg Score"],
       ...Object.entries(stats.gamesByGameId).map(([gameId, data]) => [
@@ -612,30 +185,9 @@ export function AdminDashboard(): React.JSX.Element {
     const wb = XLSX.utils.book_new();
 
     // Overview sheet
-    const highest = stats.highestScoreSummary;
-    const highestScoreDisplay =
-      highest.score !== null ? highest.score.toString() : "N/A";
-    const highestUserDisplay =
-      highest.score !== null
-        ? highest.userName || highest.userEmail || "N/A"
-        : "N/A";
-    const highestCompletedAtDisplay =
-      highest.score !== null && highest.completedAt
-        ? new Date(highest.completedAt).toISOString()
-        : "N/A";
-
     const overviewData = [
       ["Metric", "Value"],
-      ["Total Games Started", stats.gamesStarted],
-      ["Games Completed", stats.gamesCompleted],
-      ["Games Abandoned", stats.gamesAbandoned],
-      ["Completion Rate", `${stats.completionRate.toFixed(1)}%`],
-      ["Average Score", stats.averageScore.toFixed(1)],
-      ["Average Moves", stats.averageMoves.toFixed(1)],
-      ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
-      ["Highest Score", highestScoreDisplay],
-      ["Highest Score User", highestUserDisplay],
-      ["Highest Score Completed At", highestCompletedAtDisplay],
+      ...buildOverviewExportRows(stats).map((r) => [r.label, r.excelValue]),
     ];
     const ws1 = XLSX.utils.aoa_to_sheet(overviewData);
     XLSX.utils.book_append_sheet(wb, ws1, "Overview");
@@ -677,7 +229,7 @@ export function AdminDashboard(): React.JSX.Element {
     // User Stats sheet
     const userData = [
       ["User", "Email", "Grade", "Teacher Name", "School", "Games Started", "Games Completed", "Avg Score"],
-      ...Object.entries(stats.userStats).map(([key, data]) => [
+      ...Object.entries(stats.userStats).map(([, data]) => [
         data.name || data.email || "Anonymous",
         data.email || "",
         data.grade || "",
@@ -1061,11 +613,9 @@ export function AdminDashboard(): React.JSX.Element {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Events Over Time */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {isSingleDayRange ? "Events Over Time (Hourly)" : "Events Over Time"}
-            </h2>
+          <DashboardChartCard
+            title={isSingleDayRange ? "Events Over Time (Hourly)" : "Events Over Time"}
+          >
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={stats.eventsByDate}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1077,11 +627,9 @@ export function AdminDashboard(): React.JSX.Element {
                 <Line type="monotone" dataKey="completed" stroke="#82ca9d" name="Completed" />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </DashboardChartCard>
 
-          {/* Score Distribution */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Score Distribution</h2>
+          <DashboardChartCard title="Score Distribution">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.scoreDistribution}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1091,11 +639,9 @@ export function AdminDashboard(): React.JSX.Element {
                 <Bar dataKey="count" fill="#8884d8" name="Games" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </DashboardChartCard>
 
-          {/* Games by Type */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Games by Type</h2>
+          <DashboardChartCard title="Games by Type">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={gamesByTypeData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1107,11 +653,9 @@ export function AdminDashboard(): React.JSX.Element {
                 <Bar dataKey="completed" fill="#82ca9d" name="Completed" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </DashboardChartCard>
 
-          {/* Completion Rate Pie Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Completion Status</h2>
+          <DashboardChartCard title="Completion Status">
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -1137,7 +681,7 @@ export function AdminDashboard(): React.JSX.Element {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </DashboardChartCard>
         </div>
 
         {/* Games by Game ID */}

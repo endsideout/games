@@ -36,7 +36,7 @@ test.describe("Depth 1 smoke journeys", () => {
   test("player info submit returns to the target game", async ({ page }) => {
     await page.goto("/least-sugar-game");
     await page.getByRole("textbox", { name: /student name/i }).fill("Maya");
-    await page.getByRole("combobox", { name: /grade/i }).selectOption("5");
+    await page.getByRole("combobox", { name: /grade/i }).selectOption("5th Grade");
     await page.getByRole("textbox", { name: /teacher name/i }).fill("Ms Parker");
     await page.getByRole("textbox", { name: /school name/i }).fill("WHES");
     await page.getByRole("button", { name: /continue to game/i }).click();
@@ -72,7 +72,7 @@ test.describe("Depth 1 smoke journeys", () => {
   test("invalid returnTo in player info falls back to home", async ({ page }) => {
     await page.goto("/player-info?returnTo=//evil.example");
     await page.getByRole("textbox", { name: /student name/i }).fill("Nina");
-    await page.getByRole("combobox", { name: /grade/i }).selectOption("6");
+    await page.getByRole("combobox", { name: /grade/i }).selectOption("6th Grade");
     await page.getByRole("textbox", { name: /teacher name/i }).fill("Ms Bell");
     await page.getByRole("textbox", { name: /school name/i }).fill("Northview");
     await page.getByRole("button", { name: /continue to game/i }).click();
@@ -90,5 +90,31 @@ test.describe("Depth 1 smoke journeys", () => {
     ).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
+  });
+
+  test("admin route redirects unauthenticated users to login", async ({ page }) => {
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    await expect(
+      page.getByRole("heading", { name: /admin dashboard/i })
+    ).toBeVisible();
+  });
+
+  test("a second profile-gated route returns to target after player info", async ({
+    page,
+  }) => {
+    await page.goto("/budgeting-game");
+    await expect(page).toHaveURL(/\/player-info\?returnTo=%2Fbudgeting-game/);
+
+    await page.getByRole("textbox", { name: /student name/i }).fill("Aria");
+    await page.getByRole("combobox", { name: /grade/i }).selectOption("7th Grade");
+    await page.getByRole("textbox", { name: /teacher name/i }).fill("Mr Stone");
+    await page.getByRole("textbox", { name: /school name/i }).fill("WHES");
+    await page.getByRole("button", { name: /continue to game/i }).click();
+
+    await expect(page).toHaveURL(/\/budgeting-game$/);
+    await expect(
+      page.getByRole("heading", { name: /budgeting jars/i })
+    ).toBeVisible();
   });
 });
