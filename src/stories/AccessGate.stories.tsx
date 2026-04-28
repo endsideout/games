@@ -27,6 +27,10 @@ export const PublicAccess: Story = {
 };
 
 export const PlayerProfileRedirect: Story = {
+  args: {
+    access: "player_profile",
+    children: <div>Brain health game</div>,
+  },
   render: () => (
     <MemoryRouter initialEntries={["/brain-health-game"]}>
       <GameUserProvider>

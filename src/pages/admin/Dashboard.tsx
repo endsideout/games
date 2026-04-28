@@ -36,7 +36,7 @@ import {
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#8dd1e1", "#d084d0"];
 const WHES_SCHOOL_CODE = "WHES";
 
-function AdminDashboard(): React.JSX.Element {
+export function AdminDashboard(): React.JSX.Element {
   const stagingMode = isStagingEnvironment();
   const { user, logout, isWhesReportUser } = useAuth();
   const navigate = useNavigate();

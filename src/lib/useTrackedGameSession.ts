@@ -1,7 +1,6 @@
 import { useRef, type MutableRefObject } from "react";
 import { generateSessionId } from "./sessionId";
-import type { GameEventType } from "../types";
-import type { GameTrackingEvent } from "../types/tracking";
+import type { GameTrackingEvent, GameTrackingEventType } from "../types/tracking";
 
 interface UseTrackedGameSessionOptions {
   gameId: string;
@@ -11,7 +10,7 @@ interface UseTrackedGameSessionOptions {
 interface TrackedGameSessionApi {
   sessionIdRef: MutableRefObject<string>;
   startSession: () => string;
-  trackWithSession: (event: GameEventType, score: number) => void;
+  trackWithSession: (event: GameTrackingEventType, score: number) => void;
   resetCompletionGuard: () => void;
 }
 
@@ -30,7 +29,7 @@ export function useTrackedGameSession({
     return sessionId;
   };
 
-  const trackWithSession = (event: GameEventType, score: number): void => {
+  const trackWithSession = (event: GameTrackingEventType, score: number): void => {
     if (!sessionIdRef.current) {
       return;
     }

@@ -16,6 +16,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const RedirectsWhenIncomplete: Story = {
+  args: {
+    children: <div>Least sugar game</div>,
+  },
   render: () => (
     <MemoryRouter initialEntries={["/least-sugar-game"]}>
       <GameUserProvider>

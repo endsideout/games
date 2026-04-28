@@ -2,6 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import type { User } from "firebase/auth";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 vi.mock("../context/AuthContext", () => ({
@@ -64,7 +65,7 @@ describe("ProtectedRoute", () => {
   it("renders children when access is allowed", async () => {
     const authModule = await import("../context/AuthContext");
     vi.mocked(authModule.useAuth).mockReturnValue({
-      user: { uid: "user-1" } as unknown as { uid: string },
+      user: { uid: "user-1" } as unknown as User,
       loading: false,
       login: vi.fn(),
       loginWithGoogle: vi.fn(),
