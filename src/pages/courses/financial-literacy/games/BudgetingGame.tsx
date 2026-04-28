@@ -19,7 +19,7 @@ const ALL_ITEMS: BudgetItem[] = [
   { name: "Video Games",emoji: "🎮", category: "want",  value: 60  },
   { name: "Water",      emoji: "💧", category: "need",  value: 5   },
   { name: "Candy",      emoji: "🍬", category: "want",  value: 3   },
-  { name: "Shelter",    emoji: "🏠", category: "need",  value: 800 },
+  { name: "Rent",       emoji: "🏠", category: "need",  value: 800 },
   { name: "New Phone",  emoji: "📱", category: "want",  value: 200 },
   { name: "Clothing",   emoji: "👕", category: "need",  value: 50  },
   { name: "Vacation",   emoji: "✈️", category: "want",  value: 500 },
