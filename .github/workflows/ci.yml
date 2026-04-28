@@ -26,6 +26,15 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Storybook interaction tests
+        run: npm run test:storybook
+
+      - name: Unit tests
+        run: npm run test:unit
+
       - name: Build
         run: npm run build
 

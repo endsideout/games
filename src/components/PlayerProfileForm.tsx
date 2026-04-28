@@ -18,7 +18,16 @@ export function PlayerProfileForm({
   onSubmit,
   submitLabel = "Continue to Game",
 }: PlayerProfileFormProps): React.JSX.Element {
-  const gradeOptions = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+  const gradeOptions = [
+    "1st Grade",
+    "2nd Grade",
+    "3rd Grade",
+    "4th Grade",
+    "5th Grade",
+    "6th Grade",
+    "7th Grade",
+    "8th Grade",
+  ] as const;
   const [name, setName] = useState(initialValues?.name ?? "");
   const [grade, setGrade] = useState(initialValues?.grade ?? "");
   const [teacherName, setTeacherName] = useState(initialValues?.teacherName ?? "");
@@ -78,7 +87,7 @@ export function PlayerProfileForm({
             </option>
             {gradeOptions.map((option) => (
               <option key={option} value={option}>
-                Grade {option}
+                {option}
               </option>
             ))}
           </select>

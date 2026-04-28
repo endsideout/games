@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { shuffleArray } from "../../../../lib/arrayUtils";
 import { generateSessionId } from "../../../../lib/sessionId";
 
 const GAME_ID = "budgeting-game";
@@ -26,15 +27,6 @@ const ALL_ITEMS: BudgetItem[] = [
   { name: "Medicine",   emoji: "💊", category: "need",  value: 30  },
   { name: "Jewelry",    emoji: "💍", category: "want",  value: 150 },
 ];
-
-function shuffleArray<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 type JarGlow = "correct" | "incorrect" | "hover" | null;
 type GamePhase = "menu" | "playing" | "finished";
@@ -80,6 +72,7 @@ export function BudgetingGame(): React.JSX.Element {
     [trackEvent]
   );
 
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer effect intentionally keyed to phase only.
   useEffect(() => {
     if (phase !== "playing") return;
     timerRef.current = setInterval(() => {

@@ -7,7 +7,7 @@ function splitCsv(value: string | undefined): string[] {
     .filter(Boolean);
 }
 
-export function getAppEnvironment(): "production" | "staging" {
+function getAppEnvironment(): "production" | "staging" {
   return import.meta.env.VITE_APP_ENV === "staging" ? "staging" : "production";
 }
 
@@ -26,7 +26,7 @@ export function isAllowedStagingAdminEmail(email?: string | null): boolean {
   return allowlist.includes(email.toLowerCase());
 }
 
-export function getStagingBaseUrl(): string {
+function getStagingBaseUrl(): string {
   return (
     import.meta.env.VITE_STAGING_BASE_URL?.trim() ||
     "https://staging-endsideoutgames.netlify.app"

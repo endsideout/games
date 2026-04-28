@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGameUser } from "../../context/GameUserContext";
 import { PlayerProfileForm } from "../../components/PlayerProfileForm";
+import { sanitizeReturnToPath } from "../../lib/playerProfilePolicy";
 
 export function PlayerInfoForm(): React.JSX.Element {
   const { user, setPlayerProfile } = useGameUser();
@@ -9,9 +10,7 @@ export function PlayerInfoForm(): React.JSX.Element {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
-  const returnTo = searchParams.get("returnTo") || "/";
-  const cleanReturnTo =
-    returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/";
+  const cleanReturnTo = sanitizeReturnToPath(searchParams.get("returnTo"));
 
   const handleSubmit = (values: {
     name: string;

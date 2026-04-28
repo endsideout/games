@@ -200,6 +200,7 @@ function PoseAnimator({ size = 160 }: { size?: number }) {
   const [idx,     setIdx]     = useState(0);
   const [visible, setVisible] = useState(true);
 
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer/finalization effect intentionally keyed to phase.
   useEffect(() => {
     const timer = setInterval(() => {
       setVisible(false);

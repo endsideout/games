@@ -13,7 +13,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: `npm run dev -- --host 127.0.0.1 --port ${PORT}`,
+    command: `npm run preview -- --host 127.0.0.1 --port ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
   },

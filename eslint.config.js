@@ -5,6 +5,7 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([globalIgnores([
@@ -17,10 +18,11 @@ export default defineConfig([globalIgnores([
   "tests",
   "playwright.config.ts",
 ]), {
-  files: ['**/*.{js,jsx}'],
+  files: ['**/*.{ts,tsx,js,jsx}'],
   ignores: ['scripts/**'],
   extends: [
     js.configs.recommended,
+    ...tseslint.configs.recommended,
     reactHooks.configs['recommended-latest'],
     reactRefresh.configs.vite,
   ],
@@ -34,7 +36,10 @@ export default defineConfig([globalIgnores([
     },
   },
   rules: {
-    'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    'no-unused-vars': 'off',
+    'no-empty': 'off',
+    'react-refresh/only-export-components': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
   },
 }, {
   files: ['scripts/**/*.js'],

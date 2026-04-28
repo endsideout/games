@@ -2,8 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak as speakKyh } from "./gameAudio";
 
 const GAME_ID    = "habit-guard-game";
+
+function speak(text: string) {
+  speakKyh(text, { rate: 0.88 });
+}
 const ITEM_SIZE   = 215; // circle diameter (+25% from prev 173×153)
 const MAX_PIMPLES = 5;
 const SPAWN_MS   = 2100;
@@ -19,16 +24,6 @@ const PIMPLE_SPOTS = [
   { cx: 84, cy: 104 },  // right jaw
 ];
 
-function speak(text: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.88; u.pitch = 1.05; u.volume = 1;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
-}
-
 function playTone(freqs: number[], type: OscillatorType = "sine") {
   try {
     const ctx = new AudioContext();
@@ -41,7 +36,7 @@ function playTone(freqs: number[], type: OscillatorType = "sine") {
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.start(t); osc.stop(t + 0.28);
     });
-  } catch (_) {}
+  } catch {}
 }
 const playGood = () => playTone([523, 659, 784]);
 const playBad  = () => playTone([220, 170], "sawtooth");

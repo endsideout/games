@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, within } from "storybook/test";
 import { PairMatchingGame } from "../components/PairMatchingGame";
+import { fullscreenOnlyMeta } from "./storyShell";
 
 const meta = {
   title: "Components/PairMatchingGame",
@@ -17,9 +18,7 @@ const meta = {
       time: 90,
     },
   },
-  parameters: {
-    layout: "fullscreen",
-  },
+  ...fullscreenOnlyMeta,
 } satisfies Meta<typeof PairMatchingGame>;
 
 export default meta;

@@ -40,11 +40,18 @@ Staging (for peer testing) should use your dedicated non-production site URL.
    npm run dev
    ```
 
-4. Open your browser to `http://localhost:5173`
+4. Start in staging mode (optional):
+
+   ```bash
+   npm run dev -- --mode staging
+   ```
+
+5. Open your browser to `http://localhost:5173`
 
 ### Available Scripts
 
 - `npm run dev` - Start development server
+- `npm run dev -- --mode staging` - Start development server in staging mode
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint

@@ -242,6 +242,41 @@ function getCellsBetween(start: CellPosition, end: CellPosition): CellPosition[]
   return cells;
 }
 
+function BankingWordSearchEndNav({
+  onPlayAgain,
+  onBackToMenu,
+  playAgainLabel,
+}: {
+  onPlayAgain: () => void;
+  onBackToMenu: () => void;
+  playAgainLabel: string;
+}): React.JSX.Element {
+  return (
+    <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={onPlayAgain}
+        className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+      >
+        {playAgainLabel}
+      </button>
+      <button
+        type="button"
+        onClick={onBackToMenu}
+        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+      >
+        📋 Back to Menu
+      </button>
+      <Link
+        to="/financial-literacy"
+        className="inline-block px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-base font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+      >
+        ← Back to Financial Literacy
+      </Link>
+    </div>
+  );
+}
+
 export function BankingWordSearch(): React.JSX.Element {
   const { trackEvent } = useGameUser();
   const sessionIdRef = useRef<string | null>(null);
@@ -639,26 +674,11 @@ export function BankingWordSearch(): React.JSX.Element {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handlePlayAgain}
-                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                🔄 Try Again
-              </button>
-              <button
-                onClick={handleBackToMenu}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                📋 Back to Menu
-              </button>
-              <Link
-                to="/financial-literacy"
-                className="inline-block px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-base font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                ← Back to Financial Literacy
-              </Link>
-            </div>
+            <BankingWordSearchEndNav
+              onPlayAgain={handlePlayAgain}
+              onBackToMenu={handleBackToMenu}
+              playAgainLabel="🔄 Try Again"
+            />
           </div>
         </div>
       </div>
@@ -713,26 +733,11 @@ export function BankingWordSearch(): React.JSX.Element {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handlePlayAgain}
-                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                🔍 Play Again
-              </button>
-              <button
-                onClick={handleBackToMenu}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xl font-black rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                📋 Back to Menu
-              </button>
-              <Link
-                to="/financial-literacy"
-                className="inline-block px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white text-base font-bold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                ← Back to Financial Literacy
-              </Link>
-            </div>
+            <BankingWordSearchEndNav
+              onPlayAgain={handlePlayAgain}
+              onBackToMenu={handleBackToMenu}
+              playAgainLabel="🔍 Play Again"
+            />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
+import { emotionalWellbeingPageStyle } from "../emotionalWellbeingPageStyle";
 
 // Import new character images
 import mayaImg from "../../../../../assets/images/games/emotinalwellbeingscenarios/new_characters/maya.png";
@@ -320,15 +321,7 @@ export function EmotionDetectiveGame(): React.JSX.Element {
     return (
       <div
         className="min-h-screen flex items-center justify-center py-4"
-        style={{
-          background:
-            "linear-gradient(135deg, #BA68C8 0%, #E1BEE7 25%, #F8BBD0 50%, #CE93D8 75%, #AB47BC 100%)",
-          backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-          `,
-        }}
+        style={emotionalWellbeingPageStyle}
       >
         <div className="max-w-4xl mx-auto px-4 w-full">
           <div className="text-center bg-white bg-opacity-95 backdrop-blur-md rounded-3xl p-6 border-4 border-purple-400 shadow-2xl max-h-[95vh] overflow-y-auto">
@@ -422,15 +415,7 @@ export function EmotionDetectiveGame(): React.JSX.Element {
     return (
       <div
         className="min-h-screen flex items-center justify-center py-4"
-        style={{
-          background:
-            "linear-gradient(135deg, #BA68C8 0%, #E1BEE7 25%, #F8BBD0 50%, #CE93D8 75%, #AB47BC 100%)",
-          backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-          `,
-        }}
+        style={emotionalWellbeingPageStyle}
       >
         <div className="max-w-3xl mx-auto px-4 w-full">
           <div className="text-center bg-white bg-opacity-95 backdrop-blur-md rounded-3xl p-6 border-4 border-yellow-400 shadow-2xl max-h-[95vh] overflow-y-auto">
@@ -487,18 +472,7 @@ export function EmotionDetectiveGame(): React.JSX.Element {
 
   // Game Screen
   return (
-    <div
-      className="h-screen flex flex-col py-4"
-      style={{
-        background:
-          "linear-gradient(135deg, #BA68C8 0%, #E1BEE7 25%, #F8BBD0 50%, #CE93D8 75%, #AB47BC 100%)",
-        backgroundImage: `
-          radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
-          radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-        `,
-      }}
-    >
+    <div className="h-screen flex flex-col py-4" style={emotionalWellbeingPageStyle}>
       <div className="max-w-7xl mx-auto px-6 flex-1 flex flex-col">
         {/* Header with Score, Timer, and Progress */}
         <div className="flex justify-between items-center mb-3">

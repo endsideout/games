@@ -101,7 +101,7 @@ export const TDW_SET1_GAMES = [
   },
 ];
 
-export const TDW_SET1_BACK_PARAM = "?from=3dw-set1";
+const TDW_SET1_BACK_PARAM = "?from=3dw-set1";
 
 export function ThreeDWellnessSet1(): React.JSX.Element {
   return (
