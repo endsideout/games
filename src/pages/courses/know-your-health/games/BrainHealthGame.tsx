@@ -2,68 +2,20 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../lib/sessionId";
+import { playCorrect, playWrong, speak as speakShared } from "./gameAudio";
 
 const GAME_ID        = "brain-health-game";
 const GAME_DURATION  = 90;
 const POINTS_CORRECT = 10;
 
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-// Module-level ref prevents Chrome from GC-ing the utterance mid-speech
-let _utterance: SpeechSynthesisUtterance | null = null;
-
 function speak(text: string, onEnd?: () => void) {
-  if (!("speechSynthesis" in window)) {
-    // No TTS support — fire callback immediately so the game still advances
-    setTimeout(() => onEnd?.(), 100);
-    return;
-  }
-  try {
-    window.speechSynthesis.cancel();
-    _utterance = null;
-    setTimeout(() => {
-      try {
-        const u = new SpeechSynthesisUtterance(text);
-        _utterance  = u;     // keep-alive: prevents Chrome GC bug
-        u.rate      = 0.92;
-        u.pitch     = 1.05;
-        u.volume    = 1.0;
-        u.onend     = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
-        u.onerror   = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
-        window.speechSynthesis.speak(u);
-      } catch (_) { onEnd?.(); }
-    }, 100);
-  } catch (_) { onEnd?.(); }
-}
-
-// ── Sound effects ─────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.15], [784, 0.3]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.35);
-    });
-    setTimeout(() => ctx.close(), 1000);
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-    setTimeout(() => ctx.close(), 700);
-  } catch (_) {}
+  speakShared(text, {
+    keepAlive: true,
+    onEnd,
+    rate: 0.92,
+    noTtsOnEndDelayMs: 100,
+  });
 }
 
 // ── Flame-man character — matches PDF design ──────────────────────────────────
@@ -336,13 +288,14 @@ export function BrainHealthGame(): React.JSX.Element {
   useEffect(() => { phaseRef.current   = phase;   }, [phase]);
 
   // ── Timer ──
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer completion tracking depends on phase-driven lifecycle.
   useEffect(() => {
     if (phase !== "playing") return;
     const id = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(id);
-          try { window.speechSynthesis?.cancel(); } catch (_) {}
+          try { window.speechSynthesis?.cancel(); } catch {}
           trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
           setPhase("result");
           return 0;
@@ -365,7 +318,7 @@ export function BrainHealthGame(): React.JSX.Element {
 
   // ── Cleanup voice on unmount ──
   useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch (_) {} };
+    return () => { try { window.speechSynthesis?.cancel(); } catch {} };
   }, []);
 
   function startGame() {
@@ -374,7 +327,7 @@ export function BrainHealthGame(): React.JSX.Element {
     setPicked(null); setTimeLeft(GAME_DURATION);
     setFlameLevel(0); setShowLevelUp(false);
     setPhase("playing");
-    sessionIdRef.current = `${GAME_ID}-${Date.now().toString(36)}`;
+    sessionIdRef.current = generateSessionId();
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current, score: 0 });
     speak("Help Flame-man make the right choices for his brain health!");
   }

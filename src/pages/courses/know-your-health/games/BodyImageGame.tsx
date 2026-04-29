@@ -2,82 +2,21 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { playCorrect, playWrong, speak as speakKyh } from "./gameAudio";
 
 const GAME_ID        = "body-image-game";
 const POINTS_CORRECT = 20;
 
-// ── Module-level utterance store — prevents Chrome GC bug ─────────────────────
-// Chrome can silently garbage-collect SpeechSynthesisUtterance objects created
-// inside callbacks. Keeping a module-level reference prevents this.
-let _utter: SpeechSynthesisUtterance | null = null;
+const bodySpeakOpts = {
+  keepAlive: true as const,
+  rate: 1,
+  pitch: 1.05,
+  logErrors: true,
+  noTtsOnEndDelayMs: 0,
+};
 
-// ── Core speak function ────────────────────────────────────────────────────────
-// No voice selection — Brave and other privacy browsers block getVoices() /
-// voiceschanged. Using the system default voice works everywhere.
-function speakNow(
-  text: string,
-  onStart?: () => void,
-  onEnd?: () => void,
-) {
-  if (!("speechSynthesis" in window)) { onEnd?.(); return; }
-  try {
-    window.speechSynthesis.cancel();
-    _utter = null;
-
-    // Wait one tick after cancel before queuing the new utterance
-    setTimeout(() => {
-      try {
-        const u = new SpeechSynthesisUtterance(text);
-        _utter   = u;       // keep alive — prevents Chrome GC bug
-        u.rate   = 1.0;
-        u.pitch  = 1.05;
-        u.volume = 1.0;
-        u.onstart = () => onStart?.();
-        u.onend   = () => { _utter = null; onEnd?.(); };
-        u.onerror = (e) => { console.warn("TTS error:", e.error); _utter = null; onEnd?.(); };
-        window.speechSynthesis.speak(u);
-      } catch (e) {
-        console.warn("TTS exception:", e);
-        onEnd?.();
-      }
-    }, 100);
-  } catch (e) {
-    console.warn("TTS outer exception:", e);
-    onEnd?.();
-  }
-}
-
-// ── Feedback speak (used for correct/wrong answers) ───────────────────────────
-function speak(text: string) { speakNow(text); }
-
-// ── Sounds ────────────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.14], [784, 0.28]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      const t = ctx.currentTime + delay;
-      gain.gain.setValueAtTime(0.28, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-      osc.start(t); osc.stop(t + 0.3);
-    });
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(280, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.24, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-  } catch (_) {}
+function speak(text: string) {
+  speakKyh(text, bodySpeakOpts);
 }
 
 // ── Statement data ────────────────────────────────────────────────────────────
@@ -176,11 +115,11 @@ function SpeakerButton({
   const doSpeak = useCallback(() => {
     setPlaying(false);
     startedRef.current = false;
-    speakNow(
-      text,
-      () => { setPlaying(true);  startedRef.current = true; },
-      () => { setPlaying(false); startedRef.current = false; },
-    );
+    speakKyh(text, {
+      ...bodySpeakOpts,
+      onStart: () => { setPlaying(true);  startedRef.current = true; },
+      onEnd:   () => { setPlaying(false); startedRef.current = false; },
+    });
   }, [text]);
 
   // Auto-play when statementId changes (new statement shown)

@@ -1,12 +1,4 @@
-export interface ChallengeCard {
-    id: number;
-    topic: string;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-    resource: string;
-    explanation: string;
-}
+import type { ChallengeCard } from "../types";
 
 export const challengeCards: ChallengeCard[] = [
     // Check-in/Mood Meter questions (Sunlight)

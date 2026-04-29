@@ -42,3 +42,5 @@ export interface ChallengeCard {
   resource: string;
   explanation: string;
 }
+
+export * from "./tracking";

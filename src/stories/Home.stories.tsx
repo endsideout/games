@@ -1,21 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { MemoryRouter } from "react-router-dom";
 import { Home } from "../pages/landing/Home";
+import { routedFullscreenPageMeta } from "./storyShell";
 
 const meta = {
   title: "Pages/Home",
   component: Home,
-  parameters: {
-    layout: "fullscreen",
-  },
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    ),
-  ],
+  ...routedFullscreenPageMeta,
 } satisfies Meta<typeof Home>;
 
 export default meta;

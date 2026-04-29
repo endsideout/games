@@ -1,56 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { generateSessionId } from "../../../../lib/sessionId";
+import { useCountdownGameTimer } from "../../../../lib/useCountdownGameTimer";
+import { useTrackedGameSession } from "../../../../lib/useTrackedGameSession";
+import { playCorrect, playWrong, speak } from "./gameAudio";
 
 const GAME_ID        = "water-glass-game";
 const GAME_DURATION  = 120;
 const POINTS_CORRECT = 10;
 const TOTAL_Q        = 4;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u  = new SpeechSynthesisUtterance(text);
-    u.rate   = 0.9;
-    u.pitch  = 1.05;
-    u.volume = 1.0;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
-}
-
-// ── Sound effects ─────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.15], [784, 0.3]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.35);
-    });
-    setTimeout(() => ctx.close(), 1000);
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-    setTimeout(() => ctx.close(), 700);
-  } catch (_) {}
-}
 
 // ── Water Glass SVG ───────────────────────────────────────────────────────────
 // fillLevel: 0 (empty) → 1 (full). Water rises smoothly from bottom.
@@ -255,22 +215,22 @@ export function WaterGlassGame(): React.JSX.Element {
   useEffect(() => { scoreRef.current   = score;   }, [score]);
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
-  // Timer
+  const onTimeUp = useCallback(() => {
+    trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
+    setPhase("result");
+  }, [trackEvent]);
+
+  const timerApi = useCountdownGameTimer({
+    duration: GAME_DURATION,
+    isRunning: phase === "playing",
+    onTimeUp,
+  });
+
   useEffect(() => {
-    if (phase !== "playing") return;
-    const id = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(id);
-          trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
-          setPhase("result");
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [phase]);
+    setTimeLeft(timerApi.timeLeft);
+  }, [timerApi.timeLeft]);
+
+  useTrackedGameSession({ gameId: GAME_ID, trackEvent });
 
   // Speak question when idx changes
   useEffect(() => {
@@ -281,15 +241,15 @@ export function WaterGlassGame(): React.JSX.Element {
 
   // Cleanup voice
   useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch (_) {} };
+    return () => { try { window.speechSynthesis?.cancel(); } catch {} };
   }, []);
 
   function startGame() {
     setIdx(0); setCorrect(0); setScore(0); setAnswers([]);
     scoreRef.current = 0; answersRef.current = [];
-    setPicked(null); setTimeLeft(GAME_DURATION); setRippling(false);
+    setPicked(null); timerApi.resetTimer(); setTimeLeft(GAME_DURATION); setRippling(false);
     setPhase("playing");
-    sessionIdRef.current = `${GAME_ID}-${Date.now().toString(36)}`;
+    sessionIdRef.current = generateSessionId();
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current, score: 0 });
     speak("Fill up the glass of water by answering the questions!");
   }
@@ -434,9 +394,6 @@ export function WaterGlassGame(): React.JSX.Element {
 
   /* ─── PLAYING — left: glass (35%), right: question (65%) ────────────────── */
   const q           = QUESTIONS[idx];
-  const pickedOpt   = q.options.find(o => o.id === picked);
-  const correctOpt  = q.options.find(o => o.id === q.answer);
-
   return (
     <div className="min-h-screen flex flex-col" style={bg}>
 

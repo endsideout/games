@@ -163,10 +163,10 @@ export function JobPathMaze(): React.JSX.Element {
   useEffect(() => { mutedRef.current = muted; }, [muted]);
 
   // auto-speak question whenever checkpoint or job changes
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; countdown effect intentionally uses phase/answer state cadence.
   useEffect(() => {
     if (phase !== "playing" || !jobs[jobIndex]) return;
     const cp = jobs[jobIndex].checkpoints[checkpoint];
-    const job = jobs[jobIndex];
     const optionsText = cp.options.map((o, i) => `Option ${String.fromCharCode(65 + i)}: ${o.replace(/[^\w\s&',.-]/g, "")}`).join(". ");
     const text = `${cp.question}. ${optionsText}`;
     const id = setTimeout(() => speak(text, mutedRef.current), 400);
@@ -296,8 +296,6 @@ export function JobPathMaze(): React.JSX.Element {
 
   const bgStyle = { background: "linear-gradient(135deg, #f97316 0%, #ea580c 30%, #c2410c 70%, #9a3412 100%)" };
   const timerColor = timeLeft > 30 ? "#22c55e" : timeLeft > 10 ? "#f59e0b" : "#ef4444";
-  const progressPct = totalJobs > 0 ? ((jobIndex + (phase === "finished" ? 1 : 0)) / totalJobs) * 100 : 0;
-
   /* ── MENU ── */
   if (phase === "menu") return (
     <div className="min-h-screen flex items-center justify-center py-8 px-4" style={bgStyle}>

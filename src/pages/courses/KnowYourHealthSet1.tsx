@@ -91,7 +91,7 @@ export const SET1_GAMES = [
 ];
 
 // Route suffix appended so games know to navigate back to Set 1
-export const SET1_BACK_PARAM = "?from=set1";
+const SET1_BACK_PARAM = "?from=set1";
 
 export function KnowYourHealthSet1(): React.JSX.Element {
   return (

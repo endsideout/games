@@ -35,6 +35,7 @@ export function PairMatchingGame({
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Compute columns so total cards always divides evenly across rows
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; changing dependencies may alter completion callback timing.
   useEffect(() => {
     const totalCards = gameConfig.pairs * 2;
     const computeCols = (width: number): number => {
@@ -59,6 +60,7 @@ export function PairMatchingGame({
     return () => observer.disconnect();
   }, [gameConfig.pairs]);
 
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; changing dependencies may alter game-over callback timing.
   useEffect(() => {
     // Initialize cards
     const pairs = gameConfig.pairs;

@@ -289,7 +289,7 @@ export function Quiz({
   const [finished, setFinished] = React.useState(false);
   const [lastCorrect, setLastCorrect] = React.useState<null | boolean>(null);
   const [showExplanation, setShowExplanation] = React.useState(false);
-  const [selectedAnswer, setSelectedAnswer] = React.useState<number | null>(
+  const [_selectedAnswer, setSelectedAnswer] = React.useState<number | null>(
     null
   );
   const [canProceed, setCanProceed] = React.useState(false);

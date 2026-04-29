@@ -1,1 +1,9 @@
-export { SometimesAnytimeGame, LeastSugarGame, BrainHealthGame, WaterGlassGame, FinishRaceGame, HabitGuardGame, BodyImageGame } from "./games";
+export {
+  SometimesAnytimeGame,
+  LeastSugarGame,
+  BrainHealthGame,
+  WaterGlassGame,
+  FinishRaceGame,
+  HabitGuardGame,
+  BodyImageGame,
+} from "./games";

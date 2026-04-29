@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
+import { shuffleArray } from "../../../../../lib/arrayUtils";
 import { generateSessionId } from "../../../../../lib/sessionId";
 
 const GAME_ID = "study-habits-game";
@@ -37,18 +38,10 @@ const ALL_HABITS: StudyHabit[] = [
   { name: "Skip reviewing homework",     emoji: "📚", category: "bad"  },
 ];
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 function pick6() {
-  return shuffle([
-    ...shuffle(ALL_HABITS.filter(h => h.category === "good")).slice(0, 3),
-    ...shuffle(ALL_HABITS.filter(h => h.category === "bad")).slice(0, 3),
+  return shuffleArray([
+    ...shuffleArray(ALL_HABITS.filter(h => h.category === "good")).slice(0, 3),
+    ...shuffleArray(ALL_HABITS.filter(h => h.category === "bad")).slice(0, 3),
   ]);
 }
 

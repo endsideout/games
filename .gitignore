@@ -29,3 +29,8 @@ dist-ssr
 storybook-static
 playwright-report
 test-results
+
+# Local analysis/cache artifacts
+.cursor/tmp/
+.fallow/
+.fallowrc.json

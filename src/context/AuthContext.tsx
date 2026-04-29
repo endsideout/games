@@ -15,13 +15,13 @@ import {
 } from "firebase/auth";
 import { getAuthInstance } from "../lib/firebase";
 import {
-  getStagingAdminAllowlist,
-  isAllowedStagingAdminEmail,
   isStagingEnvironment,
 } from "../lib/environment";
-
-const ADMIN_DOMAIN = "@endsideout.org";
-const WHES_REPORT_DOMAIN = "@whes.org";
+import {
+  accessPolicyMessages,
+  canUseDashboardEmail,
+  getAdminAccessForEmail,
+} from "../lib/accessPolicy";
 
 interface AuthContextValue {
   user: User | null;
@@ -39,17 +39,6 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const canUseDashboardEmail = useCallback((email?: string | null): boolean => {
-    const normalized = email?.toLowerCase() ?? "";
-    if (isStagingEnvironment()) {
-      const allowlist = getStagingAdminAllowlist();
-      if (allowlist.length === 0) {
-        return false;
-      }
-      return isAllowedStagingAdminEmail(normalized);
-    }
-    return normalized.endsWith(ADMIN_DOMAIN) || normalized.endsWith(WHES_REPORT_DOMAIN);
-  }, []);
 
   useEffect(() => {
     const auth = getAuthInstance();
@@ -75,15 +64,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     // Restrict dashboard access based on environment policy.
     if (!canUseDashboardEmail(email)) {
       if (isStagingEnvironment()) {
-        throw new Error(
-          "This staging dashboard is restricted to allowlisted emails. Contact the admin to be added."
-        );
+        throw new Error(accessPolicyMessages.stagingDenied);
       }
-      throw new Error(`Only ${ADMIN_DOMAIN} or ${WHES_REPORT_DOMAIN} emails are allowed`);
+      throw new Error(accessPolicyMessages.productionDenied);
     }
 
     await signInWithEmailAndPassword(auth, email, password);
-  }, [canUseDashboardEmail]);
+  }, []);
 
   const loginWithGoogle = useCallback(async (): Promise<void> => {
     const auth = getAuthInstance();
@@ -98,13 +85,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     if (!canUseDashboardEmail(result.user.email)) {
       await signOut(auth);
       if (isStagingEnvironment()) {
-        throw new Error(
-          "This staging dashboard is restricted to allowlisted emails. Contact the admin to be added."
-        );
+        throw new Error(accessPolicyMessages.stagingDenied);
       }
-      throw new Error(`Only ${ADMIN_DOMAIN} or ${WHES_REPORT_DOMAIN} emails are allowed`);
+      throw new Error(accessPolicyMessages.productionDenied);
     }
-  }, [canUseDashboardEmail]);
+  }, []);
 
   const logout = useCallback(async (): Promise<void> => {
     const auth = getAuthInstance();
@@ -112,13 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     await signOut(auth);
   }, []);
 
-  const normalizedEmail = user?.email?.toLowerCase() ?? "";
-  const isAdmin = isStagingEnvironment()
-    ? isAllowedStagingAdminEmail(normalizedEmail)
-    : Boolean(normalizedEmail.endsWith(ADMIN_DOMAIN));
-  const isWhesReportUser = isStagingEnvironment()
-    ? false
-    : Boolean(normalizedEmail.endsWith(WHES_REPORT_DOMAIN));
+  const { isAdmin, isWhesReportUser } = getAdminAccessForEmail(user?.email);
   const canAccessDashboard = Boolean(user && (isAdmin || isWhesReportUser));
 
   const value = {

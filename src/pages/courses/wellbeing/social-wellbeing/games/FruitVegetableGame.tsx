@@ -125,7 +125,7 @@ export function FruitVegetableGame(): React.JSX.Element {
   }, [gameStarted, gameOver, timeLeft, score, trackEvent]);
 
   // Handle drag start
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDragStart = (): void => {
     if (currentItem) {
       setDraggedItem(currentItem);
     }

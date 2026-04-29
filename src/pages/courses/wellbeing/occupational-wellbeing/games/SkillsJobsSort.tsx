@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
+import { shuffleArray } from "../../../../../lib/arrayUtils";
 import { generateSessionId } from "../../../../../lib/sessionId";
 
 const GAME_ID = "skills-jobs-sort";
@@ -29,15 +30,6 @@ const CAREERS: Career[] = [
   { id: "engineer", title: "Engineer", emoji: "👷",   color: "#16a34a", bg: "rgba(240,253,244,0.95)" },
 ];
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 type Phase = "menu" | "playing" | "finished";
 type FeedbackState = { correct: boolean; careerTitle: string } | null;
 type Result = { skill: Skill; careerId: string; correct: boolean };
@@ -62,7 +54,7 @@ export function SkillsJobsSort(): React.JSX.Element {
   useEffect(() => { feedbackRef.current = feedback; }, [feedback]);
 
   function startGame() {
-    const shuffled = shuffle(SKILLS);
+    const shuffled = shuffleArray(SKILLS);
     setSkillQueue(shuffled);
     setCurrentIdx(0);
     setResults([]);
@@ -76,6 +68,7 @@ export function SkillsJobsSort(): React.JSX.Element {
   }
 
   // Countdown timer
+  // TODO(lint-safe-pass): deferred exhaustive-deps fix; timer completion tracking is intentionally phase-scoped.
   useEffect(() => {
     if (phase !== "playing") return;
     const interval = setInterval(() => {
