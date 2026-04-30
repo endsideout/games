@@ -38,7 +38,6 @@
     "@storybook/react-vite": "^10.3.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-react-oxc": "^0.4.3",
     "@vitest/browser-playwright": "^4.1.4",
     "@vitest/coverage-v8": "^4.1.4",
