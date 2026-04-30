@@ -1,9 +1,13 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GameUserProvider } from "./context/GameUserContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { EnvironmentBanner, RequirePlayerProfile } from "./components";
+
+const MascotWidget = lazy(() =>
+  import("./components/Mascot/MascotWidget").then(m => ({ default: m.MascotWidget }))
+);
 import {
   Home,
   PlayerInfoForm,
@@ -62,6 +66,9 @@ export default function App(): React.JSX.Element {
       <AuthProvider>
         <GameUserProvider>
           <EnvironmentBanner />
+          <Suspense fallback={null}>
+            <MascotWidget />
+          </Suspense>
           <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/player-info" element={<PlayerInfoForm />} />
