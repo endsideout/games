@@ -1,0 +1,1 @@
+export { MascotWidget } from "./MascotWidget";
