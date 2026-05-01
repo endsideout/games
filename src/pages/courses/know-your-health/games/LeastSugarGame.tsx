@@ -7,6 +7,19 @@ const GAME_ID        = "least-sugar-game";
 const GAME_DURATION  = 120; // 2 minutes
 const POINTS_CORRECT = 10;
 
+// ── Voice synthesis ───────────────────────────────────────────────────────────
+function speak(text: string, onEnd?: () => void) {
+  try {
+    if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
+    u.onend  = () => onEnd?.();
+    u.onerror = () => onEnd?.();
+    window.speechSynthesis.speak(u);
+  } catch (_) { onEnd?.(); }
+}
+
 // ── Sound effects (Web Audio API) ────────────────────────────────────────────
 function playCorrect() {
   try {
@@ -136,6 +149,16 @@ export function LeastSugarGame(): React.JSX.Element {
   useEffect(() => { scoreRef.current   = score;   }, [score]);
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
+  // Speak the question + both options when a new round starts
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const round = ROUNDS[roundIdx];
+    const t = setTimeout(() => {
+      speak(`Round ${roundIdx + 1}. ${round.question} ${round.left.name} or ${round.right.name}?`);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [roundIdx, phase]);
+
   // Countdown timer
   useEffect(() => {
     if (phase !== "playing") return;
@@ -164,6 +187,7 @@ export function LeastSugarGame(): React.JSX.Element {
     setPhase("playing");
     sessionIdRef.current = `${GAME_ID}-${Date.now().toString(36)}`;
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current, score: 0 });
+    speak("Let's learn about added versus natural sugar! Choose the correct food for each question!");
   }
 
   function handlePick(side: "left" | "right") {
@@ -178,7 +202,7 @@ export function LeastSugarGame(): React.JSX.Element {
     const newAnswers = [...answersRef.current, { round, chosen: side, correct }];
     setAnswers(newAnswers);
 
-    setTimeout(() => {
+    const advance = () => {
       const nextIdx = roundIdx + 1;
       if (nextIdx >= ROUNDS.length) {
         trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
@@ -187,7 +211,13 @@ export function LeastSugarGame(): React.JSX.Element {
         setRoundIdx(nextIdx);
         setPicked(null);
       }
-    }, 1600);
+    };
+
+    if (correct) {
+      speak(`Correct! ${round.explanation}`, advance);
+    } else {
+      speak(`Not quite. ${round.explanation}`, advance);
+    }
   }
 
   const bg = { background: "linear-gradient(135deg, #fdf4ff 0%, #fce7f3 40%, #ede9fe 100%)" };
