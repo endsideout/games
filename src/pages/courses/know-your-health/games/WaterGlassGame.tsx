@@ -9,16 +9,18 @@ const POINTS_CORRECT = 10;
 const TOTAL_Q        = 4;
 
 // ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
+function speak(text: string, onEnd?: () => void) {
   try {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
     window.speechSynthesis.cancel();
     const u  = new SpeechSynthesisUtterance(text);
     u.rate   = 0.9;
     u.pitch  = 1.05;
     u.volume = 1.0;
+    u.onend  = () => onEnd?.();
+    u.onerror = () => onEnd?.();
     window.speechSynthesis.speak(u);
-  } catch (_) {}
+  } catch (_) { onEnd?.(); }
 }
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
@@ -301,23 +303,7 @@ export function WaterGlassGame(): React.JSX.Element {
 
     setPicked(optionId);
 
-    if (ok) {
-      setScore(s => s + POINTS_CORRECT);
-      setCorrect(c => c + 1);
-      setRippling(true);
-      setTimeout(() => setRippling(false), 1000);
-      playCorrect();
-      speak(`Correct! ${q.explanation}`);
-    } else {
-      playWrong();
-      speak(`Not quite. ${q.explanation}`);
-    }
-
-    const entry = { q, chosen: optionId, ok };
-    const next  = [...answersRef.current, entry];
-    setAnswers(next);
-
-    setTimeout(() => {
+    const advance = () => {
       const nextIdx = idx + 1;
       if (nextIdx >= TOTAL_Q) {
         trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
@@ -326,7 +312,23 @@ export function WaterGlassGame(): React.JSX.Element {
         setIdx(nextIdx);
         setPicked(null);
       }
-    }, 2200);
+    };
+
+    if (ok) {
+      setScore(s => s + POINTS_CORRECT);
+      setCorrect(c => c + 1);
+      setRippling(true);
+      setTimeout(() => setRippling(false), 1000);
+      playCorrect();
+      speak(`Correct! ${q.explanation}`, advance);
+    } else {
+      playWrong();
+      speak(`Not quite. ${q.explanation}`, advance);
+    }
+
+    const entry = { q, chosen: optionId, ok };
+    const next  = [...answersRef.current, entry];
+    setAnswers(next);
   }
 
   const fillLevel  = correct / TOTAL_Q;

@@ -8,14 +8,16 @@ const GAME_DURATION  = 120;
 const POINTS_CORRECT = 10;
 
 // ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
+function speak(text: string, onEnd?: () => void) {
   try {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
+    u.onend  = () => onEnd?.();
+    u.onerror = () => onEnd?.();
     window.speechSynthesis.speak(u);
-  } catch (_) {}
+  } catch (_) { onEnd?.(); }
 }
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
@@ -417,19 +419,8 @@ export function FinishRaceGame(): React.JSX.Element {
     const q  = questions[idx];
     const ok = optId === q.answer;
     setPicked(optId);
-    if (ok) {
-      setScore(s => s + POINTS_CORRECT);
-      setCorrect(c => c + 1);
-      playCorrect();
-      speak(`Correct! ${q.explanation}`);
-    } else {
-      playWrong();
-      speak(`Not quite. ${q.explanation}`);
-    }
-    const entry  = { q, chosen: optId, ok };
-    const next   = [...answersRef.current, entry];
-    setAnswers(next);
-    setTimeout(() => {
+
+    const advance = () => {
       const nextIdx = idx + 1;
       if (nextIdx >= totalQ) {
         trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
@@ -438,7 +429,20 @@ export function FinishRaceGame(): React.JSX.Element {
         setIdx(nextIdx);
         setPicked(null);
       }
-    }, 2200);
+    };
+
+    if (ok) {
+      setScore(s => s + POINTS_CORRECT);
+      setCorrect(c => c + 1);
+      playCorrect();
+      speak(`Correct! ${q.explanation}`, advance);
+    } else {
+      playWrong();
+      speak(`Not quite. ${q.explanation}`, advance);
+    }
+    const entry  = { q, chosen: optId, ok };
+    const next   = [...answersRef.current, entry];
+    setAnswers(next);
   }
 
   const timerColor = timeLeft <= 20 ? "#ef4444" : timeLeft <= 40 ? "#f59e0b" : "#4ade80";
