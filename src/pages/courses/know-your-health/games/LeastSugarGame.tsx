@@ -154,7 +154,8 @@ export function LeastSugarGame(): React.JSX.Element {
     if (phase !== "playing") return;
     const round = ROUNDS[roundIdx];
     const t = setTimeout(() => {
-      speak(`${round.question} ${round.left.name} or ${round.right.name}?`);
+      const q = round.question.replace(/\p{Emoji}/gu, '').trim();
+      speak(`${q} ${round.left.name} or ${round.right.name}?`);
     }, 400);
     return () => clearTimeout(t);
   }, [roundIdx, phase]);
