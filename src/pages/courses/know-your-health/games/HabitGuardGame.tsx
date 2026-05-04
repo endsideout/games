@@ -24,7 +24,7 @@ function speak(text: string) {
     if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.88; u.pitch = 1.05; u.volume = 1;
+    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
     window.speechSynthesis.speak(u);
   } catch (_) {}
 }
@@ -290,7 +290,7 @@ export function HabitGuardGame(): React.JSX.Element {
     spawnQueueRef.current = [...items].sort(() => Math.random() - 0.5);
     nextSpawnRef.current = 0;
 
-    speak("Habits are falling! Drag good habits to the character to heal pimples. Drag bad habits away!");
+    speak("Habits are falling! Drag good habits to the character to heal pimples. Let bad habits go down and fall away!");
     setPhase("playing");
   }, []);
 
@@ -421,7 +421,7 @@ export function HabitGuardGame(): React.JSX.Element {
           speak("Great! That good habit keeps you healthy!");
         } else {
           addPimple(); flashChar("hurt"); playBad();
-          speak("Oh no! That bad habit caused a pimple! Drag it away next time!");
+          speak("Oh no! That bad habit caused a pimple! Let bad habits go down next time!");
         }
         return { ...it, isDragging: false, removed: true };
       }
@@ -446,7 +446,7 @@ export function HabitGuardGame(): React.JSX.Element {
           <p className="text-gray-600 mb-3 text-sm leading-relaxed">
             Habits fall from the sky on both sides!<br />
             <span className="text-green-600 font-bold">🟢 Drag good habits</span> onto the character to earn points and heal pimples.<br />
-            <span className="text-red-500 font-bold">🔴 Drag bad habits</span> away from the character — or they cause pimples!
+            <span className="text-red-500 font-bold">🔴 Let bad habits</span> go down — or they cause pimples!
           </p>
           <div className="flex gap-3 justify-center mb-5 text-sm flex-wrap">
             <div className="flex items-center gap-1 bg-green-50 rounded-xl px-3 py-2 border border-green-300">
@@ -625,7 +625,7 @@ export function HabitGuardGame(): React.JSX.Element {
           }}
         >
           <div>🟢 Drag <b>good</b> → character</div>
-          <div>🔴 Drag <b>bad</b> → away!</div>
+          <div>🔴 Let <b>bad</b> → go down!</div>
         </div>
       </div>
 

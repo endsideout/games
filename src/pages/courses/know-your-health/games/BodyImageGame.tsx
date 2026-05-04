@@ -29,8 +29,8 @@ function speakNow(
       try {
         const u = new SpeechSynthesisUtterance(text);
         _utter   = u;       // keep alive — prevents Chrome GC bug
-        u.rate   = 1.0;
-        u.pitch  = 1.05;
+        u.rate   = 0.85;
+        u.pitch  = 1.10;
         u.volume = 1.0;
         u.onstart = () => onStart?.();
         u.onend   = () => { _utter = null; onEnd?.(); };
@@ -176,10 +176,15 @@ function SpeakerButton({
   const doSpeak = useCallback(() => {
     setPlaying(false);
     startedRef.current = false;
+    // Speak colour cue first, then the statement after a pause
     speakNow(
-      text,
-      () => { setPlaying(true);  startedRef.current = true; },
-      () => { setPlaying(false); startedRef.current = false; },
+      "Select green for positive body image, or red for negative.",
+      undefined,
+      () => setTimeout(() => speakNow(
+        text,
+        () => { setPlaying(true);  startedRef.current = true; },
+        () => { setPlaying(false); startedRef.current = false; },
+      ), 800),
     );
   }, [text]);
 

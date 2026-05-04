@@ -7,6 +7,17 @@ const GAME_ID       = "sometimes-anytime-food";
 const GAME_DURATION = 60; // seconds
 const POINTS_CORRECT = 10;
 
+// ── Voice synthesis ───────────────────────────────────────────────────────────
+function speak(text: string) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
+    window.speechSynthesis.speak(u);
+  } catch (_) {}
+}
+
 // ── Benefit SVGs (anytime foods) ─────────────────────────────────────────────
 
 function GradesPaperSVG() {
@@ -304,6 +315,7 @@ export function SometimesAnytimeGame(): React.JSX.Element {
     setPhase("playing");
     sessionIdRef.current = `${GAME_ID}-${Date.now().toString(36)}`;
     trackEvent({ gameId: GAME_ID, event: "game_started", sessionId: sessionIdRef.current, score: 0 });
+    speak("Drag each food to the green side if it is an anytime food, or to the red side if it is a sometimes food!");
   }
 
   function handleDrop(zone: "sometimes" | "anytime") {
@@ -376,7 +388,7 @@ export function SometimesAnytimeGame(): React.JSX.Element {
     const total        = results.length;
     const pct          = Math.round((correctCount / total) * 100);
     const medal = pct === 100 ? "🏆" : pct >= 60 ? "🌟" : "💪";
-    const msg   = pct === 100 ? "Perfect! You're a food expert!" : pct >= 60 ? "Great effort!" : "Keep practising!";
+    const msg   = pct === 100 ? "Perfect! You're a food expert!" : pct >= 60 ? "Great effort!" : "Keep practicing!";
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4" style={bg}>
         <div className="bg-white/95 rounded-3xl shadow-2xl border-4 border-green-300 p-8 max-w-lg w-full text-center">

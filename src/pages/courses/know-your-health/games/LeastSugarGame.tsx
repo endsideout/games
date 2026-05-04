@@ -13,7 +13,7 @@ function speak(text: string, onEnd?: () => void) {
     if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
+    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
     u.onend  = () => onEnd?.();
     u.onerror = () => onEnd?.();
     window.speechSynthesis.speak(u);
@@ -155,7 +155,9 @@ export function LeastSugarGame(): React.JSX.Element {
     const round = ROUNDS[roundIdx];
     const t = setTimeout(() => {
       const q = round.question.replace(/\p{Emoji}/gu, '').trim();
-      speak(`${q} ${round.left.name} or ${round.right.name}?`);
+      speak(q, () => setTimeout(() =>
+        speak(`${round.left.name}... or ${round.right.name}?`), 1200
+      ));
     }, 400);
     return () => clearTimeout(t);
   }, [roundIdx, phase]);
@@ -215,9 +217,9 @@ export function LeastSugarGame(): React.JSX.Element {
     };
 
     if (correct) {
-      speak(`Correct! ${round.explanation}`, advance);
+      setTimeout(() => speak(`Correct! ${round.explanation}`, advance), 600);
     } else {
-      speak(`Not quite. ${round.explanation}`, advance);
+      setTimeout(() => speak(`Not quite. ${round.explanation}`, advance), 600);
     }
   }
 

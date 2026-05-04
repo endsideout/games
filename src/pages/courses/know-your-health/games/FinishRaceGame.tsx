@@ -13,11 +13,21 @@ function speak(text: string, onEnd?: () => void) {
     if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
+    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
     u.onend  = () => onEnd?.();
     u.onerror = () => onEnd?.();
     window.speechSynthesis.speak(u);
   } catch (_) { onEnd?.(); }
+}
+
+// Speaks each part in sequence with a pause between them
+function speakSequence(parts: string[], pauseMs: number, onEnd?: () => void) {
+  const [first, ...rest] = parts;
+  if (!first) { onEnd?.(); return; }
+  speak(first, () => {
+    if (!rest.length) { onEnd?.(); return; }
+    setTimeout(() => speakSequence(rest, pauseMs, onEnd), pauseMs);
+  });
 }
 
 // ── Sound effects ─────────────────────────────────────────────────────────────
@@ -394,7 +404,11 @@ export function FinishRaceGame(): React.JSX.Element {
   // Speak question on change
   useEffect(() => {
     if (phase !== "playing") return;
-    const t = setTimeout(() => speak(questions[idx].question), 400);
+    const t = setTimeout(() => {
+      const q    = questions[idx];
+      const opts = q.options.map((o, i) => `Select ${String.fromCharCode(65 + i)} for ${o.text}`);
+      speakSequence([q.question, ...opts], 800);
+    }, 400);
     return () => clearTimeout(t);
   }, [idx, phase]);
 
@@ -435,10 +449,10 @@ export function FinishRaceGame(): React.JSX.Element {
       setScore(s => s + POINTS_CORRECT);
       setCorrect(c => c + 1);
       playCorrect();
-      speak(`Correct! ${q.explanation}`, advance);
+      setTimeout(() => speak(`Correct! ${q.explanation}`, advance), 600);
     } else {
       playWrong();
-      speak(`Not quite. ${q.explanation}`, advance);
+      setTimeout(() => speak(`Not quite. ${q.explanation}`, advance), 600);
     }
     const entry  = { q, chosen: optId, ok };
     const next   = [...answersRef.current, entry];

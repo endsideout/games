@@ -14,8 +14,8 @@ function speak(text: string, onEnd?: () => void) {
     if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
     window.speechSynthesis.cancel();
     const u  = new SpeechSynthesisUtterance(text);
-    u.rate   = 0.9;
-    u.pitch  = 1.05;
+    u.rate   = 0.85;
+    u.pitch  = 1.10;
     u.volume = 1.0;
     u.onend  = () => onEnd?.();
     u.onerror = () => onEnd?.();
@@ -202,9 +202,9 @@ const QUESTIONS: Question[] = [
     question:  "How many cups of water should we drink each day?",
     voiceText: "How many cups of water should we drink each day?",
     options: [
-      { id: "a", numberLabel: "8", label: "8 cups" },
-      { id: "b", numberLabel: "1", label: "1 cup"  },
-      { id: "c", numberLabel: "4", label: "4 cups" },
+      { id: "a", numberLabel: "🥤🥤🥤🥤🥤🥤🥤🥤", label: "8 glasses" },
+      { id: "b", numberLabel: "🥤",               label: "1 glass"   },
+      { id: "c", numberLabel: "🥤🥤🥤🥤",         label: "4 glasses" },
     ],
     answer: "a",
     explanation: "We should drink 8 cups of water every day to stay healthy and hydrated!",
@@ -320,10 +320,10 @@ export function WaterGlassGame(): React.JSX.Element {
       setRippling(true);
       setTimeout(() => setRippling(false), 1000);
       playCorrect();
-      speak(`Correct! ${q.explanation}`, advance);
+      setTimeout(() => speak(`Correct! ${q.explanation}`, advance), 600);
     } else {
       playWrong();
-      speak(`Not quite. ${q.explanation}`, advance);
+      setTimeout(() => speak(`Not quite. ${q.explanation}`, advance), 600);
     }
 
     const entry = { q, chosen: optionId, ok };
@@ -543,11 +543,12 @@ export function WaterGlassGame(): React.JSX.Element {
                     minHeight:  140,
                   }}
                 >
-                  {/* Number option (Q2 style) */}
+                  {/* Glass emoji grid (Q2 style) */}
                   {opt.numberLabel && (
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3 shadow-lg"
-                      style={{ background: isCorrect ? "#22c55e" : isWrong ? "#ef4444" : "#f97316" }}>
-                      <span className="text-white font-black text-4xl">{opt.numberLabel}</span>
+                    <div className="flex flex-wrap justify-center gap-0.5 mb-3 max-w-[112px]">
+                      {[...opt.numberLabel].map((g, i) => (
+                        <span key={i} style={{ fontSize: 26, lineHeight: 1 }}>{g}</span>
+                      ))}
                     </div>
                   )}
 

@@ -24,8 +24,8 @@ function speak(text: string, onEnd?: () => void) {
       try {
         const u = new SpeechSynthesisUtterance(text);
         _utterance  = u;     // keep-alive: prevents Chrome GC bug
-        u.rate      = 0.92;
-        u.pitch     = 1.05;
+        u.rate      = 0.85;
+        u.pitch     = 1.10;
         u.volume    = 1.0;
         u.onend     = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
         u.onerror   = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
@@ -252,8 +252,74 @@ function FlameManCharacter({
   );
 }
 
+// ── Scenario illustration SVGs ────────────────────────────────────────────────
+function FriendsTalkingSVG() {
+  return (
+    <svg width="130" height="100" viewBox="0 0 130 100" fill="none">
+      {/* Left figure */}
+      <circle cx="30" cy="22" r="14" fill="#6ee7b7" stroke="#059669" strokeWidth="2"/>
+      <circle cx="25" cy="19" r="2" fill="#065f46"/>
+      <circle cx="35" cy="19" r="2" fill="#065f46"/>
+      <path d="M24 27 Q30 33 36 27" stroke="#065f46" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      <rect x="22" y="37" width="16" height="20" rx="5" fill="#6ee7b7" stroke="#059669" strokeWidth="2"/>
+      <line x1="22" y1="43" x2="12" y2="52" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="38" y1="43" x2="50" y2="50" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="26" y1="57" x2="24" y2="74" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="34" y1="57" x2="36" y2="74" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"/>
+
+      {/* Right figure */}
+      <circle cx="100" cy="22" r="14" fill="#93c5fd" stroke="#2563eb" strokeWidth="2"/>
+      <circle cx="95" cy="19" r="2" fill="#1e3a8a"/>
+      <circle cx="105" cy="19" r="2" fill="#1e3a8a"/>
+      <path d="M94 27 Q100 33 106 27" stroke="#1e3a8a" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      <rect x="92" y="37" width="16" height="20" rx="5" fill="#93c5fd" stroke="#2563eb" strokeWidth="2"/>
+      <line x1="108" y1="43" x2="118" y2="52" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="92" y1="43" x2="80" y2="50" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="96" y1="57" x2="94" y2="74" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="104" y1="57" x2="106" y2="74" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round"/>
+
+      {/* Speech bubble */}
+      <rect x="43" y="4" width="44" height="26" rx="9" fill="white" stroke="#d1d5db" strokeWidth="1.5"/>
+      <polygon points="52,30 46,40 60,30" fill="white" stroke="#d1d5db" strokeWidth="1.5" strokeLinejoin="round"/>
+      <circle cx="55" cy="17" r="3" fill="#9ca3af"/>
+      <circle cx="65" cy="17" r="3" fill="#9ca3af"/>
+      <circle cx="75" cy="17" r="3" fill="#9ca3af"/>
+    </svg>
+  );
+}
+
+function AloneSadSVG() {
+  return (
+    <svg width="130" height="100" viewBox="0 0 130 100" fill="none">
+      {/* Single figure, centred */}
+      <circle cx="65" cy="24" r="16" fill="#c4b5fd" stroke="#7c3aed" strokeWidth="2"/>
+      {/* Sad eyes */}
+      <circle cx="59" cy="20" r="2.5" fill="#4c1d95"/>
+      <circle cx="71" cy="20" r="2.5" fill="#4c1d95"/>
+      {/* Tears */}
+      <ellipse cx="59" cy="27" rx="2" ry="3" fill="#93c5fd" opacity="0.8"/>
+      <ellipse cx="71" cy="27" rx="2" ry="3" fill="#93c5fd" opacity="0.8"/>
+      {/* Frown */}
+      <path d="M58 33 Q65 27 72 33" stroke="#4c1d95" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      {/* Body — slightly slumped */}
+      <rect x="57" y="41" width="16" height="22" rx="5" fill="#c4b5fd" stroke="#7c3aed" strokeWidth="2"/>
+      {/* Arms hanging down */}
+      <line x1="57" y1="47" x2="46" y2="58" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="73" y1="47" x2="84" y2="58" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"/>
+      {/* Legs */}
+      <line x1="61" y1="63" x2="59" y2="80" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="69" y1="63" x2="71" y2="80" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"/>
+      {/* Emptiness dots on sides */}
+      <circle cx="20" cy="50" r="3" fill="#e9d5ff" opacity="0.6"/>
+      <circle cx="10" cy="38" r="2" fill="#e9d5ff" opacity="0.4"/>
+      <circle cx="110" cy="50" r="3" fill="#e9d5ff" opacity="0.6"/>
+      <circle cx="120" cy="38" r="2" fill="#e9d5ff" opacity="0.4"/>
+    </svg>
+  );
+}
+
 // ── Scenarios ─────────────────────────────────────────────────────────────────
-interface Choice   { name: string; emoji: string; desc: string; }
+interface Choice   { name: string; emoji: string; desc: string; svg?: React.ReactNode; }
 interface Scenario {
   situation:   string;
   question:    string;
@@ -291,8 +357,8 @@ const SCENARIOS: Scenario[] = [
   {
     situation:   "Flame-man is feeling lonely and sad.",
     question:    "What would help his brain health most?",
-    left:  { name: "Talk to a Friend", emoji: "🗣️", desc: "Share his feelings with someone" },
-    right: { name: "Stay Alone",       emoji: "😶",  desc: "Lock himself in his room" },
+    left:  { name: "Talk to a Friend", emoji: "🗣️", desc: "Share his feelings with someone", svg: <FriendsTalkingSVG /> },
+    right: { name: "Stay Alone",       emoji: "😶",  desc: "Lock himself in his room",        svg: <AloneSadSVG /> },
     answer: "left",
     explanation: "Social connection boosts brain chemicals that lift your mood — superheroes need friends too!",
   },
@@ -358,7 +424,7 @@ export function BrainHealthGame(): React.JSX.Element {
     if (phase !== "playing") return;
     const t = setTimeout(() => {
       const s = SCENARIOS[idx];
-      speak(`${s.situation} ${s.question}`);
+      speak(s.situation, () => setTimeout(() => speak(s.question), 1000));
     }, 450);
     return () => clearTimeout(t);
   }, [idx, phase]);
@@ -422,7 +488,7 @@ export function BrainHealthGame(): React.JSX.Element {
     };
 
     advanceRef.current = advance;
-    speak(feedbackText, advance);
+    setTimeout(() => speak(feedbackText, advance), 600);
   }
 
   const bg         = { background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 40%, #7c3aed 100%)" };
@@ -656,7 +722,10 @@ export function BrainHealthGame(): React.JSX.Element {
                     opacity:    picked && !isCorrect && !isWrong ? 0.38 : 1,
                   }}
                 >
-                  <div style={{ fontSize: 72, lineHeight: 1 }}>{choice.emoji}</div>
+                  {choice.svg
+                    ? <div className="mb-1">{choice.svg}</div>
+                    : <div style={{ fontSize: 72, lineHeight: 1 }}>{choice.emoji}</div>
+                  }
                   <p className="font-black text-white text-lg mt-3">{choice.name}</p>
                   <p className="text-white/55 text-xs mt-1">{choice.desc}</p>
                   {isCorrect && <p className="text-green-300 font-black text-sm mt-3">✅ Correct!</p>}
