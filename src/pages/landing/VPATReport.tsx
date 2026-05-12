@@ -682,7 +682,8 @@ function CriteriaTable({ criteria, tableNum, title }: {
   title:     string;
 }) {
   return (
-    <section aria-labelledby={`t${tableNum}`} style={{ marginBottom: "3rem" }}>
+    <section className="print-section" aria-labelledby={`t${tableNum}`} style={{ marginBottom: "3rem" }}>
+      {/* Screen heading — hidden in print; the in-thead row takes over */}
       <h2
         id={`t${tableNum}`}
         style={{
@@ -701,6 +702,23 @@ function CriteriaTable({ criteria, tableNum, title }: {
       <div style={{ overflowX: "auto", border: "1px solid #d1d5db", borderTop: "none", borderRadius: "0 0 6px 6px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.83rem" }}>
           <thead>
+            {/* Repeating title row — hidden on screen, repeats on every print page */}
+            <tr className="table-title-row">
+              <th
+                colSpan={3}
+                style={{
+                  padding:    "6px 0 4px",
+                  fontFamily: "sans-serif",
+                  fontWeight: 700,
+                  fontSize:   "0.9rem",
+                  color:      BRAND,
+                  borderBottom: `2px solid ${BRAND}`,
+                  textAlign:  "left",
+                }}
+              >
+                Table {tableNum}: Success Criteria, {title}
+              </th>
+            </tr>
             <tr style={{ background: "#f8fafa" }}>
               {(["Criteria", "Conformance Level", "Remarks and Explanations"] as const).map((h, i) => (
                 <th
@@ -760,13 +778,56 @@ export function VPATReport(): React.JSX.Element {
   return (
     <>
       <style>{`
+        /* Hide the repeating title row on screen — the h2 above the table serves that role */
+        .table-title-row { display: none; }
+
         @media print {
           .no-print { display: none !important; }
           a[href]::after { content: none; }
+
+          /* Full width on paper, no side padding waste */
+          .print-container { max-width: 100% !important; padding: 0.25rem 0.75rem !important; }
+
+          /* Tighten global line-height — the biggest space saver */
+          * { line-height: 1.35 !important; }
+
+          /* Compact font size throughout */
+          body, p, td, th, li, span { font-size: 8.5pt !important; }
+          h1 { font-size: 15pt !important; margin-bottom: 0.75rem !important; }
+          h2 { font-size: 10.5pt !important; margin-top: 0 !important; margin-bottom: 0.25rem !important; page-break-after: avoid; }
+          h3 { page-break-after: avoid; }
+          p  { margin-top: 0.1rem !important; margin-bottom: 0.3rem !important; }
+
+          /* Hide the screen-only table section heading — the in-thead title row takes over in print */
+          h2[id^="t"] { display: none !important; }
+
+          /* Show the in-thead repeating title row only in print */
+          .table-title-row { display: table-row !important; }
+
+          /* Compress table cell padding — single biggest layout win */
+          td, th { padding: 5px 8px !important; }
+
+          /* Collapse section margins — zero top margin prevents gaps between intro text and first table */
+          section { margin-top: 0 !important; margin-bottom: 0.5rem !important; }
+          header  { padding-bottom: 0.75rem !important; margin-bottom: 1rem !important; }
+
+          /* Remove overflow wrappers — they block row-level page breaks inside criteria tables */
+          div    { overflow: visible !important; }
+
+          /* Table structure */
+          table  { page-break-inside: auto; border-collapse: collapse !important; width: 100%; }
+          thead  { display: table-header-group; }
+
+          /* Only row-level page-break prevention — don't try to keep whole sections together */
+          tr     { page-break-inside: avoid; }
+
+          /* Allow all sections to flow naturally — no forced page-break-before */
+          .print-section { page-break-before: auto; }
+          .print-keep    { page-break-inside: avoid; }
         }
       `}</style>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "2rem 1.25rem", color: "#1a1a1a" }}>
+      <div className="print-container" style={{ maxWidth: 1040, margin: "0 auto", padding: "2rem 1.25rem", color: "#1a1a1a" }}>
 
         {/* Toolbar */}
         <div className="no-print" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
@@ -834,7 +895,7 @@ export function VPATReport(): React.JSX.Element {
         </header>
 
         {/* Remediation Schedule */}
-        <section aria-labelledby="remediation-h" style={{ marginBottom: "2.5rem" }}>
+        <section className="print-section" aria-labelledby="remediation-h" style={{ marginBottom: "2.5rem" }}>
           <h2 id="remediation-h" style={{ fontSize: "1.05rem", fontWeight: 700, color: BRAND, fontFamily: "sans-serif", marginBottom: "0.5rem" }}>
             Accessibility Remediation Schedule
           </h2>
@@ -987,7 +1048,7 @@ export function VPATReport(): React.JSX.Element {
         </section>
 
         {/* Applicable Standards */}
-        <section aria-labelledby="standards-h" style={{ marginBottom: "2.5rem" }}>
+        <section className="print-section print-keep" aria-labelledby="standards-h" style={{ marginBottom: "2.5rem" }}>
           <h2 id="standards-h" style={{ fontSize: "1.05rem", fontWeight: 700, color: BRAND, fontFamily: "sans-serif", marginBottom: "0.75rem" }}>
             Applicable Standards / Guidelines
           </h2>
@@ -1029,7 +1090,7 @@ export function VPATReport(): React.JSX.Element {
         </section>
 
         {/* Terms */}
-        <section aria-labelledby="terms-h" style={{ marginBottom: "2.5rem" }}>
+        <section className="print-section" aria-labelledby="terms-h" style={{ marginBottom: "2.5rem" }}>
           <h2 id="terms-h" style={{ fontSize: "1.05rem", fontWeight: 700, color: BRAND, fontFamily: "sans-serif", marginBottom: "0.75rem" }}>
             Terms
           </h2>
@@ -1050,7 +1111,7 @@ export function VPATReport(): React.JSX.Element {
         </section>
 
         {/* WCAG tables */}
-        <section aria-labelledby="wcag-h">
+        <section className="print-section" aria-labelledby="wcag-h">
           <h2 id="wcag-h" style={{ fontSize: "1.1rem", fontWeight: 800, color: BRAND, fontFamily: "sans-serif", marginBottom: "0.4rem" }}>
             WCAG 2.x Report
           </h2>
