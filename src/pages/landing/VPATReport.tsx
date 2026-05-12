@@ -33,8 +33,10 @@ const META = {
   notes:
     "This report reflects the accessibility state of the platform as of the report date. A number of " +
     "criteria are not currently met; these are identified and described honestly below. EndsideOut has " +
-    "initiated an accessibility remediation roadmap with the goal of achieving WCAG 2.2 Level AA " +
-    "conformance. This document will be revised as remediation milestones are completed.",
+    "committed to a phased remediation schedule targeting full WCAG 2.2 Level AA conformance by the " +
+    "end of Q2 2026 (June 30, 2026). A detailed remediation schedule, organized by priority and " +
+    "target completion date, is provided in the section below. This document will be updated as " +
+    "each phase is completed.",
 };
 
 type Level =
@@ -830,6 +832,159 @@ export function VPATReport(): React.JSX.Element {
             </tbody>
           </table>
         </header>
+
+        {/* Remediation Schedule */}
+        <section aria-labelledby="remediation-h" style={{ marginBottom: "2.5rem" }}>
+          <h2 id="remediation-h" style={{ fontSize: "1.05rem", fontWeight: 700, color: BRAND, fontFamily: "sans-serif", marginBottom: "0.5rem" }}>
+            Accessibility Remediation Schedule
+          </h2>
+          <p style={{ fontFamily: "sans-serif", fontSize: "0.88rem", color: "#374151", marginBottom: "0.75rem" }}>
+            The following table outlines the planned remediation work for all criteria currently rated
+            Does Not Support, organized by priority phase. All phases target completion by June 30, 2026
+            (Q2 2026).
+          </p>
+          <table style={{ borderCollapse: "collapse", fontSize: "0.83rem", width: "100%", border: "1px solid #c9cdd4" }}>
+            <thead>
+              <tr style={{ background: "#e8edf0" }}>
+                {(["Phase", "Criteria", "Remediation Work", "Target Date"] as const).map((h, i) => (
+                  <th key={h} scope="col" style={{
+                    padding:      "10px 14px",
+                    textAlign:    "left",
+                    fontFamily:   "sans-serif",
+                    fontWeight:   700,
+                    color:        "#374151",
+                    borderBottom: "1px solid #c9cdd4",
+                    borderRight:  "1px solid #c9cdd4",
+                    width:        i === 0 ? 80 : i === 1 ? "22%" : i === 3 ? 110 : undefined,
+                  }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {([
+                [
+                  "Phase 1",
+                  "2.1.1 Keyboard",
+                  "Add role=\"button\" and tabIndex to all game choice cards so they are reachable and activatable via keyboard. Implement keyboard-operable selection alternatives for the HabitGuardGame and SometimesAnytimeGame drag interactions.",
+                  "May 30, 2026",
+                ],
+                [
+                  "Phase 1",
+                  "4.1.2 Name, Role, Value",
+                  "Add ARIA roles, accessible names (aria-label), and state attributes (aria-pressed) to all interactive game elements. Add aria-label to score badges and the countdown timer.",
+                  "May 30, 2026",
+                ],
+                [
+                  "Phase 1",
+                  "1.4.2 Audio Control",
+                  "Introduce a pause and stop control for all auto-playing instruction audio clips and text-to-speech voiceovers, accessible from every game screen.",
+                  "May 30, 2026",
+                ],
+                [
+                  "Phase 1",
+                  "2.4.7 Focus Visible",
+                  "Implement visible focus-visible styles (minimum 2px outline with sufficient contrast) for all interactive elements, including game choice cards, navigation links, and buttons.",
+                  "May 30, 2026",
+                ],
+                [
+                  "Phase 1",
+                  "4.1.3 Status Messages",
+                  "Add aria-live regions to announce score updates, correct and incorrect feedback, level-up notifications, and game result screens to screen reader users.",
+                  "May 30, 2026",
+                ],
+                [
+                  "Phase 2",
+                  "1.1.1 Non-text Content",
+                  "Add role=\"img\" and aria-label to all SVG game characters and illustrations. Add visually hidden text alternatives for emoji used as game content.",
+                  "June 15, 2026",
+                ],
+                [
+                  "Phase 2",
+                  "1.2.2 Captions (Prerecorded)",
+                  "Create synchronized WebVTT caption tracks for all prerecorded instruction audio clips and pair them with an on-screen caption display.",
+                  "June 15, 2026",
+                ],
+                [
+                  "Phase 2",
+                  "1.3.1 Info and Relationships",
+                  "Add ARIA landmark regions (main, nav) and group game choice cards with a fieldset or role=\"group\" with an accessible label.",
+                  "June 15, 2026",
+                ],
+                [
+                  "Phase 2",
+                  "1.4.11 Non-text Contrast",
+                  "Update game choice card borders and all interactive component boundaries to meet the 3:1 minimum non-text contrast ratio.",
+                  "June 15, 2026",
+                ],
+                [
+                  "Phase 2",
+                  "1.4.10 Reflow",
+                  "Refactor the split-panel game layout to stack vertically at a 320-pixel viewport width, eliminating horizontal scrolling.",
+                  "June 15, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "1.3.3 Sensory Characteristics",
+                  "Revise text-to-speech instructions and on-screen text in the SometimesAnytimeGame and HabitGuardGame to identify drop zones by label or position, not colour alone.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.2.1 Timing Adjustable",
+                  "Introduce a settings option allowing users to disable or extend the game countdown timer before starting a session.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.4.1 Bypass Blocks",
+                  "Add a skip navigation link at the top of each game screen, allowing keyboard users to bypass the repeated header elements.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.4.2 Page Titled",
+                  "Implement dynamic document.title updates on each route so the browser tab reflects the name of the active game or module.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.4.3 Focus Order",
+                  "Add programmatic focus management on game-phase transitions, including moving focus to the result screen heading after game completion.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.5.1 Pointer Gestures",
+                  "Add single-point tap alternatives for drag interactions so users can select and place items without performing a path-based gesture.",
+                  "June 30, 2026",
+                ],
+                [
+                  "Phase 3",
+                  "2.5.3 Label in Name",
+                  "Add aria-label attributes to the mascot Help button and all icon-only controls so their accessible names match their visible labels.",
+                  "June 30, 2026",
+                ],
+              ] as [string, string, string, string][]).map(([phase, criterion, work, date], i) => (
+                <tr key={i} style={{ background: i % 2 === 0 ? "white" : "#f4f6f8", borderBottom: "1px solid #e2e5e9" }}>
+                  <td style={{ padding: "10px 14px", fontFamily: "sans-serif", color: "#374151", borderRight: "1px solid #c9cdd4", fontWeight: 600, verticalAlign: "top", whiteSpace: "nowrap" }}>
+                    {phase}
+                  </td>
+                  <td style={{ padding: "10px 14px", fontFamily: "sans-serif", color: BRAND, borderRight: "1px solid #c9cdd4", fontWeight: 700, verticalAlign: "top", whiteSpace: "nowrap" }}>
+                    {criterion}
+                  </td>
+                  <td style={{ padding: "10px 14px", fontFamily: "sans-serif", color: "#374151", borderRight: "1px solid #c9cdd4", lineHeight: 1.7, verticalAlign: "top" }}>
+                    {work}
+                  </td>
+                  <td style={{ padding: "10px 14px", fontFamily: "sans-serif", color: "#374151", verticalAlign: "top", whiteSpace: "nowrap" }}>
+                    {date}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
 
         {/* Applicable Standards */}
         <section aria-labelledby="standards-h" style={{ marginBottom: "2.5rem" }}>
