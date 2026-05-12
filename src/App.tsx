@@ -11,6 +11,7 @@ const MascotWidget = lazy(() =>
 import {
   Home,
   PlayerInfoForm,
+  VPATReport,
   ThreeDWellness,
   ThreeDWellnessSet1,
   KnowYourHealth,
@@ -72,6 +73,7 @@ export default function App(): React.JSX.Element {
           <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/player-info" element={<PlayerInfoForm />} />
+        <Route path="/accessibility" element={<VPATReport />} />
         <Route path="/3d-wellness" element={<ThreeDWellness />} />
         <Route path="/3d-wellness/set-1" element={<ThreeDWellnessSet1 />} />
         <Route path="/know-your-health" element={<KnowYourHealth />} />

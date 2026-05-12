@@ -1,6 +1,7 @@
 // Landing pages
 export { Home } from "./landing";
 export { PlayerInfoForm } from "./landing";
+export { VPATReport } from "./landing";
 
 // Course pages
 export { ThreeDWellness, ThreeDWellnessSet1, KnowYourHealth, KnowYourHealthModule1, KnowYourHealthModule2, KnowYourHealthModule3, KnowYourHealthModule4, KnowYourHealthModule5, KnowYourHealthModule6, KnowYourHealthModule7, KnowYourHealthSet1 } from "./courses";
