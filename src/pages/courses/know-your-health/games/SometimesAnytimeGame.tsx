@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { gradeToMode } from "../../../../utils/gradeMode";
 
 const GAME_ID       = "sometimes-anytime-food";
 const GAME_DURATION = 60; // seconds
@@ -179,7 +180,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 type Phase = "mode-select" | "playing" | "result";
-type Mode  = "mode1" | "mode2";
+type Mode  = "mode1" | "mode2" | "mode3";
 
 interface PlacedEntry { food: FoodItem; correct: boolean; }
 
@@ -240,7 +241,7 @@ function FlashOverlay({ food, mode }: { food: FoodItem; mode: Mode }) {
         </div>
 
         {/* Effect illustration — large */}
-        {mode === "mode2" && effect ? (
+        {mode !== "mode1" && effect ? (
           <div className="flex flex-col items-center text-center" style={{ maxWidth: 180 }}>
             <div style={{ transform: "scale(1.5)", transformOrigin: "top center", marginBottom: 60 }}>
               <EffectIllustration icon={effect.icon} />
@@ -277,7 +278,8 @@ export function SometimesAnytimeGame(): React.JSX.Element {
   const sessionIdRef = useRef("");
   const resultsRef   = useRef<{ food: FoodItem; chosen: "sometimes" | "anytime"; correct: boolean }[]>([]);
   const scoreRef     = useRef(0);
-  const { trackEvent } = useGameUser();
+  const { trackEvent, user } = useGameUser();
+  const autoMode = gradeToMode(user?.grade);
 
   // Sync refs for use inside timer callback
   useEffect(() => { resultsRef.current = results; }, [results]);
@@ -300,8 +302,19 @@ export function SometimesAnytimeGame(): React.JSX.Element {
     return () => clearInterval(id);
   }, [phase]);
 
+  // Auto-start from grade on mount
+  const hasAutoStarted = React.useRef(false);
+  React.useEffect(() => {
+    if (!hasAutoStarted.current && autoMode !== null) {
+      hasAutoStarted.current = true;
+      const m: Mode = autoMode === 1 ? "mode1" : autoMode === 2 ? "mode2" : "mode3";
+      startGame(m);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function startGame(m: Mode) {
     setMode(m);
+    // mode1 = PreK–Grade 2 (simple), mode2 = Grade 3–5, mode3 = Grade 6–8 (both use detailed foods)
     const foods = shuffle(m === "mode1" ? MODE1_FOODS : MODE2_FOODS);
     setQueue(foods);
     setResults([]);
@@ -351,36 +364,46 @@ export function SometimesAnytimeGame(): React.JSX.Element {
   const bg      = { background: "linear-gradient(135deg, #fef9c3 0%, #bbf7d0 40%, #bae6fd 100%)" };
 
   /* ── MODE SELECT ── */
-  if (phase === "mode-select") return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4" style={bg}>
-      <div className="bg-white/90 rounded-3xl shadow-2xl border-4 border-green-300 p-10 max-w-lg w-full text-center mb-8">
-        <Logo size="md" className="mx-auto mb-4" />
-        <div className="text-5xl mb-3">🍎🍪</div>
-        <h1 className="text-3xl font-black text-gray-800 mb-2">Sometimes or Anytime?</h1>
-        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-          Drag each food to the right group —{" "}
-          <strong className="text-orange-500">Sometimes</strong> foods are treats,{" "}
-          <strong className="text-green-600">Anytime</strong> foods are always good for you!
-        </p>
-        <p className="text-gray-700 font-black text-base mb-4">Choose your level:</p>
-        <div className="flex flex-col gap-4">
-          <button onClick={() => startGame("mode1")}
-            className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform"
-            style={{ background: "linear-gradient(135deg, #f59e0b, #10b981)" }}>
-            🌱 PreK – 3rd Grade
-          </button>
-          <button onClick={() => startGame("mode2")}
-            className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform"
-            style={{ background: "linear-gradient(135deg, #6366f1, #06b6d4)" }}>
-            🚀 4th – 8th Grade
-          </button>
+  if (phase === "mode-select") {
+    // If grade is set, auto-start is in progress — show blank while useEffect fires
+    if (autoMode !== null) return <div className="min-h-screen" style={bg} />;
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4" style={bg}>
+        <div className="bg-white/90 rounded-3xl shadow-2xl border-4 border-green-300 p-10 max-w-lg w-full text-center mb-8">
+          <Logo size="md" className="mx-auto mb-4" />
+          <div className="text-5xl mb-3">🍎🍪</div>
+          <h1 className="text-3xl font-black text-gray-800 mb-2">Sometimes or Anytime?</h1>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            Drag each food to the right group —{" "}
+            <strong className="text-orange-500">Sometimes</strong> foods are treats,{" "}
+            <strong className="text-green-600">Anytime</strong> foods are always good for you!
+          </p>
+          <p className="text-gray-700 font-black text-base mb-4">Choose your level:</p>
+          <div className="flex flex-col gap-4">
+            <button onClick={() => startGame("mode1")}
+              className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform"
+              style={{ background: "linear-gradient(135deg, #f59e0b, #10b981)" }}>
+              🌱 Mode 1 — PreK – Grade 2
+            </button>
+            <button onClick={() => startGame("mode2")}
+              className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform"
+              style={{ background: "linear-gradient(135deg, #6366f1, #06b6d4)" }}>
+              🚀 Mode 2 — Grade 3 – 5
+            </button>
+            <button onClick={() => startGame("mode3")}
+              className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform"
+              style={{ background: "linear-gradient(135deg, #0284c7, #7c3aed)" }}>
+              ⭐ Mode 3 — Grade 6 – 8
+            </button>
+          </div>
         </div>
+        <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
+          {backLabel}
+        </Link>
       </div>
-      <Link to={backTo} className="text-gray-500 hover:text-gray-700 font-semibold text-sm">
-        {backLabel}
-      </Link>
-    </div>
-  );
+    );
+  }
 
   /* ── RESULT ── */
   if (phase === "result") {

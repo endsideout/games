@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GameUserProvider } from "./context/GameUserContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { EnvironmentBanner, RequirePlayerProfile } from "./components";
+import { EnvironmentBanner, RequirePlayerProfile, GradeModeWrapper } from "./components";
 
 const MascotWidget = lazy(() =>
   import("./components/Mascot/MascotWidget").then(m => ({ default: m.MascotWidget }))
@@ -12,6 +12,7 @@ import {
   Home,
   PlayerInfoForm,
   VPATReport,
+  ContentRegistry,
   ThreeDWellness,
   ThreeDWellnessSet1,
   KnowYourHealth,
@@ -62,6 +63,10 @@ export default function App(): React.JSX.Element {
     <RequirePlayerProfile>{element}</RequirePlayerProfile>
   );
 
+  // Wraps a game with player-profile gate + grade mode selector
+  const withGame = (element: React.ReactNode): React.JSX.Element =>
+    withPlayerInfoGate(<GradeModeWrapper>{element}</GradeModeWrapper>);
+
   return (
     <Router>
       <AuthProvider>
@@ -74,36 +79,38 @@ export default function App(): React.JSX.Element {
         <Route path="/" element={<Home />} />
         <Route path="/player-info" element={<PlayerInfoForm />} />
         <Route path="/accessibility" element={<VPATReport />} />
+        <Route path="/game-content" element={<ContentRegistry />} />
         <Route path="/3d-wellness" element={<ThreeDWellness />} />
         <Route path="/3d-wellness/set-1" element={<ThreeDWellnessSet1 />} />
         <Route path="/know-your-health" element={<KnowYourHealth />} />
         <Route path="/know-your-health/module-1" element={<KnowYourHealthModule1 />} />
+        {/* SometimesAnytimeGame handles grade modes internally */}
         <Route path="/sometimes-anytime-food" element={withPlayerInfoGate(<SometimesAnytimeGame />)} />
         <Route path="/know-your-health/module-2" element={<KnowYourHealthModule2 />} />
         <Route path="/know-your-health/set-1" element={<KnowYourHealthSet1 />} />
-        <Route path="/least-sugar-game" element={withPlayerInfoGate(<LeastSugarGame />)} />
+        <Route path="/least-sugar-game" element={withGame(<LeastSugarGame />)} />
         <Route path="/know-your-health/module-3" element={<KnowYourHealthModule3 />} />
-        <Route path="/brain-health-game" element={withPlayerInfoGate(<BrainHealthGame />)} />
+        <Route path="/brain-health-game" element={withGame(<BrainHealthGame />)} />
         <Route path="/know-your-health/module-4" element={<KnowYourHealthModule4 />} />
-        <Route path="/water-glass-game" element={withPlayerInfoGate(<WaterGlassGame />)} />
+        <Route path="/water-glass-game" element={withGame(<WaterGlassGame />)} />
         <Route path="/know-your-health/module-5" element={<KnowYourHealthModule5 />} />
-        <Route path="/finish-race-game" element={withPlayerInfoGate(<FinishRaceGame />)} />
+        <Route path="/finish-race-game" element={withGame(<FinishRaceGame />)} />
         <Route path="/know-your-health/module-6" element={<KnowYourHealthModule6 />} />
-        <Route path="/habit-guard-game" element={withPlayerInfoGate(<HabitGuardGame />)} />
+        <Route path="/habit-guard-game" element={withGame(<HabitGuardGame />)} />
         <Route path="/know-your-health/module-7" element={<KnowYourHealthModule7 />} />
-        <Route path="/body-image-game" element={withPlayerInfoGate(<BodyImageGame />)} />
+        <Route path="/body-image-game" element={withGame(<BodyImageGame />)} />
         <Route path="/social-wellbeing" element={<SocialWellbeing />} />
         <Route
           path="/principle-of-relationship-pair-matching-game"
-          element={withPlayerInfoGate(<PrincipleOfRelationshipGame />)}
+          element={withGame(<PrincipleOfRelationshipGame />)}
         />
         <Route
           path="/fruit-vegetable-matching-game"
-          element={withPlayerInfoGate(<FruitVegetableGame />)}
+          element={withGame(<FruitVegetableGame />)}
         />
         <Route
           path="/fruit-veggie-quiz"
-          element={withPlayerInfoGate(
+          element={withGame(
             <Quiz
               questions={FRUIT_VEGGIE_QUESTIONS}
               title="Fruit & Veggie Quiz"
@@ -114,7 +121,7 @@ export default function App(): React.JSX.Element {
         />
         <Route
           path="/challenge-quiz"
-          element={withPlayerInfoGate(
+          element={withGame(
             <Quiz
               cards={challengeCards}
               title="Mental Health Challenge"
@@ -125,25 +132,25 @@ export default function App(): React.JSX.Element {
         />
         {/* Emotional Wellbeing routes */}
         <Route path="/emotional-wellbeing" element={<EmotionalWellbeing />} />
-        <Route path="/emotion-detective-game" element={withPlayerInfoGate(<EmotionDetectiveGame />)} />
+        <Route path="/emotion-detective-game" element={withGame(<EmotionDetectiveGame />)} />
         {/* Environmental Wellbeing routes */}
         <Route path="/environmental-wellbeing" element={<EnvironmentalWellbeing />} />
-        <Route path="/environmental-wellbeing/planet-protector" element={withPlayerInfoGate(<PlanetProtectorGame />)} />
-        <Route path="/environmental-wellbeing/eco-fix-it" element={withPlayerInfoGate(<EcoFixItGame />)} />
+        <Route path="/environmental-wellbeing/planet-protector" element={withGame(<PlanetProtectorGame />)} />
+        <Route path="/environmental-wellbeing/eco-fix-it" element={withGame(<EcoFixItGame />)} />
         {/* Financial Literacy routes */}
         <Route path="/financial-literacy" element={<FinancialLiteracy />} />
-        <Route path="/banking-word-search" element={withPlayerInfoGate(<BankingWordSearch />)} />
-        <Route path="/budgeting-game" element={withPlayerInfoGate(<BudgetingGame />)} />
+        <Route path="/banking-word-search" element={withGame(<BankingWordSearch />)} />
+        <Route path="/budgeting-game" element={withGame(<BudgetingGame />)} />
         {/* Other Wellbeing dimension routes */}
-        <Route path="/study-habits-game" element={withPlayerInfoGate(<StudyHabitsGame />)} />
+        <Route path="/study-habits-game" element={withGame(<StudyHabitsGame />)} />
         <Route path="/intellectual-wellbeing" element={<IntellectualWellbeing />} />
         <Route path="/occupational-wellbeing" element={<OccupationalWellbeing />} />
-        <Route path="/job-path-maze"    element={withPlayerInfoGate(<JobPathMaze />)} />
-        <Route path="/dream-job-builder" element={withPlayerInfoGate(<DreamJobBuilder />)} />
-        <Route path="/skills-jobs-sort"  element={withPlayerInfoGate(<SkillsJobsSort />)} />
+        <Route path="/job-path-maze"    element={withGame(<JobPathMaze />)} />
+        <Route path="/dream-job-builder" element={withGame(<DreamJobBuilder />)} />
+        <Route path="/skills-jobs-sort"  element={withGame(<SkillsJobsSort />)} />
         <Route path="/physical-wellbeing" element={<PhysicalWellbeing />} />
-        <Route path="/healthy-plate" element={withPlayerInfoGate(<HealthyPlateGame />)} />
-        <Route path="/surya-namaskar" element={withPlayerInfoGate(<SuryaNamaskarGame />)} />
+        <Route path="/healthy-plate" element={withGame(<HealthyPlateGame />)} />
+        <Route path="/surya-namaskar" element={withGame(<SuryaNamaskarGame />)} />
         <Route path="/spiritual-wellbeing" element={<SpiritualWellbeing />} />
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
