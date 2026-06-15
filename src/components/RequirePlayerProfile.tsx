@@ -12,7 +12,11 @@ export function RequirePlayerProfile({
   const { isProfileComplete } = useGameUser();
   const location = useLocation();
 
-  if (!isProfileComplete) {
+  const isExcluded =
+    location.pathname === "/player-info" ||
+    location.pathname.startsWith("/admin");
+
+  if (!isProfileComplete && !isExcluded) {
     const returnTo = `${location.pathname}${location.search}`;
     return (
       <Navigate

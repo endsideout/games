@@ -19,6 +19,12 @@ export function PlayerProfileForm({
   submitLabel = "Continue to Game",
 }: PlayerProfileFormProps): React.JSX.Element {
   const gradeOptions = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+  const schoolOptions = [
+    "Graceland Park",
+    "Windsor Hill",
+    "Katherine Johnson Global Academy",
+    "Arundel",
+  ] as const;
   const [name, setName] = useState(initialValues?.name ?? "");
   const [grade, setGrade] = useState(initialValues?.grade ?? "");
   const [teacherName, setTeacherName] = useState(initialValues?.teacherName ?? "");
@@ -102,14 +108,22 @@ export function PlayerProfileForm({
           <span className="block text-sm font-semibold text-gray-700 mb-1">
             School Name
           </span>
-          <input
-            type="text"
+          <select
             value={schoolName}
             onChange={(e) => setSchoolName(e.target.value)}
             required
             data-testid="player-school-input"
             className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          >
+            <option value="" disabled>
+              Select school
+            </option>
+            {schoolOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

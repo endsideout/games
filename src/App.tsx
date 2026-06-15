@@ -75,6 +75,7 @@ export default function App(): React.JSX.Element {
           <Suspense fallback={null}>
             <MascotWidget />
           </Suspense>
+          <RequirePlayerProfile>
           <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/player-info" element={<PlayerInfoForm />} />
@@ -163,6 +164,7 @@ export default function App(): React.JSX.Element {
           }
         />
       </Routes>
+          </RequirePlayerProfile>
       </GameUserProvider>
       </AuthProvider>
     </Router>
