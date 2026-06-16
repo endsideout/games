@@ -4,6 +4,12 @@ const profileStorageKey = "endsideout-player-profile";
 
 test.describe("Depth 1 smoke journeys", () => {
   test("home renders key navigation options", async ({ page }) => {
+    await page.addInitScript((storageKey) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        name: "Test User", grade: "3", teacherName: "Ms Test",
+        schoolName: "Graceland Park", school: "Graceland Park",
+      }));
+    }, profileStorageKey);
     await page.goto("/");
     await expect(
       page.getByRole("heading", { name: "EndsideOut Games" })
@@ -15,6 +21,12 @@ test.describe("Depth 1 smoke journeys", () => {
   });
 
   test("can navigate from home to 3D wellness", async ({ page }) => {
+    await page.addInitScript((storageKey) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        name: "Test User", grade: "3", teacherName: "Ms Test",
+        schoolName: "Graceland Park", school: "Graceland Park",
+      }));
+    }, profileStorageKey);
     await page.goto("/");
     await page.getByRole("link", { name: /3d wellness/i }).click();
     await expect(page).toHaveURL(/\/3d-wellness$/);
@@ -38,7 +50,7 @@ test.describe("Depth 1 smoke journeys", () => {
     await page.getByRole("textbox", { name: /student name/i }).fill("Maya");
     await page.getByRole("combobox", { name: /grade/i }).selectOption("5");
     await page.getByRole("textbox", { name: /teacher name/i }).fill("Ms Parker");
-    await page.getByRole("textbox", { name: /school name/i }).fill("WHES");
+    await page.getByRole("combobox", { name: /school name/i }).selectOption("Graceland Park");
     await page.getByRole("button", { name: /continue to game/i }).click();
 
     await expect(page).toHaveURL(/\/least-sugar-game$/);
@@ -74,7 +86,7 @@ test.describe("Depth 1 smoke journeys", () => {
     await page.getByRole("textbox", { name: /student name/i }).fill("Nina");
     await page.getByRole("combobox", { name: /grade/i }).selectOption("6");
     await page.getByRole("textbox", { name: /teacher name/i }).fill("Ms Bell");
-    await page.getByRole("textbox", { name: /school name/i }).fill("Northview");
+    await page.getByRole("combobox", { name: /school name/i }).selectOption("Windsor Hill");
     await page.getByRole("button", { name: /continue to game/i }).click();
 
     await expect(page).toHaveURL(/\/$/);
