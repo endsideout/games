@@ -1,24 +1,26 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, query, onSnapshot, orderBy, limit, where } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, limit } from "firebase/firestore";
 import { getFirestoreDb } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { Logo } from "../../components";
 import { isStagingEnvironment } from "../../lib/environment";
+import {
+  GAME_FILTER_METADATA,
+  MAX_SCORE_BY_GAME_ID,
+  WHES_SCHOOL_CODE,
+  type GameFilterMetadata,
+} from "../../data/adminDashboard";
 import * as XLSX from "xlsx";
 import {
   LineChart,
   Line,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -44,19 +46,14 @@ interface GameEvent {
 
 interface GameStats {
   totalGames: number;
-  gamesStarted: number;
   gamesCompleted: number;
-  gamesAbandoned: number;
-  completionRate: number;
-  averageScore: number;
-  averageMoves: number;
-  averageTimeRemaining: number;
+  averageScore: number | null;
   gamesByGameId: Record<
     string,
     {
-      started: number;
       completed: number;
-      avgScore: number;
+      avgScore: number | null;
+      scoredCompletions: number;
     }
   >;
   recentEvents: Array<{
@@ -74,7 +71,7 @@ interface GameStats {
     score?: number;
     timestamp: string;
   }>;
-  eventsByDate: Array<{ date: string; started: number; completed: number }>;
+  eventsByDate: Array<{ date: string; completed: number }>;
   scoreDistribution: Array<{ range: string; count: number }>;
   highestScoreSummary: {
     score: number | null;
@@ -90,20 +87,50 @@ interface GameStats {
       grade: string | null;
       teacherName: string | null;
       school: string | null;
-      gamesStarted: number;
       gamesCompleted: number;
-      avgScore: number;
-      totalScore: number;
+      avgScore: number | null;
+      scorePercentTotal: number;
+      scoredCompletions: number;
     }
   >;
-  /** Per-game score bucket counts (completed games with a numeric score). */
+  /** Per-game score percentage bucket counts for games with a known max score. */
   gamesByResult: Record<string, Array<{ range: string; count: number }>>;
 }
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#8dd1e1", "#d084d0"];
-const WHES_SCHOOL_CODE = "WHES";
+interface GameFilterOption extends GameFilterMetadata {
+  value: string;
+}
 
-/** Buckets completed-game scores into ranges for export and charts. */
+interface CourseFilterStyle {
+  accent: string;
+  badge: string;
+}
+
+const COURSE_FILTER_STYLES: Record<string, CourseFilterStyle> = {
+  "Know Your Health": {
+    accent: "text-green-700",
+    badge: "bg-green-50 text-green-700 border-green-200",
+  },
+  "3D Wellness": {
+    accent: "text-purple-700",
+    badge: "bg-purple-50 text-purple-700 border-purple-200",
+  },
+  "Financial Literacy": {
+    accent: "text-emerald-700",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+};
+
+const DEFAULT_COURSE_FILTER_STYLE: CourseFilterStyle = {
+  accent: "text-gray-700",
+  badge: "bg-gray-50 text-gray-700 border-gray-200",
+};
+
+function getCourseFilterStyle(course: string): CourseFilterStyle {
+  return COURSE_FILTER_STYLES[course] ?? DEFAULT_COURSE_FILTER_STYLE;
+}
+
+/** Buckets completed-game score percentages into ranges for export and charts. */
 function buildScoreDistributionFromScores(
   scores: number[]
 ): Array<{ range: string; count: number }> {
@@ -133,6 +160,24 @@ function buildScoreDistributionFromScores(
   }));
 }
 
+function getScorePercentage(event: GameEvent): number | null {
+  const score = event.score;
+  const maxScore = MAX_SCORE_BY_GAME_ID[event.gameId];
+  if (
+    typeof score !== "number" ||
+    Number.isNaN(score) ||
+    typeof maxScore !== "number" ||
+    maxScore <= 0
+  ) {
+    return null;
+  }
+  return Math.max(0, (score / maxScore) * 100);
+}
+
+function formatScorePercentage(value: number | null): string {
+  return value === null ? "N/A" : `${value.toFixed(1)}%`;
+}
+
 function parseLocalDateInput(value: string): Date {
   const [y, m, d] = value.split("-").map(Number);
   return new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
@@ -154,12 +199,22 @@ function normalizeEventType(value: unknown): string {
   return normalized.length > 0 ? normalized : "unknown_event";
 }
 
+function isCompletedEvent(eventType: string): boolean {
+  return eventType === "game_completed" || eventType === "game_over";
+}
+
 function formatGameLabel(gameId: string): string {
   return gameId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 function formatEventLabel(eventType: string): string {
   return eventType.replace("game_", "");
+}
+
+function haveSameStringValues(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const bValues = new Set(b);
+  return a.every((value) => bValues.has(value));
 }
 
 export function AdminDashboard(): React.JSX.Element {
@@ -170,9 +225,15 @@ export function AdminDashboard(): React.JSX.Element {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [error, setError] = useState("");
   const [selectedGames, setSelectedGames] = useState<string[]>([]);
-  const [selectedSchool, setSelectedSchool] = useState<string>("all");
+  const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+  const [draftSelectedGames, setDraftSelectedGames] = useState<string[]>([]);
+  const [draftSelectedSchools, setDraftSelectedSchools] = useState<string[]>([]);
+  const [isGameDropdownOpen, setIsGameDropdownOpen] = useState(false);
+  const [isSchoolDropdownOpen, setIsSchoolDropdownOpen] = useState(false);
   const [dateRangeStart, setDateRangeStart] = useState<string>("");
   const [dateRangeEnd, setDateRangeEnd] = useState<string>("");
+  const [draftDateRangeStart, setDraftDateRangeStart] = useState<string>("");
+  const [draftDateRangeEnd, setDraftDateRangeEnd] = useState<string>("");
   const [recentEventsPage, setRecentEventsPage] = useState(1);
   const [allEvents, setAllEvents] = useState<GameEvent[]>([]);
 
@@ -185,10 +246,15 @@ export function AdminDashboard(): React.JSX.Element {
   }, [stagingMode]);
 
   useEffect(() => {
-    if (isWhesReportUser && selectedSchool !== WHES_SCHOOL_CODE) {
-      setSelectedSchool(WHES_SCHOOL_CODE);
+    if (!isWhesReportUser) return;
+
+    if (selectedSchools.length !== 1 || selectedSchools[0] !== WHES_SCHOOL_CODE) {
+      setSelectedSchools([WHES_SCHOOL_CODE]);
     }
-  }, [isWhesReportUser, selectedSchool]);
+    if (draftSelectedSchools.length !== 1 || draftSelectedSchools[0] !== WHES_SCHOOL_CODE) {
+      setDraftSelectedSchools([WHES_SCHOOL_CODE]);
+    }
+  }, [draftSelectedSchools, isWhesReportUser, selectedSchools]);
 
   useEffect(() => {
     const db = getFirestoreDb();
@@ -235,11 +301,14 @@ export function AdminDashboard(): React.JSX.Element {
         const selectedGameSet = new Set(selectedGames);
         filteredEvents = filteredEvents.filter((e) => selectedGameSet.has(e.gameId));
       }
-      if (selectedSchool !== "all") {
-        const schoolValue = selectedSchool === "__none__" ? "" : selectedSchool;
-        const normalizedSchoolValue = schoolValue.toLowerCase();
-        filteredEvents = filteredEvents.filter(
-          (e) => (e.user.school ?? "").toLowerCase() === normalizedSchoolValue
+      if (selectedSchools.length > 0) {
+        const normalizedSchoolValues = new Set(
+          selectedSchools.map((school) =>
+            (school === "__none__" ? "" : school).toLowerCase()
+          )
+        );
+        filteredEvents = filteredEvents.filter((e) =>
+          normalizedSchoolValues.has((e.user.school ?? "").toLowerCase())
         );
       }
       // Filter by date range if set
@@ -262,47 +331,17 @@ export function AdminDashboard(): React.JSX.Element {
         });
       }
 
-      const gamesStarted = filteredEvents.filter((e) => e.event === "game_started").length;
-      const gamesCompleted = filteredEvents.filter(
-        (e) => e.event === "game_completed" || e.event === "game_over"
-      ).length;
-      const totalGames = gamesStarted;
-
-      // Get unique sessionIds
-      const startedSessionIds = new Set(
-        filteredEvents
-          .filter((e) => e.event === "game_started")
-          .map((e) => e.sessionId)
-          .filter(Boolean)
-      );
-      const completedSessionIds = new Set(
-        filteredEvents
-          .filter((e) => e.event === "game_completed" || e.event === "game_over")
-          .map((e) => e.sessionId)
-          .filter(Boolean)
-      );
-      const gamesAbandoned = Array.from(startedSessionIds).filter(
-        (id) => !completedSessionIds.has(id)
-      ).length;
-
-      const completionRate = gamesStarted > 0 ? (gamesCompleted / gamesStarted) * 100 : 0;
-
-      const completedEvents = filteredEvents.filter(
-        (e) => e.event === "game_completed" || e.event === "game_over"
-      );
+      const completedEvents = filteredEvents.filter((e) => isCompletedEvent(e.event));
+      const gamesCompleted = completedEvents.length;
+      const totalGames = gamesCompleted;
+      const scorePercentages = completedEvents
+        .map(getScorePercentage)
+        .filter((score): score is number => score !== null);
       const averageScore =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.score || 0), 0) / completedEvents.length
-          : 0;
-      const averageMoves =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.moves || 0), 0) / completedEvents.length
-          : 0;
-      const averageTimeRemaining =
-        completedEvents.length > 0
-          ? completedEvents.reduce((sum, e) => sum + (e.timeRemaining || 0), 0) /
-            completedEvents.length
-          : 0;
+        scorePercentages.length > 0
+          ? scorePercentages.reduce((sum, score) => sum + score, 0) /
+            scorePercentages.length
+          : null;
 
       // Highest score across completed events
       let highestScoreSummary: {
@@ -333,31 +372,35 @@ export function AdminDashboard(): React.JSX.Element {
       // Games by gameId
       const gamesByGameId: Record<
         string,
-        { started: number; completed: number; avgScore: number }
+        { completed: number; avgScore: number | null; scoredCompletions: number }
       > = {};
-      filteredEvents.forEach((event) => {
+      completedEvents.forEach((event) => {
         if (!gamesByGameId[event.gameId]) {
-          gamesByGameId[event.gameId] = { started: 0, completed: 0, avgScore: 0 };
+          gamesByGameId[event.gameId] = {
+            completed: 0,
+            avgScore: null,
+            scoredCompletions: 0,
+          };
         }
-        if (event.event === "game_started") {
-          gamesByGameId[event.gameId].started++;
-        } else if (event.event === "game_completed" || event.event === "game_over") {
-          gamesByGameId[event.gameId].completed++;
-        }
+        gamesByGameId[event.gameId].completed++;
       });
 
-      // Calculate average scores per game
+      // Calculate average percentage scores per game. Variable-score games stay N/A.
       Object.keys(gamesByGameId).forEach((gameId) => {
-        const gameCompletedEvents = completedEvents.filter((e) => e.gameId === gameId);
-        if (gameCompletedEvents.length > 0) {
+        const gameScorePercentages = completedEvents
+          .filter((e) => e.gameId === gameId)
+          .map(getScorePercentage)
+          .filter((score): score is number => score !== null);
+        gamesByGameId[gameId].scoredCompletions = gameScorePercentages.length;
+        if (gameScorePercentages.length > 0) {
           gamesByGameId[gameId].avgScore =
-            gameCompletedEvents.reduce((sum, e) => sum + (e.score || 0), 0) /
-            gameCompletedEvents.length;
+            gameScorePercentages.reduce((sum, score) => sum + score, 0) /
+            gameScorePercentages.length;
         }
       });
 
       // Recent events (keep up to 1000 for pagination)
-      const recentEvents = filteredEvents.slice(0, 1000).map((e) => ({
+      const recentEvents = completedEvents.slice(0, 1000).map((e) => ({
         id: e.id,
         gameId: e.gameId,
         event: e.event,
@@ -367,46 +410,37 @@ export function AdminDashboard(): React.JSX.Element {
       }));
 
       // Events by date/hour (selected range, otherwise last 7 days)
-      const eventsByDate: Array<{ date: string; started: number; completed: number }> = [];
+      const eventsByDate: Array<{ date: string; completed: number }> = [];
       const selectedSingleDay =
         Boolean(dateRangeStart) && Boolean(dateRangeEnd) && dateRangeStart === dateRangeEnd;
       if (selectedSingleDay) {
-        const hourMap = new Map<string, { started: number; completed: number }>();
-        filteredEvents.forEach((event) => {
+        const hourMap = new Map<string, { completed: number }>();
+        completedEvents.forEach((event) => {
           const eventDate = new Date(event.createdAt || event.timestamp);
           const label = formatHourLabel(eventDate.getHours());
           if (!hourMap.has(label)) {
-            hourMap.set(label, { started: 0, completed: 0 });
+            hourMap.set(label, { completed: 0 });
           }
           const hourData = hourMap.get(label)!;
-          if (event.event === "game_started") {
-            hourData.started++;
-          } else if (event.event === "game_completed" || event.event === "game_over") {
-            hourData.completed++;
-          }
+          hourData.completed++;
         });
 
         for (let hour = 0; hour < 24; hour++) {
           const label = formatHourLabel(hour);
           eventsByDate.push({
             date: label,
-            started: hourMap.get(label)?.started || 0,
             completed: hourMap.get(label)?.completed || 0,
           });
         }
       } else {
-        const dateMap = new Map<string, { started: number; completed: number }>();
-        filteredEvents.forEach((event) => {
+        const dateMap = new Map<string, { completed: number }>();
+        completedEvents.forEach((event) => {
           const date = new Date(event.createdAt || event.timestamp).toLocaleDateString();
           if (!dateMap.has(date)) {
-            dateMap.set(date, { started: 0, completed: 0 });
+            dateMap.set(date, { completed: 0 });
           }
           const dayData = dateMap.get(date)!;
-          if (event.event === "game_started") {
-            dayData.started++;
-          } else if (event.event === "game_completed" || event.event === "game_over") {
-            dayData.completed++;
-          }
+          dayData.completed++;
         });
 
         const dateLabels: string[] = [];
@@ -434,23 +468,22 @@ export function AdminDashboard(): React.JSX.Element {
         dateLabels.forEach((date) => {
           eventsByDate.push({
             date: date,
-            started: dateMap.get(date)?.started || 0,
             completed: dateMap.get(date)?.completed || 0,
           });
         });
       }
 
-      const scores = completedEvents
-        .map((e) => e.score)
-        .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
-      const scoreDistribution = buildScoreDistributionFromScores(scores);
+      const scoreDistribution = buildScoreDistributionFromScores(
+        scorePercentages.map((score) => Math.round(score))
+      );
 
       const gamesByResult: Record<string, Array<{ range: string; count: number }>> = {};
       Object.keys(gamesByGameId).forEach((gameId) => {
         const gameScores = completedEvents
           .filter((e) => e.gameId === gameId)
-          .map((e) => e.score)
-          .filter((s): s is number => typeof s === "number" && !Number.isNaN(s));
+          .map(getScorePercentage)
+          .filter((score): score is number => score !== null)
+          .map((score) => Math.round(score));
         gamesByResult[gameId] = buildScoreDistributionFromScores(gameScores);
       });
 
@@ -463,14 +496,14 @@ export function AdminDashboard(): React.JSX.Element {
           grade: string | null;
           teacherName: string | null;
           school: string | null;
-          gamesStarted: number;
           gamesCompleted: number;
-          avgScore: number;
-          totalScore: number;
+          avgScore: number | null;
+          scorePercentTotal: number;
+          scoredCompletions: number;
         }
       > = {};
 
-      filteredEvents.forEach((event) => {
+      completedEvents.forEach((event) => {
         const userKey = event.user.email || event.user.name || "anonymous";
         if (!userStats[userKey]) {
           userStats[userKey] = {
@@ -479,37 +512,33 @@ export function AdminDashboard(): React.JSX.Element {
             grade: event.user.grade ?? null,
             teacherName: event.user.teacherName ?? null,
             school: event.user.schoolName ?? event.user.school ?? null,
-            gamesStarted: 0,
             gamesCompleted: 0,
-            avgScore: 0,
-            totalScore: 0,
+            avgScore: null,
+            scorePercentTotal: 0,
+            scoredCompletions: 0,
           };
         }
 
-        if (event.event === "game_started") {
-          userStats[userKey].gamesStarted++;
-        } else if (event.event === "game_completed" || event.event === "game_over") {
-          userStats[userKey].gamesCompleted++;
-          userStats[userKey].totalScore += event.score || 0;
+        const scorePercentage = getScorePercentage(event);
+        userStats[userKey].gamesCompleted++;
+        if (scorePercentage !== null) {
+          userStats[userKey].scorePercentTotal += scorePercentage;
+          userStats[userKey].scoredCompletions++;
         }
       });
 
-      // Calculate average scores per user
+      // Calculate average percentage scores per user, excluding variable-score games.
       Object.keys(userStats).forEach((key) => {
-        if (userStats[key].gamesCompleted > 0) {
-          userStats[key].avgScore = userStats[key].totalScore / userStats[key].gamesCompleted;
+        if (userStats[key].scoredCompletions > 0) {
+          userStats[key].avgScore =
+            userStats[key].scorePercentTotal / userStats[key].scoredCompletions;
         }
       });
 
       setStats({
         totalGames,
-        gamesStarted,
         gamesCompleted,
-        gamesAbandoned,
-        completionRate,
         averageScore,
-        averageMoves,
-        averageTimeRemaining,
         gamesByGameId,
         recentEvents,
         eventsByDate,
@@ -528,12 +557,12 @@ export function AdminDashboard(): React.JSX.Element {
     if (allEvents.length > 0) {
       calculateStats(allEvents);
     }
-  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd, allEvents]);
+  }, [selectedGames, selectedSchools, dateRangeStart, dateRangeEnd, allEvents]);
 
   // Reset Recent Events to page 1 when filters change
   useEffect(() => {
     setRecentEventsPage(1);
-  }, [selectedGames, selectedSchool, dateRangeStart, dateRangeEnd]);
+  }, [selectedGames, selectedSchools, dateRangeStart, dateRangeEnd]);
 
   const handleLogout = async (): Promise<void> => {
     await logout();
@@ -557,27 +586,21 @@ export function AdminDashboard(): React.JSX.Element {
 
     const csvData: string[][] = [
       ["Metric", "Value"],
-      ["Total Games Started", stats.gamesStarted.toString()],
-      ["Games Completed", stats.gamesCompleted.toString()],
-      ["Games Abandoned", stats.gamesAbandoned.toString()],
-      ["Completion Rate", `${stats.completionRate.toFixed(1)}%`],
-      ["Average Score", stats.averageScore.toFixed(1)],
-      ["Average Moves", stats.averageMoves.toFixed(1)],
-      ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
+      ["Total Completed Games", stats.totalGames.toString()],
+      ["Average Score (%)", formatScorePercentage(stats.averageScore)],
       ["Highest Score", highestScoreDisplay],
       ["Highest Score User", highestUserDisplay],
       ["Highest Score Completed At", highestCompletedAtDisplay],
       [],
-      ["Game", "Started", "Completed", "Avg Score"],
+      ["Game", "Completed", "Avg Score (%)"],
       ...Object.entries(stats.gamesByGameId).map(([gameId, data]) => [
         gameId,
-        data.started.toString(),
         data.completed.toString(),
-        data.avgScore.toFixed(1),
+        formatScorePercentage(data.avgScore),
       ]),
       [],
       ["Games by Result", "", ""],
-      ["Game", "Score Range", "Count"],
+      ["Game", "Score % Range", "Count"],
       ...Object.keys(stats.gamesByResult)
         .sort()
         .flatMap((gameId) =>
@@ -590,8 +613,8 @@ export function AdminDashboard(): React.JSX.Element {
             : [[gameId, "No scored completions", "0"]]
         ),
       [],
-      ["Date", "Started", "Completed"],
-      ...stats.eventsByDate.map((d) => [d.date, d.started.toString(), d.completed.toString()]),
+      ["Date", "Completed"],
+      ...stats.eventsByDate.map((d) => [d.date, d.completed.toString()]),
     ];
 
     const csvContent = csvData.map((row) => row.join(",")).join("\n");
@@ -626,13 +649,8 @@ export function AdminDashboard(): React.JSX.Element {
 
     const overviewData = [
       ["Metric", "Value"],
-      ["Total Games Started", stats.gamesStarted],
-      ["Games Completed", stats.gamesCompleted],
-      ["Games Abandoned", stats.gamesAbandoned],
-      ["Completion Rate", `${stats.completionRate.toFixed(1)}%`],
-      ["Average Score", stats.averageScore.toFixed(1)],
-      ["Average Moves", stats.averageMoves.toFixed(1)],
-      ["Average Time Remaining", `${stats.averageTimeRemaining.toFixed(0)}s`],
+      ["Total Completed Games", stats.totalGames],
+      ["Average Score (%)", formatScorePercentage(stats.averageScore)],
       ["Highest Score", highestScoreDisplay],
       ["Highest Score User", highestUserDisplay],
       ["Highest Score Completed At", highestCompletedAtDisplay],
@@ -642,19 +660,18 @@ export function AdminDashboard(): React.JSX.Element {
 
     // Games by Type sheet
     const gamesData = [
-      ["Game", "Started", "Completed", "Avg Score"],
+      ["Game", "Completed", "Avg Score (%)"],
       ...Object.entries(stats.gamesByGameId).map(([gameId, data]) => [
         gameId,
-        data.started,
         data.completed,
-        data.avgScore.toFixed(1),
+        formatScorePercentage(data.avgScore),
       ]),
     ];
     const ws2 = XLSX.utils.aoa_to_sheet(gamesData);
     XLSX.utils.book_append_sheet(wb, ws2, "Games by Type");
 
     const gamesByResultData = [
-      ["Game", "Score Range", "Count"],
+      ["Game", "Score % Range", "Count"],
       ...Object.keys(stats.gamesByResult)
         .sort()
         .flatMap((gameId) =>
@@ -668,24 +685,23 @@ export function AdminDashboard(): React.JSX.Element {
 
     // Events by Date sheet
     const eventsData = [
-      ["Date", "Started", "Completed"],
-      ...stats.eventsByDate.map((d) => [d.date, d.started, d.completed]),
+      ["Date", "Completed"],
+      ...stats.eventsByDate.map((d) => [d.date, d.completed]),
     ];
     const ws3 = XLSX.utils.aoa_to_sheet(eventsData);
     XLSX.utils.book_append_sheet(wb, ws3, "Events by Date");
 
     // User Stats sheet
     const userData = [
-      ["User", "Email", "Grade", "Teacher Name", "School", "Games Started", "Games Completed", "Avg Score"],
+      ["User", "Email", "Grade", "Teacher Name", "School", "Games Completed", "Avg Score (%)"],
       ...Object.entries(stats.userStats).map(([key, data]) => [
         data.name || data.email || "Anonymous",
         data.email || "",
         data.grade || "",
         data.teacherName || "",
         data.school || "",
-        data.gamesStarted,
         data.gamesCompleted,
-        data.avgScore.toFixed(1),
+        formatScorePercentage(data.avgScore),
       ]),
     ];
     const ws4 = XLSX.utils.aoa_to_sheet(userData);
@@ -711,29 +727,78 @@ export function AdminDashboard(): React.JSX.Element {
     XLSX.writeFile(wb, `game-analytics-${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
-  // Game options must come from raw events, not from filtered stats — otherwise picking one game
-  // removes every other game from the list and breaks multi-select.
+  // Game options must come from completed raw events, not from filtered stats — otherwise picking
+  // one game removes every other game from the list and breaks multi-select.
   const uniqueGames = useMemo(() => {
-    let events = allEvents;
-    if (selectedSchool !== "all") {
-      const schoolValue = selectedSchool === "__none__" ? "" : selectedSchool;
-      const normalizedSchoolValue = schoolValue.toLowerCase();
-      events = events.filter(
-        (e) => (e.user.school ?? "").toLowerCase() === normalizedSchoolValue
+    let events = allEvents.filter((event) => isCompletedEvent(event.event));
+    if (draftSelectedSchools.length > 0) {
+      const normalizedSchoolValues = new Set(
+        draftSelectedSchools.map((school) =>
+          (school === "__none__" ? "" : school).toLowerCase()
+        )
+      );
+      events = events.filter((e) =>
+        normalizedSchoolValues.has((e.user.school ?? "").toLowerCase())
       );
     }
     const ids = new Set(events.map((e) => e.gameId));
     return Array.from(ids)
-      .sort()
-      .map((gameId) => ({
-        value: gameId,
-        label: formatGameLabel(gameId),
-      }));
-  }, [allEvents, selectedSchool]);
+      .map((gameId): GameFilterOption => {
+        const metadata = GAME_FILTER_METADATA[gameId] ?? {
+          course: "Other",
+          module: "Unmapped",
+          label: formatGameLabel(gameId),
+          order: Number.MAX_SAFE_INTEGER,
+        };
+        return {
+          value: gameId,
+          ...metadata,
+        };
+      })
+      .sort(
+        (a, b) =>
+          a.order - b.order ||
+          a.course.localeCompare(b.course) ||
+          a.module.localeCompare(b.module) ||
+          a.label.localeCompare(b.label)
+      );
+  }, [allEvents, draftSelectedSchools]);
+
+  const groupedGameOptions = useMemo(() => {
+    const courseGroups = new Map<
+      string,
+      {
+        course: string;
+        modules: Map<string, { module: string; games: GameFilterOption[] }>;
+      }
+    >();
+
+    uniqueGames.forEach((game) => {
+      if (!courseGroups.has(game.course)) {
+        courseGroups.set(game.course, {
+          course: game.course,
+          modules: new Map(),
+        });
+      }
+      const courseGroup = courseGroups.get(game.course)!;
+      if (!courseGroup.modules.has(game.module)) {
+        courseGroup.modules.set(game.module, {
+          module: game.module,
+          games: [],
+        });
+      }
+      courseGroup.modules.get(game.module)!.games.push(game);
+    });
+
+    return Array.from(courseGroups.values()).map((courseGroup) => ({
+      course: courseGroup.course,
+      modules: Array.from(courseGroup.modules.values()),
+    }));
+  }, [uniqueGames]);
 
   useEffect(() => {
     const valid = new Set(uniqueGames.map((g) => g.value));
-    setSelectedGames((prev) => {
+    setDraftSelectedGames((prev) => {
       const next = prev.filter((id) => valid.has(id));
       return next.length === prev.length ? prev : next;
     });
@@ -742,26 +807,27 @@ export function AdminDashboard(): React.JSX.Element {
   const selectedGamesSummary = useMemo(() => {
     if (!stats || selectedGames.length === 0) return null;
 
-    let started = 0;
     let completed = 0;
     let weightedScoreSum = 0;
+    let scoredCompletions = 0;
     selectedGames.forEach((gameId) => {
       const gameStats = stats.gamesByGameId[gameId];
       if (!gameStats) return;
-      started += gameStats.started;
       completed += gameStats.completed;
-      weightedScoreSum += gameStats.avgScore * gameStats.completed;
+      if (gameStats.avgScore !== null) {
+        weightedScoreSum += gameStats.avgScore * gameStats.scoredCompletions;
+        scoredCompletions += gameStats.scoredCompletions;
+      }
     });
 
-    const avgScore = completed > 0 ? weightedScoreSum / completed : 0;
-    const completionRate = started > 0 ? (completed / started) * 100 : 0;
+    const avgScore = scoredCompletions > 0 ? weightedScoreSum / scoredCompletions : null;
 
-    return { started, completed, avgScore, completionRate };
+    return { completed, avgScore };
   }, [stats, selectedGames]);
 
   const uniqueSchools = useMemo(() => {
     const schools = new Set<string>();
-    allEvents.forEach((e) => {
+    allEvents.filter((event) => isCompletedEvent(event.event)).forEach((e) => {
       const s = e.user.school ?? "";
       schools.add(s || "__none__");
     });
@@ -770,6 +836,58 @@ export function AdminDashboard(): React.JSX.Element {
       .sort()
       .map((s) => ({ value: s, label: s }));
   }, [allEvents]);
+
+  useEffect(() => {
+    if (isWhesReportUser) return;
+
+    const valid = new Set(uniqueSchools.map((school) => school.value));
+    setDraftSelectedSchools((prev) => {
+      const next = prev.filter((school) => valid.has(school));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [isWhesReportUser, uniqueSchools]);
+
+  const schoolDropdownLabel = useMemo(() => {
+    if (isWhesReportUser) return WHES_SCHOOL_CODE;
+    if (draftSelectedSchools.length === 0) return "All Schools";
+    if (draftSelectedSchools.length === 1) {
+      return uniqueSchools.find((school) => school.value === draftSelectedSchools[0])?.label ?? draftSelectedSchools[0];
+    }
+    return `${draftSelectedSchools.length} schools selected`;
+  }, [draftSelectedSchools, isWhesReportUser, uniqueSchools]);
+
+  const gameFilterLabel = useMemo(() => {
+    if (draftSelectedGames.length === 0) return "All Games";
+    if (draftSelectedGames.length === 1) {
+      return uniqueGames.find((game) => game.value === draftSelectedGames[0])?.label ?? formatGameLabel(draftSelectedGames[0]);
+    }
+    return `${draftSelectedGames.length} games selected`;
+  }, [draftSelectedGames, uniqueGames]);
+
+  const toggleDraftGame = (gameId: string): void => {
+    setDraftSelectedGames((prev) =>
+      prev.includes(gameId)
+        ? prev.filter((id) => id !== gameId)
+        : [...prev, gameId]
+    );
+  };
+
+  const setDraftGamesForScope = (gameIds: string[], shouldSelect: boolean): void => {
+    setDraftSelectedGames((prev) => {
+      if (shouldSelect) {
+        return Array.from(new Set([...prev, ...gameIds]));
+      }
+
+      const scope = new Set(gameIds);
+      return prev.filter((id) => !scope.has(id));
+    });
+  };
+
+  const hasPendingFilterChanges =
+    !haveSameStringValues(selectedGames, draftSelectedGames) ||
+    !haveSameStringValues(selectedSchools, draftSelectedSchools) ||
+    dateRangeStart !== draftDateRangeStart ||
+    dateRangeEnd !== draftDateRangeEnd;
 
   if (loading) {
     return (
@@ -811,7 +929,6 @@ export function AdminDashboard(): React.JSX.Element {
   // Prepare chart data
   const gamesByTypeData = Object.entries(stats.gamesByGameId).map(([gameId, data]) => ({
     name: formatGameLabel(gameId).substring(0, 20),
-    started: data.started,
     completed: data.completed,
   }));
   const isSingleDayRange = Boolean(dateRangeStart && dateRangeEnd && dateRangeStart === dateRangeEnd);
@@ -862,135 +979,308 @@ export function AdminDashboard(): React.JSX.Element {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Game & School Filters */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-2 border-gray-200">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-gray-800">Filters</h2>
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex flex-col gap-2 sm:max-w-xl">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span id="game-filter-label" className="text-sm font-medium text-gray-700">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Filters</h2>
+                <p className="mt-1 text-sm text-gray-500">{gameFilterLabel}</p>
+              </div>
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="relative flex flex-col gap-2">
+                  <label htmlFor="game-filter-button" className="text-sm font-medium text-gray-700">
                     Games
-                  </span>
-                  {selectedGames.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedGames([])}
-                      className="text-sm font-medium text-purple-600 hover:text-purple-800"
+                  </label>
+                  <button
+                    id="game-filter-button"
+                    type="button"
+                    aria-haspopup="listbox"
+                    aria-expanded={isGameDropdownOpen}
+                    aria-controls="game-filter-menu"
+                    onClick={() => {
+                      setIsGameDropdownOpen((open) => !open);
+                      setIsSchoolDropdownOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setIsGameDropdownOpen(false);
+                      }
+                    }}
+                    className="flex min-w-56 items-center justify-between gap-3 rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-left text-sm text-gray-800 transition-colors hover:bg-gray-50 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                  >
+                    <span className="truncate">{gameFilterLabel}</span>
+                    <span className="text-gray-500" aria-hidden="true">
+                      {isGameDropdownOpen ? "^" : "v"}
+                    </span>
+                  </button>
+                  {isGameDropdownOpen && (
+                    <div
+                      id="game-filter-menu"
+                      role="listbox"
+                      aria-labelledby="game-filter-button"
+                      aria-multiselectable="true"
+                      className="absolute left-0 top-full z-30 mt-2 w-136 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
                     >
-                      Clear selection (show all)
-                    </button>
+                      <div className="mb-2 flex items-center justify-between gap-3 border-b border-gray-100 pb-2">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-700">Select games</p>
+                          <p className="text-xs text-gray-500">Course, module, game</p>
+                        </div>
+                        {draftSelectedGames.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setDraftSelectedGames([])}
+                            className="text-xs font-medium text-purple-700 hover:text-purple-900"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
+                        {uniqueGames.length === 0 ? (
+                          <span className="block rounded border border-dashed border-gray-300 p-3 text-sm text-gray-500">
+                            No games in current data.
+                          </span>
+                        ) : (
+                          groupedGameOptions.map((courseGroup) => {
+                            const courseStyle = getCourseFilterStyle(courseGroup.course);
+                            const courseGames = courseGroup.modules.flatMap((moduleGroup) => moduleGroup.games);
+                            const courseGameIds = courseGames.map((game) => game.value);
+                            const selectedCourseCount = courseGameIds.filter((id) =>
+                              draftSelectedGames.includes(id)
+                            ).length;
+                            const allCourseSelected =
+                              courseGameIds.length > 0 &&
+                              selectedCourseCount === courseGameIds.length;
+
+                            return (
+                              <div key={courseGroup.course} className="rounded border border-gray-200">
+                                <div className="flex items-center justify-between gap-2 border-b border-gray-100 bg-gray-50 px-3 py-2">
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <span className={`truncate text-sm font-semibold ${courseStyle.accent}`}>
+                                      {courseGroup.course}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {selectedCourseCount}/{courseGameIds.length}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setDraftGamesForScope(courseGameIds, !allCourseSelected)
+                                    }
+                                    className="shrink-0 text-xs font-medium text-purple-700 hover:text-purple-900"
+                                  >
+                                    {allCourseSelected ? "Clear" : "Select all"}
+                                  </button>
+                                </div>
+                                <div className="divide-y divide-gray-100">
+                                  {courseGroup.modules.map((moduleGroup) => {
+                                    const moduleGameIds = moduleGroup.games.map((game) => game.value);
+                                    const selectedModuleCount = moduleGameIds.filter((id) =>
+                                      draftSelectedGames.includes(id)
+                                    ).length;
+                                    const allModuleSelected =
+                                      moduleGameIds.length > 0 &&
+                                      selectedModuleCount === moduleGameIds.length;
+
+                                    return (
+                                      <div
+                                        key={`${courseGroup.course}-${moduleGroup.module}`}
+                                        className="px-3 py-2"
+                                      >
+                                        <div className="mb-1.5 flex items-center justify-between gap-2">
+                                          <div className="flex min-w-0 items-center gap-2">
+                                            <span className={`truncate rounded border px-2 py-0.5 text-xs font-medium ${courseStyle.badge}`}>
+                                              {moduleGroup.module}
+                                            </span>
+                                            <span className="text-xs text-gray-500">
+                                              {selectedModuleCount}/{moduleGameIds.length}
+                                            </span>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              setDraftGamesForScope(moduleGameIds, !allModuleSelected)
+                                            }
+                                            className="shrink-0 text-xs font-medium text-purple-700 hover:text-purple-900"
+                                          >
+                                            {allModuleSelected ? "Clear" : "Select"}
+                                          </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+                                          {moduleGroup.games.map((game) => {
+                                            const checked = draftSelectedGames.includes(game.value);
+
+                                            return (
+                                              <label
+                                                key={game.value}
+                                                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm text-gray-800 hover:bg-gray-50"
+                                              >
+                                                <input
+                                                  type="checkbox"
+                                                  checked={checked}
+                                                  onChange={() => toggleDraftGame(game.value)}
+                                                  className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                                />
+                                                <span className="truncate">{game.label}</span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500">
-                  Check multiple games to filter the dashboard and exports. Leave none checked to include
-                  all games.
-                </p>
-                <div
-                  id="game-filter"
-                  role="group"
-                  aria-labelledby="game-filter-label"
-                  className="flex flex-wrap gap-x-4 gap-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
-                >
-                  {uniqueGames.length === 0 ? (
-                    <span className="text-sm text-gray-500">No games in current data.</span>
-                  ) : (
-                    uniqueGames.map((game) => {
-                      const checked = selectedGames.includes(game.value);
-                      return (
-                        <label
-                          key={game.value}
-                          className="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-800"
+                <div className="relative flex flex-col gap-2">
+                  <label htmlFor="school-filter-button" className="text-sm font-medium text-gray-700">
+                    Schools
+                  </label>
+                  <button
+                    id="school-filter-button"
+                    type="button"
+                    disabled={isWhesReportUser}
+                    aria-haspopup="listbox"
+                    aria-expanded={isSchoolDropdownOpen}
+                    aria-controls="school-filter-menu"
+                    onClick={() => {
+                      setIsSchoolDropdownOpen((open) => !open);
+                      setIsGameDropdownOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setIsSchoolDropdownOpen(false);
+                      }
+                    }}
+                    className="flex min-w-48 items-center justify-between gap-3 rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-left text-sm text-gray-800 transition-colors hover:bg-gray-50 focus:border-transparent focus:ring-2 focus:ring-purple-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                  >
+                    <span className="truncate">{schoolDropdownLabel}</span>
+                    <span className="text-gray-500" aria-hidden="true">
+                      {isSchoolDropdownOpen ? "^" : "v"}
+                    </span>
+                  </button>
+                  {isSchoolDropdownOpen && !isWhesReportUser && (
+                    <div
+                      id="school-filter-menu"
+                      role="listbox"
+                      aria-labelledby="school-filter-button"
+                      aria-multiselectable="true"
+                      className="absolute left-0 top-full z-20 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+                    >
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b border-gray-100 pb-2">
+                      <span className="text-xs font-medium text-gray-500">
+                        Select one or more schools
+                      </span>
+                      {draftSelectedSchools.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setDraftSelectedSchools([])}
+                          className="text-xs font-medium text-purple-600 hover:text-purple-800"
                         >
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                            checked={checked}
-                            onChange={() =>
-                              setSelectedGames((prev) =>
-                                prev.includes(game.value)
-                                  ? prev.filter((id) => id !== game.value)
-                                  : [...prev, game.value]
-                              )
-                            }
-                          />
-                          {game.label}
-                        </label>
-                      );
-                    })
-                  )}
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {uniqueSchools.length === 0 ? (
+                        <span className="block text-sm text-gray-500">
+                          No schools in current data.
+                        </span>
+                      ) : (
+                        uniqueSchools.map((school) => {
+                          const checked = draftSelectedSchools.includes(school.value);
+                          return (
+                            <label
+                              key={school.value}
+                              role="option"
+                              aria-selected={checked}
+                              className="flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm text-gray-800 hover:bg-gray-50"
+                            >
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                checked={checked}
+                                onChange={() =>
+                                  setDraftSelectedSchools((prev) =>
+                                    prev.includes(school.value)
+                                      ? prev.filter((value) => value !== school.value)
+                                      : [...prev, school.value]
+                                  )
+                                }
+                              />
+                              {school.label}
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="school-filter" className="text-sm font-medium text-gray-700">
-                  School
-                </label>
-                <select
-                  id="school-filter"
-                  value={selectedSchool}
-                  onChange={(e) => setSelectedSchool(e.target.value)}
-                  disabled={isWhesReportUser}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  {!isWhesReportUser && <option value="all">All Schools</option>}
-                  {isWhesReportUser && <option value={WHES_SCHOOL_CODE}>{WHES_SCHOOL_CODE}</option>}
-                  {uniqueSchools
-                    .filter((school) =>
-                      isWhesReportUser
-                        ? school.value.toLowerCase() !== WHES_SCHOOL_CODE.toLowerCase()
-                        : true
-                    )
-                    .map((school) => (
-                    <option key={school.value} value={school.value}>
-                      {school.label}
-                    </option>
-                    ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="date-start" className="text-sm font-medium text-gray-700">
-                  From
-                </label>
-                <input
-                  id="date-start"
-                  type="date"
-                  value={dateRangeStart}
-                  onChange={(e) => setDateRangeStart(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="date-end" className="text-sm font-medium text-gray-700">
-                  To
-                </label>
-                <input
-                  id="date-end"
-                  type="date"
-                  value={dateRangeEnd}
-                  onChange={(e) => setDateRangeEnd(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              {(dateRangeStart || dateRangeEnd) && (
+                <div className="flex items-center gap-2">
+                  <label htmlFor="date-start" className="text-sm font-medium text-gray-700">
+                    From
+                  </label>
+                  <input
+                    id="date-start"
+                    type="date"
+                    value={draftDateRangeStart}
+                    onChange={(e) => setDraftDateRangeStart(e.target.value)}
+                    className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="date-end" className="text-sm font-medium text-gray-700">
+                    To
+                  </label>
+                  <input
+                    id="date-end"
+                    type="date"
+                    value={draftDateRangeEnd}
+                    onChange={(e) => setDraftDateRangeEnd(e.target.value)}
+                    className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                {(draftDateRangeStart || draftDateRangeEnd) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftDateRangeStart("");
+                      setDraftDateRangeEnd("");
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Clear dates
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
-                    setDateRangeStart("");
-                    setDateRangeEnd("");
+                    setSelectedGames(draftSelectedGames);
+                    setSelectedSchools(draftSelectedSchools);
+                    setDateRangeStart(draftDateRangeStart);
+                    setDateRangeEnd(draftDateRangeEnd);
+                    setIsGameDropdownOpen(false);
+                    setIsSchoolDropdownOpen(false);
+                    setRecentEventsPage(1);
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  disabled={!hasPendingFilterChanges}
+                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
                 >
-                  Clear dates
+                  Apply Filters
                 </button>
-              )}
+              </div>
             </div>
           </div>
           {selectedGamesSummary && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-600 font-medium">Games Started</p>
-                <p className="text-2xl font-bold text-blue-800">
-                  {selectedGamesSummary.started}
-                </p>
-              </div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="text-sm text-green-600 font-medium">Games Completed</p>
                 <p className="text-2xl font-bold text-green-800">
@@ -998,16 +1288,9 @@ export function AdminDashboard(): React.JSX.Element {
                 </p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-sm text-purple-600 font-medium">Avg Score</p>
+                <p className="text-sm text-purple-600 font-medium">Avg Score (%)</p>
                 <p className="text-2xl font-bold text-purple-800">
-                  {selectedGamesSummary.avgScore.toFixed(1)}
-                </p>
-              </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <p className="text-sm text-yellow-600 font-medium">Completion Rate</p>
-                <p className="text-2xl font-bold text-yellow-800">
-                  {selectedGamesSummary.completionRate.toFixed(1)}
-                  %
+                  {formatScorePercentage(selectedGamesSummary.avgScore)}
                 </p>
               </div>
             </div>
@@ -1015,8 +1298,7 @@ export function AdminDashboard(): React.JSX.Element {
         </div>
 
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard title="Total Games Started" value={stats.gamesStarted} icon="🎮" color="blue" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <StatCard
             title="Games Completed"
             value={stats.gamesCompleted}
@@ -1024,39 +1306,11 @@ export function AdminDashboard(): React.JSX.Element {
             color="green"
           />
           <StatCard
-            title="Completion Rate"
-            value={`${stats.completionRate.toFixed(1)}%`}
-            icon="📊"
-            color="purple"
-          />
-          <StatCard
-            title="Abandoned Games"
-            value={stats.gamesAbandoned}
-            icon="⏸️"
-            color="orange"
-          />
-        </div>
-
-        {/* Performance Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* <StatCard
-            title="Average Score"
-            value={stats.averageScore.toFixed(1)}
+            title="Average Score (%)"
+            value={formatScorePercentage(stats.averageScore)}
             icon="⭐"
             color="yellow"
-          /> */}
-          {/* <StatCard
-            title="Average Moves"
-            value={stats.averageMoves.toFixed(1)}
-            icon="🎯"
-            color="indigo"
-          /> */}
-          {/* <StatCard
-            title="Avg Time Remaining"
-            value={`${stats.averageTimeRemaining.toFixed(0)}s`}
-            icon="⏰"
-            color="pink"
-          /> */}
+          />
         </div>
 
         {/* Charts Section */}
@@ -1072,8 +1326,6 @@ export function AdminDashboard(): React.JSX.Element {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="started" stroke="#8884d8" name="Started" />
                 <Line type="monotone" dataKey="completed" stroke="#82ca9d" name="Completed" />
               </LineChart>
             </ResponsiveContainer>
@@ -1081,7 +1333,7 @@ export function AdminDashboard(): React.JSX.Element {
 
           {/* Score Distribution */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Score Distribution</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Score % Distribution</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.scoreDistribution}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1102,40 +1354,8 @@ export function AdminDashboard(): React.JSX.Element {
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
                 <Tooltip />
-                <Legend />
-                <Bar dataKey="started" fill="#8884d8" name="Started" />
                 <Bar dataKey="completed" fill="#82ca9d" name="Completed" />
               </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Completion Rate Pie Chart */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Completion Status</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: "Completed", value: stats.gamesCompleted },
-                    { name: "Abandoned", value: stats.gamesAbandoned },
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }: { name: string; percent?: number }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {[
-                    { name: "Completed", value: stats.gamesCompleted },
-                    { name: "Abandoned", value: stats.gamesAbandoned },
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -1151,13 +1371,10 @@ export function AdminDashboard(): React.JSX.Element {
                     Game
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Started
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Completed
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avg Score
+                    Avg Score (%)
                   </th>
                 </tr>
               </thead>
@@ -1168,13 +1385,10 @@ export function AdminDashboard(): React.JSX.Element {
                       {formatGameLabel(gameId)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {data.started}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {data.completed}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {data.avgScore.toFixed(1)}
+                      {formatScorePercentage(data.avgScore)}
                     </td>
                   </tr>
                 ))}
@@ -1200,22 +1414,16 @@ export function AdminDashboard(): React.JSX.Element {
                     School
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Games Started
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Games Completed
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avg Score
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Completion Rate
+                    Avg Score (%)
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {Object.entries(stats.userStats)
-                  .sort((a, b) => b[1].gamesStarted - a[1].gamesStarted)
+                  .sort((a, b) => b[1].gamesCompleted - a[1].gamesCompleted)
                   .map(([key, userData]) => (
                     <tr key={key}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -1228,18 +1436,10 @@ export function AdminDashboard(): React.JSX.Element {
                         {userData.school || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {userData.gamesStarted}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {userData.gamesCompleted}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {userData.avgScore.toFixed(1)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {userData.gamesStarted > 0
-                          ? `${((userData.gamesCompleted / userData.gamesStarted) * 100).toFixed(1)}%`
-                          : "-"}
+                        {formatScorePercentage(userData.avgScore)}
                       </td>
                     </tr>
                   ))}
@@ -1250,7 +1450,7 @@ export function AdminDashboard(): React.JSX.Element {
 
         {/* Recent Events */}
         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Events</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Completed Events</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -1299,9 +1499,7 @@ export function AdminDashboard(): React.JSX.Element {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            event.event === "game_started"
-                              ? "bg-blue-100 text-blue-800"
-                              : event.event === "game_completed"
+                            event.event === "game_completed"
                               ? "bg-green-100 text-green-800"
                               : "bg-orange-100 text-orange-800"
                           }`}
