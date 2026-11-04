@@ -49,6 +49,15 @@ async function seedProfile(page: import("@playwright/test").Page): Promise<void>
 }
 
 test.describe("copyright visual samples", () => {
+  // Generator for the copyright-deposit screenshots, not a regression test.
+  // Skipped in normal/CI e2e runs; use `npm run capture:copyright-visuals`.
+  test.skip(
+    !process.env.COPYRIGHT_CAPTURE,
+    "Set COPYRIGHT_CAPTURE=1 to capture copyright-deposit screenshots",
+  );
+  // ~22 routes x (navigation + 1s settle + full-page screenshot) exceeds the 30s default.
+  test.setTimeout(180_000);
+
   test.beforeAll(() => {
     mkdirSync(visualDir, { recursive: true });
   });
