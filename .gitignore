@@ -25,6 +25,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Cursor AI editor
+.cursor/
+
+# Fallow tool cache
+.fallow/
+
 *storybook.log
 storybook-static
 playwright-report
