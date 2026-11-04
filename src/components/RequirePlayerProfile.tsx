@@ -9,14 +9,14 @@ interface RequirePlayerProfileProps {
 export function RequirePlayerProfile({
   children,
 }: RequirePlayerProfileProps): React.JSX.Element {
-  const { isProfileComplete } = useGameUser();
+  const { isProfileComplete, isLmsSession } = useGameUser();
   const location = useLocation();
 
   const isExcluded =
     location.pathname === "/player-info" ||
     location.pathname.startsWith("/admin");
 
-  if (!isProfileComplete && !isExcluded) {
+  if (!isProfileComplete && !isLmsSession && !isExcluded) {
     const returnTo = `${location.pathname}${location.search}`;
     return (
       <Navigate

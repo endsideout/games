@@ -1,0 +1,277 @@
+[
+  {
+    "id": "platform",
+    "type": "hub",
+    "name": "EndsideOut Games",
+    "description": "Course and game hierarchy for authored content.",
+    "route": "/",
+    "parent_id": "",
+    "sequence": null,
+    "children": [
+      {
+        "id": "know-your-health",
+        "type": "course",
+        "name": "Know Your Health",
+        "description": "Seven-module health literacy course.",
+        "route": "/know-your-health",
+        "parent_id": "platform",
+        "sequence": 1,
+        "children": [
+          {
+            "id": "know-your-health-set-1",
+            "type": "set",
+            "name": "Know Your Health Set 1",
+            "description": "One game from each Know Your Health module.",
+            "route": "/know-your-health/set-1",
+            "parent_id": "know-your-health",
+            "sequence": 1,
+            "children": [
+              {
+                "id": "know-your-health-set-1:1",
+                "type": "game",
+                "name": "Sometimes or Anytime?",
+                "description": "Drag each food to the right group — treat foods vs. foods you can eat anytime!",
+                "route": "/sometimes-anytime-food",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 1,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:2",
+                "type": "game",
+                "name": "Added vs. Natural Sugar",
+                "description": "Natural sugar or added sugar? Eat more or less? Answer different questions each round!",
+                "route": "/least-sugar-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 2,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:3",
+                "type": "game",
+                "name": "Help Flame-man!",
+                "description": "Help our superhero make smart choices for his brain health across 5 real-life scenarios!",
+                "route": "/brain-health-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 3,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:4",
+                "type": "game",
+                "name": "Fill the Glass!",
+                "description": "Answer questions about water and healthy drinks to fill up the glass — every correct answer adds water!",
+                "route": "/water-glass-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 4,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:5",
+                "type": "game",
+                "name": "Finish the Race!",
+                "description": "Answer questions about healthy habits and race to the finish line — every correct answer moves your runner closer!",
+                "route": "/finish-race-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 5,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:6",
+                "type": "game",
+                "name": "Guard Your Health!",
+                "description": "Let good habits fall on you and drag bad habits away — protect your body from disease!",
+                "route": "/habit-guard-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 6,
+                "children": []
+              },
+              {
+                "id": "know-your-health-set-1:7",
+                "type": "game",
+                "name": "Positive or Negative?",
+                "description": "Read body image statements and decide if each one is positive or negative — build a healthy self-image!",
+                "route": "/body-image-game",
+                "parent_id": "know-your-health-set-1",
+                "sequence": 7,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "3d-wellness",
+        "type": "course",
+        "name": "3D Wellness",
+        "description": "Eight-dimension wellness course.",
+        "route": "/3d-wellness",
+        "parent_id": "platform",
+        "sequence": 2,
+        "children": [
+          {
+            "id": "3d-wellness-set-1",
+            "type": "set",
+            "name": "3D Wellness Set 1",
+            "description": "One game from each wellness dimension.",
+            "route": "/3d-wellness/set-1",
+            "parent_id": "3d-wellness",
+            "sequence": 1,
+            "children": [
+              {
+                "id": "3d-wellness-set-1:1",
+                "type": "game",
+                "name": "Principle of Relationship",
+                "description": "Match relationship principles and discover the building blocks of healthy connections!",
+                "route": "/principle-of-relationship-pair-matching-game",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 1,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:2",
+                "type": "game",
+                "name": "Emotional Detective",
+                "description": "Identify emotions in real-life scenarios and build emotional intelligence!",
+                "route": "/emotion-detective-game",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 2,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:3",
+                "type": "game",
+                "name": "Eco Sort Challenge",
+                "description": "Sort items into eco-friendly categories and protect the planet!",
+                "route": "/environmental-wellbeing/eco-fix-it",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 3,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:4",
+                "type": "game",
+                "name": "Budgeting Jars",
+                "description": "Learn smart money management by sorting coins into the right jars!",
+                "route": "/budgeting-game",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 4,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:5",
+                "type": "game",
+                "name": "Study Habits Sort",
+                "description": "Sort good and bad study habits to build smarter learning routines!",
+                "route": "/study-habits-game",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 5,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:6",
+                "type": "game",
+                "name": "Dream Job Builder",
+                "description": "Explore careers and build your dream job path step by step!",
+                "route": "/dream-job-builder",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 6,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:7",
+                "type": "game",
+                "name": "Healthy Plate Builder",
+                "description": "Build a balanced meal by placing foods in the right sections of the plate!",
+                "route": "/healthy-plate",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 7,
+                "children": []
+              },
+              {
+                "id": "3d-wellness-set-1:8",
+                "type": "game",
+                "name": "Surya Namaskar",
+                "description": "Follow the sun salutation sequence and find your inner calm!",
+                "route": "/surya-namaskar",
+                "parent_id": "3d-wellness-set-1",
+                "sequence": 8,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fruit-vegetable-matching-game",
+        "type": "game",
+        "name": "Fruit & Vegetable Matching",
+        "description": "Social Wellbeing",
+        "route": "/fruit-vegetable-matching-game",
+        "parent_id": "platform",
+        "sequence": 1,
+        "children": []
+      },
+      {
+        "id": "fruit-veggie-quiz",
+        "type": "game",
+        "name": "Fruit & Veggie Quiz",
+        "description": "Social Wellbeing",
+        "route": "/fruit-veggie-quiz",
+        "parent_id": "platform",
+        "sequence": 2,
+        "children": []
+      },
+      {
+        "id": "challenge-quiz",
+        "type": "game",
+        "name": "Mental Health Challenge",
+        "description": "Social Wellbeing",
+        "route": "/challenge-quiz",
+        "parent_id": "platform",
+        "sequence": 3,
+        "children": []
+      },
+      {
+        "id": "planet-protector-game",
+        "type": "game",
+        "name": "Planet Protector",
+        "description": "Environmental Wellbeing",
+        "route": "/environmental-wellbeing/planet-protector",
+        "parent_id": "platform",
+        "sequence": 4,
+        "children": []
+      },
+      {
+        "id": "banking-word-search",
+        "type": "game",
+        "name": "Banking Word Search",
+        "description": "Financial Literacy",
+        "route": "/banking-word-search",
+        "parent_id": "platform",
+        "sequence": 5,
+        "children": []
+      },
+      {
+        "id": "job-path-maze",
+        "type": "game",
+        "name": "Job Path Maze",
+        "description": "Occupational Wellbeing",
+        "route": "/job-path-maze",
+        "parent_id": "platform",
+        "sequence": 6,
+        "children": []
+      },
+      {
+        "id": "skills-jobs-sort",
+        "type": "game",
+        "name": "Skills Jobs Sort",
+        "description": "Occupational Wellbeing",
+        "route": "/skills-jobs-sort",
+        "parent_id": "platform",
+        "sequence": 7,
+        "children": []
+      }
+    ]
+  }
+]

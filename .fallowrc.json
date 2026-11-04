@@ -1,0 +1,8 @@
+{
+  "ignorePatterns": [
+    "scripts/convert-to-webp.js"
+  ],
+  "ignoreDependencies": [
+    "sharp"
+  ]
+}
