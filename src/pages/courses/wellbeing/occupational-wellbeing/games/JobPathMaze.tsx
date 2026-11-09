@@ -3,27 +3,17 @@ import { Link } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
+import { speak as speakShared, stopVoice, getPreferredVoice } from "../../../../../lib/audio";
 
 const GAME_ID = "job-path-maze";
 const LIVES = 3;
 const SECONDS_PER_JOB = 60;
 
 /* ── Speech helper ─────────────────────────────────────────────────────── */
+// Friendly voice through the shared audio channel; skipped while muted
 function speak(text: string, muted: boolean) {
-  if (muted || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate  = 0.92;
-  utt.pitch = 1.05;
-  utt.volume = 1;
-  // prefer a friendly English voice if available
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.lang.startsWith("en") && v.name.toLowerCase().includes("samantha"))
-    ?? voices.find(v => v.lang.startsWith("en") && !v.name.toLowerCase().includes("compact"))
-    ?? voices.find(v => v.lang.startsWith("en"))
-    ?? null;
-  if (preferred) utt.voice = preferred;
-  window.speechSynthesis.speak(utt);
+  if (muted) return;
+  speakShared(text, undefined, { rate: 0.92, pitch: 1.05, voice: getPreferredVoice() });
 }
 
 interface Checkpoint {
@@ -182,7 +172,7 @@ export function JobPathMaze(): React.JSX.Element {
   }, [phase, jobIndex, jobs]);
 
   // cancel speech on unmount
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
+  useEffect(() => stopVoice, []);
 
   const currentJob   = jobs[jobIndex];
   const totalJobs    = jobs.length;
@@ -420,7 +410,7 @@ export function JobPathMaze(): React.JSX.Element {
             ✅ {totalScore} pts
           </div>
           <button
-            onClick={() => { setMuted(m => !m); if (!muted) window.speechSynthesis?.cancel(); }}
+            onClick={() => { setMuted(m => !m); if (!muted) stopVoice(); }}
             className="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-lg transition-all"
             title={muted ? "Unmute voice" : "Mute voice"}
           >

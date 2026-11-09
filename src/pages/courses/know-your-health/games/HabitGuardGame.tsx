@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak, stopVoice, playNotes } from "../../../../lib/audio";
 
 const GAME_ID    = "habit-guard-game";
 const ITEM_SIZE   = 215; // circle diameter (+25% from prev 173×153)
@@ -19,32 +20,8 @@ const PIMPLE_SPOTS = [
   { cx: 84, cy: 104 },  // right jaw
 ];
 
-function speak(text: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
-}
-
-function playTone(freqs: number[], type: OscillatorType = "sine") {
-  try {
-    const ctx = new AudioContext();
-    freqs.forEach((f, i) => {
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = type; osc.frequency.value = f;
-      const t = ctx.currentTime + i * 0.13;
-      gain.gain.setValueAtTime(0.28, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
-      osc.start(t); osc.stop(t + 0.28);
-    });
-  } catch (_) {}
-}
-const playGood = () => playTone([523, 659, 784]);
-const playBad  = () => playTone([220, 170], "sawtooth");
+const playGood = () => playNotes([523, 659, 784]);
+const playBad  = () => playNotes([220, 170], "sawtooth");
 
 // ── Character SVG — white skin, yellow top, pimples ──────────────────────────
 function CharacterSVG({
@@ -293,6 +270,9 @@ export function HabitGuardGame(): React.JSX.Element {
     speak("Habits are falling! Drag good habits to the character to heal pimples. Let bad habits go down and fall away!");
     setPhase("playing");
   }, []);
+
+  // Stop any narration when leaving the game
+  useEffect(() => stopVoice, []);
 
   // ── RAF game loop ────────────────────────────────────────────────────────────
   useEffect(() => {

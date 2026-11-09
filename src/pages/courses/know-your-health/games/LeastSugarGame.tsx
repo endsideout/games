@@ -2,62 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak, speakSequence, stopVoice, playCorrect, playWrong } from "../../../../lib/audio";
 
 const GAME_ID        = "least-sugar-game";
 const GAME_DURATION  = 120; // 2 minutes
 const POINTS_CORRECT = 10;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string, onEnd?: () => void) {
-  try {
-    if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
-    u.onend  = () => onEnd?.();
-    u.onerror = () => onEnd?.();
-    window.speechSynthesis.speak(u);
-  } catch (_) { onEnd?.(); }
-}
-
-// ── Sound effects (Web Audio API) ────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    // Two ascending notes: C5 → E5
-    [[523, 0], [659, 0.15]].forEach(([freq, delay]) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.35, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + 0.3);
-    });
-    setTimeout(() => ctx.close(), 800);
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx  = new AudioContext();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.35);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.35);
-    setTimeout(() => ctx.close(), 600);
-  } catch (_) {}
-}
 
 interface FoodOption {
   name: string;
@@ -155,12 +104,14 @@ export function LeastSugarGame(): React.JSX.Element {
     const round = ROUNDS[roundIdx];
     const t = setTimeout(() => {
       const q = round.question.replace(/\p{Emoji}/gu, '').trim();
-      speak(q, () => setTimeout(() =>
-        speak(`${round.left.name}... or ${round.right.name}?`), 1200
-      ));
+      // Picking an answer interrupts the sequence, so the options line never cuts off feedback
+      speakSequence([q, `${round.left.name}... or ${round.right.name}?`], 1200);
     }, 400);
     return () => clearTimeout(t);
   }, [roundIdx, phase]);
+
+  // Stop any narration when leaving the game
+  useEffect(() => stopVoice, []);
 
   // Countdown timer
   useEffect(() => {
@@ -195,6 +146,7 @@ export function LeastSugarGame(): React.JSX.Element {
 
   function handlePick(side: "left" | "right") {
     if (picked || phase !== "playing") return;
+    stopVoice(); // stop reading the question once the player answers
     const round   = ROUNDS[roundIdx];
     const correct = side === round.answer;
 
