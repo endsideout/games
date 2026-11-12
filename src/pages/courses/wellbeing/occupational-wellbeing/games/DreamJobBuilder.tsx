@@ -3,19 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";
 import { generateSessionId } from "../../../../../lib/sessionId";
+import { speak as speakShared, stopVoice, getPreferredVoice } from "../../../../../lib/audio";
 
+// Friendly voice through the shared audio channel; skipped while muted
 function speak(text: string, muted: boolean) {
-  if (muted || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.92; utt.pitch = 1.05; utt.volume = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const preferred =
-    voices.find(v => v.lang.startsWith("en") && v.name.toLowerCase().includes("samantha")) ??
-    voices.find(v => v.lang.startsWith("en") && !v.name.toLowerCase().includes("compact")) ??
-    voices.find(v => v.lang.startsWith("en")) ?? null;
-  if (preferred) utt.voice = preferred;
-  window.speechSynthesis.speak(utt);
+  if (muted) return;
+  speakShared(text, undefined, { rate: 0.92, pitch: 1.05, voice: getPreferredVoice() });
 }
 
 const GAME_ID = "dream-job-builder";
@@ -133,7 +126,7 @@ export function DreamJobBuilder(): React.JSX.Element {
   }, [currentQ, phase]);
 
   // Cancel speech on unmount
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
+  useEffect(() => stopVoice, []);
 
   function startGame() {
     setPhase("quiz"); setCurrentQ(0); setPieces([]);
@@ -272,7 +265,7 @@ export function DreamJobBuilder(): React.JSX.Element {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-white/80 text-sm font-semibold">{currentQ + 1} / {QUESTIONS.length}</span>
-          <button onClick={() => setMuted(m => !m)} className="text-white/80 hover:text-white text-lg leading-none" title={muted ? "Unmute" : "Mute"}>
+          <button onClick={() => { setMuted(m => !m); if (!muted) stopVoice(); }} className="text-white/80 hover:text-white text-lg leading-none" title={muted ? "Unmute" : "Mute"}>
             {muted ? "🔇" : "🔊"}
           </button>
         </div>

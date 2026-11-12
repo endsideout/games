@@ -2,69 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak, speakSequence, stopVoice, playCorrect, playWrong } from "../../../../lib/audio";
 
 const GAME_ID        = "brain-health-game";
 const GAME_DURATION  = 90;
 const POINTS_CORRECT = 10;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-// Module-level ref prevents Chrome from GC-ing the utterance mid-speech
-let _utterance: SpeechSynthesisUtterance | null = null;
-
-function speak(text: string, onEnd?: () => void) {
-  if (!("speechSynthesis" in window)) {
-    // No TTS support — fire callback immediately so the game still advances
-    setTimeout(() => onEnd?.(), 100);
-    return;
-  }
-  try {
-    window.speechSynthesis.cancel();
-    _utterance = null;
-    setTimeout(() => {
-      try {
-        const u = new SpeechSynthesisUtterance(text);
-        _utterance  = u;     // keep-alive: prevents Chrome GC bug
-        u.rate      = 0.85;
-        u.pitch     = 1.10;
-        u.volume    = 1.0;
-        u.onend     = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
-        u.onerror   = () => { if (_utterance === u) _utterance = null; onEnd?.(); };
-        window.speechSynthesis.speak(u);
-      } catch (_) { onEnd?.(); }
-    }, 100);
-  } catch (_) { onEnd?.(); }
-}
-
-// ── Sound effects ─────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.15], [784, 0.3]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.35);
-    });
-    setTimeout(() => ctx.close(), 1000);
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-    setTimeout(() => ctx.close(), 700);
-  } catch (_) {}
-}
 
 // ── Flame-man character — matches PDF design ──────────────────────────────────
 // Teal/cyan suit, flame hair, confident hero pose, concentric ring aura
@@ -408,7 +350,8 @@ export function BrainHealthGame(): React.JSX.Element {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(id);
-          try { window.speechSynthesis?.cancel(); } catch (_) {}
+          phaseRef.current = "result"; // set first so the interrupted feedback's advance() bails
+          stopVoice();
           trackEvent({ gameId: GAME_ID, event: "game_completed", sessionId: sessionIdRef.current, score: scoreRef.current });
           setPhase("result");
           return 0;
@@ -424,15 +367,13 @@ export function BrainHealthGame(): React.JSX.Element {
     if (phase !== "playing") return;
     const t = setTimeout(() => {
       const s = SCENARIOS[idx];
-      speak(s.situation, () => setTimeout(() => speak(s.question), 1000));
+      speakSequence([s.situation, s.question], 1000);
     }, 450);
     return () => clearTimeout(t);
   }, [idx, phase]);
 
   // ── Cleanup voice on unmount ──
-  useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch (_) {} };
-  }, []);
+  useEffect(() => stopVoice, []);
 
   function startGame() {
     setIdx(0); setAnswers([]); setScore(0);
@@ -447,6 +388,7 @@ export function BrainHealthGame(): React.JSX.Element {
 
   function handlePick(side: "left" | "right") {
     if (picked || phase !== "playing") return;
+    stopVoice(); // stop reading the scenario once the player answers
     const scenario   = SCENARIOS[idx];
     const correct    = side === scenario.answer;
     const currentIdx = idx;

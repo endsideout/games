@@ -2,57 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak, stopVoice, playCorrect, playWrong } from "../../../../lib/audio";
 
 const GAME_ID        = "water-glass-game";
 const GAME_DURATION  = 120;
 const POINTS_CORRECT = 10;
 const TOTAL_Q        = 4;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string, onEnd?: () => void) {
-  try {
-    if (!("speechSynthesis" in window)) { setTimeout(() => onEnd?.(), 100); return; }
-    window.speechSynthesis.cancel();
-    const u  = new SpeechSynthesisUtterance(text);
-    u.rate   = 0.85;
-    u.pitch  = 1.10;
-    u.volume = 1.0;
-    u.onend  = () => onEnd?.();
-    u.onerror = () => onEnd?.();
-    window.speechSynthesis.speak(u);
-  } catch (_) { onEnd?.(); }
-}
-
-// ── Sound effects ─────────────────────────────────────────────────────────────
-function playCorrect() {
-  try {
-    const ctx = new AudioContext();
-    [[523, 0], [659, 0.15], [784, 0.3]].forEach(([freq, delay]) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
-      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.35);
-    });
-    setTimeout(() => ctx.close(), 1000);
-  } catch (_) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(); osc.stop(ctx.currentTime + 0.4);
-    setTimeout(() => ctx.close(), 700);
-  } catch (_) {}
-}
 
 // ── Water Glass SVG ───────────────────────────────────────────────────────────
 // fillLevel: 0 (empty) → 1 (full). Water rises smoothly from bottom.
@@ -282,9 +237,7 @@ export function WaterGlassGame(): React.JSX.Element {
   }, [idx, phase]);
 
   // Cleanup voice
-  useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch (_) {} };
-  }, []);
+  useEffect(() => stopVoice, []);
 
   function startGame() {
     setIdx(0); setCorrect(0); setScore(0); setAnswers([]);
@@ -298,6 +251,7 @@ export function WaterGlassGame(): React.JSX.Element {
 
   function handlePick(optionId: string) {
     if (picked || phase !== "playing") return;
+    stopVoice(); // stop reading the question once the player answers
     const q  = QUESTIONS[idx];
     const ok = optionId === q.answer;
 

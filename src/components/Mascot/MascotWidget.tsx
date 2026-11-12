@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { useLocation } from "react-router-dom";
 import { MascotCharacter } from "./MascotScene";
 import { GAME_INSTRUCTIONS } from "./gameInstructions";
+import { playClip as playVoiceClip, stopVoice } from "../../lib/audio";
 
 const HINT_DELAY_MS = 6000;
 
@@ -17,7 +18,8 @@ export function MascotWidget() {
   const [characterHidden, setCharacterHidden] = useState(false);
   const [showHint,      setShowHint]     = useState(false);
 
-  const audioRef      = useRef<HTMLAudioElement | null>(null);
+  const clipPlaying   = useRef(false); // true while the mascot owns the shared voice channel
+  const clipId        = useRef(0);     // ignores onEnd from clips that a newer clip replaced
   const currentAudio  = useRef<string>("");
   const hintTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,35 +35,33 @@ export function MascotWidget() {
     hintTimer.current = setTimeout(() => setShowHint(true), HINT_DELAY_MS);
   }, [clearHintTimer]);
 
+  // Only stops the mascot's own clip — never a game's narration
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.onended  = null;
-      audioRef.current.onerror  = null;
-    }
+    if (clipPlaying.current) stopVoice();
     setIsTalking(false);
   }, []);
 
   const playClip = useCallback((src: string) => {
-    stopAudio();
     clearHintTimer();
     setCharacterHidden(false);
     setShowHint(false);
 
-    const audio = new Audio(src);
-    audioRef.current = audio;
-
-    audio.onplay  = () => setIsTalking(true);
-    audio.onerror = () => setIsTalking(false);
-    audio.onended = () => {
-      setIsTalking(false);
-      setCharacterHidden(true);
-      startHintTimer();
-    };
-
-    audio.play().catch(() => setIsTalking(false));
-  }, [stopAudio, clearHintTimer, startHintTimer]);
+    // Shared channel stops any game narration (or previous clip) before this starts
+    const id = ++clipId.current;
+    clipPlaying.current = true;
+    playVoiceClip(src, {
+      onStart: () => setIsTalking(true),
+      onEnd: (interrupted) => {
+        if (id !== clipId.current) return; // replaced by a newer clip
+        clipPlaying.current = false;
+        setIsTalking(false);
+        if (!interrupted) {
+          setCharacterHidden(true);
+          startHintTimer();
+        }
+      },
+    });
+  }, [clearHintTimer, startHintTimer]);
 
   // On route change: reset and play game-specific audio
   useEffect(() => {

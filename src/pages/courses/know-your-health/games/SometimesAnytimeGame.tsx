@@ -2,22 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";
 import { useGameUser } from "../../../../context/GameUserContext";
+import { speak, stopVoice } from "../../../../lib/audio";
 import { gradeToMode } from "../../../../utils/gradeMode";
 
 const GAME_ID       = "sometimes-anytime-food";
 const GAME_DURATION = 60; // seconds
 const POINTS_CORRECT = 10;
-
-// ── Voice synthesis ───────────────────────────────────────────────────────────
-function speak(text: string) {
-  try {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.85; u.pitch = 1.10; u.volume = 1;
-    window.speechSynthesis.speak(u);
-  } catch (_) {}
-}
 
 // ── Benefit SVGs (anytime foods) ─────────────────────────────────────────────
 
@@ -284,6 +274,9 @@ export function SometimesAnytimeGame(): React.JSX.Element {
   // Sync refs for use inside timer callback
   useEffect(() => { resultsRef.current = results; }, [results]);
   useEffect(() => { scoreRef.current   = score;   }, [score]);
+
+  // Stop any narration when leaving the game
+  useEffect(() => stopVoice, []);
 
   // Countdown timer
   useEffect(() => {
