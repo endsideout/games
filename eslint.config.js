@@ -16,6 +16,7 @@ export default defineConfig([globalIgnores([
   "src/stories",
   "tests",
   "playwright.config.ts",
+  "public/spike-lab",
 ]), {
   files: ['**/*.{js,jsx}'],
   ignores: ['scripts/**'],
