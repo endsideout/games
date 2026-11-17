@@ -53,7 +53,7 @@ import {
   SkillsJobsSort,
   HealthyPlateGame,
   SuryaNamaskarGame,
-  GermFactoryGame
+  HealthFactoryGame
 } from "./pages";
 import { AdminLogin, AdminDashboard } from "./pages/admin";
 import { FRUIT_VEGGIE_QUESTIONS } from "./data/fruitVeggieQuiz";
@@ -153,7 +153,7 @@ export default function App(): React.JSX.Element {
         <Route path="/physical-wellbeing" element={<PhysicalWellbeing />} />
         <Route path="/healthy-plate" element={withGame(<HealthyPlateGame />)} />
         <Route path="/surya-namaskar" element={withGame(<SuryaNamaskarGame />)} />
-        <Route path="/germ-factory" element={withGame(<GermFactoryGame />)} />
+        <Route path="/health-factory" element={withGame(<HealthFactoryGame />)} />
         <Route path="/spiritual-wellbeing" element={<SpiritualWellbeing />} />
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />

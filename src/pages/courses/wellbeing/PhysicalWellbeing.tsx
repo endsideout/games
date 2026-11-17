@@ -5,16 +5,17 @@ import { Logo } from "../../../components";
 export function PhysicalWellbeing(): React.JSX.Element {
   const games = [
     {
-      title: "Germ Factory: Clean Hands Conveyor",
-      icon: "🧼",
-      description: "Sort fast on the conveyor belt! Keep good hygiene habits and wash away germy ones before time runs out!",
-      route: "/germ-factory",
+      title: "Health Factory",
+      icon: "🛡️",
+      description: "Choose Germ Mode or Chronic Disease Mode and sort fast on the conveyor belt!",
+      route: "/health-factory",
       color: "from-teal-50 to-emerald-50",
       borderColor: "border-teal-300",
       buttonColor: "from-teal-500 to-emerald-600",
-      tags: ["Hygiene", "Clean Hands", "Fast Sorter", "Arcade"],
+      tags: ["Hygiene", "Chronic Disease", "Healthy Habits", "Sorter"],
       comingSoon: false
     },
+
     {
       title: "Fitness Fun",
       icon: "🏃",

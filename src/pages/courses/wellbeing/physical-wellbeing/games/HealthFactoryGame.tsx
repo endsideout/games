@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MascotWidget } from '../../../../../components/Mascot';
 import { saveGameEventToFirebase } from '../../../../../lib/gameTracking';
@@ -13,6 +13,8 @@ interface Scenario {
   tip: string;
 }
 
+type GameMode = 'germs' | 'chronic';
+
 const germScenarios: Scenario[] = [
   { id: 1, emoji: '🧼', title: '20s Soap Wash', text: 'Washing hands with soap and water for 20 seconds', category: 'stops', tip: 'Soap and water wash germs right down the drain!' },
   { id: 2, emoji: '🤧', title: 'Sneeze in Hands', text: 'Sneezing directly into your hands', category: 'spreads', tip: 'Always sneeze into your elbow or a tissue!' },
@@ -26,6 +28,19 @@ const germScenarios: Scenario[] = [
   { id: 10, emoji: '🥤', title: 'Shared Straw', text: 'Sharing the same juice box straw with a friend', category: 'spreads', tip: 'Never share straws, cups, or forks!' },
   { id: 11, emoji: '🐶', title: 'Pet Wash', text: 'Washing hands after petting a puppy or kitten', category: 'stops', tip: 'Washing up after petting animals keeps everyone healthy!' },
   { id: 12, emoji: '👀', title: 'Dirty Eye Rub', text: 'Rubbing your eyes with dirty playground hands', category: 'spreads', tip: 'Germs sneak in easily through your eyes, nose, and mouth!' },
+];
+
+const chronicScenarios: Scenario[] = [
+  { id: 1, emoji: '🏃', title: '1 Hour of Exercise', text: 'Exercising or playing actively for at least 1 hour every day', category: 'stops', tip: 'Daily exercise helps prevent Type 2 Diabetes, obesity, and heart disease!' },
+  { id: 2, emoji: '🤧', title: 'Flu Is Chronic?', text: 'Thinking the flu or a cold is a chronic disease that lasts your whole life', category: 'spreads', tip: 'The flu is short-term. Chronic diseases like diabetes or asthma last for years.' },
+  { id: 3, emoji: '🥦', title: 'Anytime Foods', text: 'Fueling your body with colorful fruits, vegetables, and lots of water', category: 'stops', tip: 'Anytime foods give your body healthy fuel and lower future health risks!' },
+  { id: 4, emoji: '🪞', title: 'Judged by Looks', text: 'Thinking obesity or health is defined by how someone looks', category: 'spreads', tip: 'Weight and BMI are just one measurement—nobody is built the same!' },
+  { id: 5, emoji: '🫁', title: 'Asthma Inhaler', text: 'Treating tight lungs with prescribed medication and an inhaler', category: 'stops', tip: 'Asthma cannot be prevented, but inhalers and medicine keep breathing safe!' },
+  { id: 6, emoji: '🧬', title: 'Only Genetic?', text: 'Believing diabetes can only be passed down from your parents', category: 'spreads', tip: 'Type 1 is genetic, but Type 2 Diabetes is preventable with diet and exercise!' },
+  { id: 7, emoji: '😴', title: '8 Hours of Sleep', text: 'Getting enough sleep every night to help your body stay strong', category: 'stops', tip: 'Getting 8+ hours of sleep is a key way to help prevent chronic disease!' },
+  { id: 8, emoji: '🍟', title: 'High-Fat Diet', text: 'Eating high-fat foods all the time and skipping daily exercise', category: 'spreads', tip: 'Poor diet and low activity raise the risk of obesity, diabetes, and heart disease.' },
+  { id: 9, emoji: '📋', title: 'Family Health Talk', text: 'Asking family members about their health history to share with your doctor', category: 'stops', tip: 'Knowing family health history helps your doctor understand how to lower your risk!' },
+  { id: 10, emoji: '🦠', title: 'Catching Asthma?', text: 'Thinking you can catch asthma or diabetes from a friend at school', category: 'spreads', tip: 'Chronic diseases are not contagious—they come from genetics, diet, or lifestyle.' },
 ];
 
 const playSound = (type: 'sortRight' | 'combo' | 'wrong' | 'win') => {
@@ -80,10 +95,11 @@ const playSound = (type: 'sortRight' | 'combo' | 'wrong' | 'win') => {
   }
 };
 
-export const GermFactoryGame: React.FC = () => {
+export const HealthFactoryGame: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useGameUser();
 
+  const [gameMode, setGameMode] = useState<GameMode>('germs');
   const [gameStarted, setGameStarted] = useState(false);
   const [queue, setQueue] = useState<Scenario[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -118,17 +134,19 @@ export const GermFactoryGame: React.FC = () => {
         saveGameEventToFirebase({
           user,
           event: 'game_completed',
-          gameId: 'germ_factory',
+          gameId: gameMode === 'germs' ? 'germ_factory' : 'chronic_disease_factory',
           score: finalScore,
           timestamp: new Date().toISOString(),
         });
       }
     },
-    [user, triggerSound]
+    [user, triggerSound, gameMode]
   );
 
-  const startGame = () => {
-    const shuffled = [...germScenarios].sort(() => Math.random() - 0.5);
+  const startGame = (selectedMode: GameMode = gameMode) => {
+    setGameMode(selectedMode);
+    const sourceList = selectedMode === 'germs' ? germScenarios : chronicScenarios;
+    const shuffled = [...sourceList].sort(() => Math.random() - 0.5);
     setQueue(shuffled);
     setCurrentIndex(0);
     setScore(0);
@@ -179,7 +197,10 @@ export const GermFactoryGame: React.FC = () => {
 
         setStatusBanner({
           type: 'good',
-          headline: nextStreak >= 3 ? `🔥 ${nextStreak}x Combo! +${bonus} pts` : `Sorted! +${bonus} pts`,
+          headline:
+            nextStreak >= 3
+              ? nextStreak + 'x Combo! +' + bonus + ' pts'
+              : 'Sorted! +' + bonus + ' pts',
           tip: currentItem.tip,
         });
       } else {
@@ -213,7 +234,7 @@ export const GermFactoryGame: React.FC = () => {
     [gameStarted, gameOver, slideDirection, queue, currentIndex, score, lives, streak, triggerSound, endGame]
   );
 
-  // Keyboard shortcuts (Left Arrow / A = Stops Germs, Right Arrow / D = Spreads Germs)
+  // Keyboard shortcuts (Left Arrow / A = Stops, Right Arrow / D = Spreads)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!gameStarted || gameOver) return;
@@ -229,6 +250,10 @@ export const GermFactoryGame: React.FC = () => {
 
   const currentItem = queue[currentIndex];
   const nextItem = queue[currentIndex + 1];
+
+  const isGermMode = gameMode === 'germs';
+  const leftButtonLabel = isGermMode ? 'Good Habit' : 'Healthy / True';
+  const rightButtonLabel = isGermMode ? 'Bad Habit' : 'Risk / Myth';
 
   return (
     <div className="min-h-screen bg-teal-50 flex flex-col justify-between p-4 md:p-6 select-none">
@@ -250,7 +275,11 @@ export const GermFactoryGame: React.FC = () => {
         </div>
 
         <h1 className="text-xl font-bold text-teal-900">
-          Germ Factory
+          {!gameStarted
+            ? 'Health Factory'
+            : isGermMode
+            ? 'Germ Factory'
+            : 'Chronic Disease Sorter'}
         </h1>
 
         {gameStarted && !gameOver && (
@@ -264,11 +293,11 @@ export const GermFactoryGame: React.FC = () => {
               Score: {score}
             </span>
             <span
-              className={`px-3 py-1 rounded-lg ${
+              className={
                 timeLeft <= 10
-                  ? 'bg-red-100 text-red-700 animate-pulse'
-                  : 'bg-amber-100 text-amber-800'
-              }`}
+                  ? 'px-3 py-1 rounded-lg bg-red-100 text-red-700 animate-pulse'
+                  : 'px-3 py-1 rounded-lg bg-amber-100 text-amber-800'
+              }
             >
               Time: {timeLeft}s
             </span>
@@ -281,39 +310,37 @@ export const GermFactoryGame: React.FC = () => {
         {!gameStarted ? (
           <div className="w-full bg-white p-8 rounded-2xl shadow-md text-center">
             <h2 className="text-3xl font-bold text-teal-900 mb-3">
-              Welcome to the Germ Factory!
+              Welcome to the Health Factory!
             </h2>
             <p className="text-gray-600 text-lg mb-6">
-              Habits roll down the conveyor belt! Sort each crate into the right chute before time runs out.
+              Choose a game mode below, then sort each crate onto the right side before time runs out.
             </p>
-            <div className="grid grid-cols-2 gap-4 bg-teal-50 p-4 rounded-xl mb-6 text-sm font-semibold">
-              <div className="bg-white p-3 rounded-lg border-2 border-green-400 text-green-800">
-                Left / Green Chute
-                <div className="font-normal text-gray-600 mt-1">Stops Germs</div>
-              </div>
-              <div className="bg-white p-3 rounded-lg border-2 border-red-400 text-red-800">
-                Right / Red Chute
-                <div className="font-normal text-gray-600 mt-1">Spreads Germs</div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => startGame('germs')}
+                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 px-6 rounded-xl shadow transition transform active:scale-95"
+              >
+                Germ Mode
+              </button>
+              <button
+                onClick={() => startGame('chronic')}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg py-4 px-6 rounded-xl shadow transition transform active:scale-95"
+              >
+                Disease Mode
+              </button>
             </div>
-            <button
-              onClick={startGame}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 px-10 rounded-xl shadow transition transform active:scale-95"
-            >
-              Start Conveyor Belt
-            </button>
           </div>
         ) : !gameOver && currentItem ? (
           <div className="w-full flex flex-col gap-4">
-            {/* Live Feedback Strip (Never blocks gameplay!) */}
+            {/* Live Feedback Strip */}
             <div
-              className={`min-h-[64px] px-4 py-3 rounded-xl shadow-sm flex flex-col justify-center text-center transition-colors ${
+              className={
                 !statusBanner
-                  ? 'bg-white text-teal-800 border border-teal-100'
+                  ? 'min-h-[64px] px-4 py-3 rounded-xl shadow-sm flex flex-col justify-center text-center transition-colors bg-white text-teal-800 border border-teal-100'
                   : statusBanner.type === 'good'
-                  ? 'bg-green-100 text-green-900 border border-green-300'
-                  : 'bg-red-100 text-red-900 border border-red-300'
-              }`}
+                  ? 'min-h-[64px] px-4 py-3 rounded-xl shadow-sm flex flex-col justify-center text-center transition-colors bg-green-100 text-green-900 border border-green-300'
+                  : 'min-h-[64px] px-4 py-3 rounded-xl shadow-sm flex flex-col justify-center text-center transition-colors bg-red-100 text-red-900 border border-red-300'
+              }
             >
               {statusBanner ? (
                 <>
@@ -324,21 +351,20 @@ export const GermFactoryGame: React.FC = () => {
                 </>
               ) : (
                 <div className="font-semibold text-sm md:text-base">
-                  Sort the crate on the scanner! (Tip: You can also use ⬅️ / ➡️ arrow keys)
+                  Sort the crate on the scanner! (Tip: You can also use left / right arrow keys)
                 </div>
               )}
             </div>
 
             {/* Conveyor Belt Visual Track */}
             <div className="relative bg-slate-800 rounded-2xl p-6 shadow-md overflow-hidden border-4 border-slate-700">
-              {/* Belt Progress & Streak Header */}
               <div className="flex justify-between items-center text-xs font-bold text-slate-300 mb-4">
                 <span>
                   CRATE {currentIndex + 1} OF {queue.length}
                 </span>
                 {streak >= 3 ? (
                   <span className="bg-amber-400 text-slate-900 px-2.5 py-0.5 rounded-full animate-pulse">
-                    🔥 {streak}x SUPER STREAK (2X PTS)
+                    {streak}x SUPER STREAK (2X PTS)
                   </span>
                 ) : (
                   <span>STREAK: {streak}</span>
@@ -355,7 +381,7 @@ export const GermFactoryGame: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-xs text-slate-400 font-semibold py-1.5">
-                    🏁 Final Crate!
+                    Final Crate!
                   </div>
                 )}
               </div>
@@ -364,15 +390,16 @@ export const GermFactoryGame: React.FC = () => {
               <div className="relative flex items-center justify-center py-4">
                 <div className="absolute inset-x-0 h-3 bg-slate-600 rounded-full" />
 
-                {/* Active Sorting Crate (GPU-accelerated slide) */}
+                {/* Active Sorting Crate */}
                 <div
-                  className={`relative z-10 w-full max-w-md bg-white rounded-2xl p-6 text-center shadow-xl border-4 border-teal-400 transition-all duration-300 ease-out ${
-                    slideDirection === 'left'
+                  className={
+                    'relative z-10 w-full max-w-md bg-white rounded-2xl p-6 text-center shadow-xl border-4 border-teal-400 transition-all duration-300 ease-out ' +
+                    (slideDirection === 'left'
                       ? '-translate-x-48 -rotate-12 opacity-0'
                       : slideDirection === 'right'
                       ? 'translate-x-48 rotate-12 opacity-0'
-                      : 'translate-x-0 rotate-0 opacity-100'
-                  }`}
+                      : 'translate-x-0 rotate-0 opacity-100')
+                  }
                 >
                   <div className="inline-block bg-teal-100 text-teal-800 text-xs font-extrabold px-3 py-0.5 rounded-full mb-2">
                     ON SCANNER
@@ -387,16 +414,15 @@ export const GermFactoryGame: React.FC = () => {
                 </div>
               </div>
 
-              {/* Left & Right Sorting Chutes */}
-                            {/* Left & Right Sorting Bins */}
+              {/* Left & Right Sorting Bins */}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <button
                   onClick={() => handleSort('stops')}
                   className="bg-green-600 hover:bg-green-500 active:scale-95 text-white py-4 px-4 rounded-xl font-extrabold text-base md:text-lg shadow-lg border-b-4 border-green-800 transition flex flex-col items-center"
                 >
-                  <span>Good Habit</span>
+                  <span>{leftButtonLabel}</span>
                   <span className="text-xs font-normal text-green-100 mt-0.5">
-                    Click the left arrow!
+                    Click this button or the left arrow!
                   </span>
                 </button>
 
@@ -404,13 +430,12 @@ export const GermFactoryGame: React.FC = () => {
                   onClick={() => handleSort('spreads')}
                   className="bg-red-600 hover:bg-red-500 active:scale-95 text-white py-4 px-4 rounded-xl font-extrabold text-base md:text-lg shadow-lg border-b-4 border-red-800 transition flex flex-col items-center"
                 >
-                  <span>Bad Habit</span>
+                  <span>{rightButtonLabel}</span>
                   <span className="text-xs font-normal text-red-100 mt-0.5">
-                    Click the right arrow!
+                    Click this button or the right arrow!
                   </span>
                 </button>
               </div>
-
             </div>
           </div>
         ) : (
@@ -422,7 +447,9 @@ export const GermFactoryGame: React.FC = () => {
             <p className="text-gray-600 mb-6">
               {lives === 0
                 ? 'Three crates went down the wrong chute. Give it another go!'
-                : 'Great job sorting all the healthy and germy habits!'}
+                : isGermMode
+                ? 'Great job sorting all the healthy and germy habits!'
+                : 'Great job sorting all the chronic disease facts and habits!'}
             </p>
 
             <div className="flex justify-center gap-6 bg-teal-50 p-4 rounded-xl mb-6">
@@ -432,16 +459,24 @@ export const GermFactoryGame: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Best Streak</p>
-                <p className="text-2xl font-bold text-amber-600">🔥 {bestStreak}</p>
+                <p className="text-2xl font-bold text-amber-600">{bestStreak}</p>
               </div>
             </div>
 
-            <button
-              onClick={startGame}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-xl shadow transition"
-            >
-              Play Again
-            </button>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => startGame(gameMode)}
+                className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-xl shadow transition"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => setGameStarted(false)}
+                className="bg-teal-100 hover:bg-teal-200 text-teal-900 font-bold py-3 px-6 rounded-xl transition"
+              >
+                Switch Mode
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -452,4 +487,4 @@ export const GermFactoryGame: React.FC = () => {
   );
 };
 
-export default GermFactoryGame;
+export default HealthFactoryGame;

@@ -1,2 +1,2 @@
 export { HealthyPlateGame } from "./HealthyPlateGame";
-export { GermFactoryGame } from './GermFactoryGame';
+export { HealthFactoryGame } from './HealthFactoryGame';
