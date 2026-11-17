@@ -51,6 +51,7 @@ export {
 
 export {
   HealthyPlateGame,
+  GermFactoryGame,
 } from "./courses/wellbeing/physical-wellbeing";
 
 export {

@@ -1,1 +1,2 @@
-export { HealthyPlateGame } from "./games";
+export * from "./games";
+

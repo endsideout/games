@@ -5,6 +5,17 @@ import { Logo } from "../../../components";
 export function PhysicalWellbeing(): React.JSX.Element {
   const games = [
     {
+      title: "Germ Factory: Clean Hands Conveyor",
+      icon: "🧼",
+      description: "Sort fast on the conveyor belt! Keep good hygiene habits and wash away germy ones before time runs out!",
+      route: "/germ-factory",
+      color: "from-teal-50 to-emerald-50",
+      borderColor: "border-teal-300",
+      buttonColor: "from-teal-500 to-emerald-600",
+      tags: ["Hygiene", "Clean Hands", "Fast Sorter", "Arcade"],
+      comingSoon: false
+    },
+    {
       title: "Fitness Fun",
       icon: "🏃",
       description: "Coming Soon! Get moving with fun exercise challenges and learn how to keep your body healthy and strong.",
@@ -18,12 +29,12 @@ export function PhysicalWellbeing(): React.JSX.Element {
     {
       title: "Healthy Plate Builder",
       icon: "🍽️",
-      description: "Build the perfect healthy plate! Drag 5 foods onto the plate and score based on how nutritious your choices are.",
+      description: "Build the perfect healthy plate! Drag foods onto the plate and score based on how nutritious your choices are.",
       route: "/healthy-plate",
       color: "from-green-50 to-lime-50",
       borderColor: "border-green-300",
       buttonColor: "from-green-400 to-lime-500",
-      tags: ["Nutrition", "Drag & Drop", "5 Foods", "90s Timer"],
+      tags: ["Nutrition", "Drag & Drop", "Healthy Food", "90s Timer"],
       comingSoon: false
     },
     {
@@ -64,7 +75,7 @@ export function PhysicalWellbeing(): React.JSX.Element {
               </h1>
             </div>
             <p className="text-xl text-gray-700 max-w-3xl">
-              Take care of your body! Learn about exercise, nutrition, and healthy habits that keep you strong and energized.
+              Take care of your body! Learn about exercise, nutrition, hygiene, and healthy habits that keep you strong and energized.
             </p>
           </div>
         </div>
@@ -85,7 +96,7 @@ export function PhysicalWellbeing(): React.JSX.Element {
               )}
               <div className="text-center">
                 <div className="text-7xl mb-4">{game.icon}</div>
-                <h2 className="text-3xl font-black mb-4 text-red-800">
+                <h2 className="text-3xl font-black mb-4 text-gray-800">
                   {game.title}
                 </h2>
                 <p className="text-lg text-gray-700 mb-6 leading-relaxed">
@@ -95,7 +106,7 @@ export function PhysicalWellbeing(): React.JSX.Element {
                   {game.tags.map((tag, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm font-semibold"
+                      className="px-3 py-1 bg-white/60 text-gray-800 rounded-full text-sm font-semibold shadow-xs"
                     >
                       {tag}
                     </span>
