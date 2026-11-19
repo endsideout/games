@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { GameEvent } from "../types";
 import { buildGameStats } from "./buildGameStats";

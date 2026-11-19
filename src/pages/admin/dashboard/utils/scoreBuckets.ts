@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 /** Buckets completed-game scores into ranges for export and charts. */
 export function buildScoreDistributionFromScores(
   scores: number[]

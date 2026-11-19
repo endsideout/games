@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { GameStats } from "../../types";
 

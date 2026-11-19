@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React from "react";
 import { Logo } from "../../../../components";
 import { exportStatsToCsv } from "../logic/exporters/csv";

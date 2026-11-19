@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {

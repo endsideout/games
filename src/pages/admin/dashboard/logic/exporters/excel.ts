@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import * as XLSX from "xlsx";
 import type { GameStats } from "../../types";
 

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { challengeCards } from "../../src/data/challengeCards.ts";
 import { FRUIT_VEGGIE_QUESTIONS } from "../../src/data/fruitVeggieQuiz.ts";
 import { GAME_INSTRUCTIONS } from "../../src/components/Mascot/gameInstructions.ts";

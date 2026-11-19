@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { WHES_SCHOOL_CODE } from "./constants";
 
 export interface GameEvent {

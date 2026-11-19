@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export const MODE1_FOODS = [
   { id: "cookie", name: "Cookie", emoji: "🍪", category: "sometimes" },
   { id: "apple", name: "Apple", emoji: "🍎", category: "anytime" },

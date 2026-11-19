@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export { GameMenu } from "./GameMenu";
 export { GradeModeWrapper } from "./GradeModeWrapper";
 export { PairMatchingGame } from "./PairMatchingGame";

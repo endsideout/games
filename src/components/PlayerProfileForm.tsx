@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { useState } from "react";
 
 export interface PlayerProfileValues {

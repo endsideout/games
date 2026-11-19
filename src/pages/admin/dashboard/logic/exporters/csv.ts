@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import type { GameStats } from "../../types";
 
 /** Builds CSV content for snapshot/testing (pure). */
