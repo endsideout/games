@@ -167,3 +167,9 @@ src/
 ├── index.css                         # Global styles and Tailwind imports
 └── vite-env.d.ts                     # TypeScript declarations for imports
 ```
+
+## Copyright
+
+© 2026 EndsideOut. All rights reserved.
+
+The games, their content (questions, feedback, narration, artwork and audio) and this source code are the property of EndsideOut, a non-profit organization. Do not copy, redistribute or reuse them without written permission from EndsideOut.
