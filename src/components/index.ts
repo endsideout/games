@@ -5,3 +5,5 @@ export { Logo } from "./Logo";
 export { RequirePlayerProfile } from "./RequirePlayerProfile";
 export { EnvironmentBanner } from "./EnvironmentBanner";
 export { PlayerProfileForm } from "./PlayerProfileForm";
+export { CopyrightFooter } from "./CopyrightFooter";
+
