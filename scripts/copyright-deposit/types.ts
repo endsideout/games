@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export type ItemType =
   | "mcq"
   | "binary_choice"

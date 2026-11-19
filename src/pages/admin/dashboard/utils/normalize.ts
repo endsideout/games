@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export function normalizeSearchText(value: string): string {
   return value.trim().toLowerCase();
 }

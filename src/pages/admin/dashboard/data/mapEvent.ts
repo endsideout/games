@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import type { GameEvent } from "../types";
 import { normalizeSchoolKey, normalizeGameId, normalizeEventType } from "../utils/normalize";

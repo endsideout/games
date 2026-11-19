@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "../../../../components";

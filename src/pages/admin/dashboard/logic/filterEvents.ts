@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import type { GameEvent } from "../types";
 
 export function filterEvents(

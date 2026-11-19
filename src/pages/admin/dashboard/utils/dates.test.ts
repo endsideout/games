@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { describe, it, expect } from "vitest";
 import {
   formatDateInputLocal,

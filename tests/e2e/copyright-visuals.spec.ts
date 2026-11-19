@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "@playwright/test";

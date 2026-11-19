@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import type { GameEvent, GameStats } from "../types";
 import { parseLocalDateInput, formatHourLabel } from "../utils/dates";
 import { buildScoreDistributionFromScores } from "../utils/scoreBuckets";

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { type Dispatch, type SetStateAction } from "react";
 import type { DashboardFilters, GameStats } from "../types";
 

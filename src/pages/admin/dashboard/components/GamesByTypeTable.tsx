@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React from "react";
 import type { GameStats } from "../types";
 import { formatGameLabel } from "../utils/normalize";

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export { SocialWellbeing } from "./SocialWellbeing";
 export { EmotionalWellbeing } from "./EmotionalWellbeing";
 export { EnvironmentalWellbeing } from "./EnvironmentalWellbeing";

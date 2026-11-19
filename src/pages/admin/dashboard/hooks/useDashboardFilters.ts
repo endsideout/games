@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { WHES_SCHOOL_CODE } from "../constants";
 import type { DashboardFilters } from "../types";

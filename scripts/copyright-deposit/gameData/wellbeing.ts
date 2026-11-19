@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export const EMOTION_SCENARIOS = [
   {
     id: 1,

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export interface SetGameCard {
   number: number;
   name: string;

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { createContext, useContext, useState } from "react";
 import { useGameUser } from "../context/GameUserContext";
 import { gradeToMode, GameMode, MODE_INFO } from "../utils/gradeMode";

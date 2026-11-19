@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../../../../components";
 import { useGameUser } from "../../../../../context/GameUserContext";

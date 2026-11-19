@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 // Landing pages
 export { Home } from "./landing";
 export { PlayerInfoForm } from "./landing";

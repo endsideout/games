@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { useEffect, useRef, useState } from "react";
 import { getFirestoreDb } from "../../../../lib/firebase";
 import { loadGameEventsPaginated } from "../data/loadGameEvents";

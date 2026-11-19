@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { useRef } from "react";
 import type { QuizQuestion, ChallengeCard } from "../../../../../types";
 import { Logo } from "../../../../../components";

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { RECENT_EVENTS_PAGE_SIZE } from "../constants";
 import type { DashboardFilters, GameEvent, GameStats, GameOption } from "../types";
