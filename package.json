@@ -13,7 +13,8 @@
     "build-storybook": "storybook build",
     "test:storybook": "vitest run --project=storybook",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "capture:copyright-visuals": "COPYRIGHT_CAPTURE=1 playwright test tests/e2e/copyright-visuals.spec.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -61,6 +62,6 @@
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "main": "eslint.config.js",
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "EndsideOut, Inc.",
+  "license": "SEE LICENSE IN LICENSE"
 }

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 // Auto-extracted content data — shared by ContentRegistry.tsx and generateContentRegistry.ts
 
 export interface QARow {

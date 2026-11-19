@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export const WHES_SCHOOL_CODE = "WHES";
 
 export const MAX_SCORE_BY_GAME_ID: Record<string, number> = {

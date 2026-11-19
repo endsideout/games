@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { QuizQuestion } from "../types";
 
 export const FRUIT_VEGGIE_QUESTIONS: QuizQuestion[] = [

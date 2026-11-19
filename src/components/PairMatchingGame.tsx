@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { useState, useEffect, useRef } from "react";
 import { Card, PairMatchingGameProps } from "../types";
 import { Logo } from "./Logo";

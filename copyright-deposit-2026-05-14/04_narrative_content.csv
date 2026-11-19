@@ -1,0 +1,95 @@
+content_id,course,game_id,route,narrative_kind,text,audio_path
+sometimes-anytime-food:mode1:overview,Know Your Health,sometimes-anytime-food,/sometimes-anytime-food,mode_overview,Mode 1 sorts foods into anytime foods and sometimes foods.,
+least-sugar-game:round:1:facts,Know Your Health,least-sugar-game,/least-sugar-game,choice_fact,Donut: Made with added sugar & syrup | Orange: Natural sugar from fruit,
+least-sugar-game:round:2:facts,Know Your Health,least-sugar-game,/least-sugar-game,choice_fact,Cookies: Packed with added sugar & fat | Cherries: Only natural fruit sugars,
+least-sugar-game:round:3:facts,Know Your Health,least-sugar-game,/least-sugar-game,choice_fact,"Grapes: Natural sugars + antioxidants | Candy: Pure added sugar, no nutrients",
+least-sugar-game:round:4:facts,Know Your Health,least-sugar-game,/least-sugar-game,choice_fact,"Cereal: Often has lots of added sugar | Oatmeal: Barely any sugar, full of fibre",
+least-sugar-game:round:5:facts,Know Your Health,least-sugar-game,/least-sugar-game,choice_fact,Watermelon: Natural fruit sugar + lots of water | Ice Cream: High in added sugar & fat,
+brain-health-game:scenario:1:situation,Know Your Health,brain-health-game,/brain-health-game,situation,Flame-man has been feeling stressed all day.,
+brain-health-game:scenario:2:situation,Know Your Health,brain-health-game,/brain-health-game,situation,Flame-man needs a snack to help his brain function.,
+brain-health-game:scenario:3:situation,Know Your Health,brain-health-game,/brain-health-game,situation,Flame-man can't focus on his homework.,
+brain-health-game:scenario:4:situation,Know Your Health,brain-health-game,/brain-health-game,situation,Flame-man is feeling lonely and sad.,
+brain-health-game:scenario:5:situation,Know Your Health,brain-health-game,/brain-health-game,situation,It's 10pm and Flame-man is still wide awake.,
+water-glass-game:question:1:voice,Know Your Health,water-glass-game,/water-glass-game,voice_text,Which drink is a sometimes drink?,
+water-glass-game:question:2:voice,Know Your Health,water-glass-game,/water-glass-game,voice_text,How many cups of water should we drink each day?,
+water-glass-game:question:3:voice,Know Your Health,water-glass-game,/water-glass-game,voice_text,Which drink is the healthiest?,
+water-glass-game:question:4:voice,Know Your Health,water-glass-game,/water-glass-game,voice_text,Which drink helps plants grow?,
+habit-guard-game:prek:1:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Staying Active!,
+habit-guard-game:prek:2:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Sleep Well!,
+habit-guard-game:prek:3:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Drinking Water!,
+habit-guard-game:prek:4:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Junk Food!,
+habit-guard-game:prek:5:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Not enough sleep!,
+habit-guard-game:older:1:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Washing hands!,
+habit-guard-game:older:2:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Anytime foods!,
+habit-guard-game:older:3:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Exercise one hour a day!,
+habit-guard-game:older:4:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Drink water!,
+habit-guard-game:older:5:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Clean and disinfect!,
+habit-guard-game:older:6:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Not enough sleep!,
+habit-guard-game:older:7:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Too much sugar!,
+habit-guard-game:older:8:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Ignoring family health history!,
+habit-guard-game:older:9:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Eating junk food!,
+habit-guard-game:older:10:voice,Know Your Health,habit-guard-game,/habit-guard-game,voice_text,Limiting exercise!,
+planet-protector-game:menu-description,3D Wellness,planet-protector-game,/environmental-wellbeing/planet-protector,game_description,Let good actions naturally reach Earth for +1 point and stop the bad actions for +1 point! Bonus: Drag good actions from the right onto bad actions to cancel out the bad for +2 points!,
+surya-namaskar:pose:1:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Normal breath,/poses/pose-1.png
+surya-namaskar:pose:2:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Stretch up,/poses/pose-2.png
+surya-namaskar:pose:3:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Forward fold,/poses/pose-3.png
+surya-namaskar:pose:4:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Right leg back,/poses/pose-4.png
+surya-namaskar:pose:5:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Plank,/poses/pose-5.png
+surya-namaskar:pose:6:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Knees chest chin,/poses/pose-6.png
+surya-namaskar:pose:7:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Lift chest,/poses/pose-7.png
+surya-namaskar:pose:8:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Hips up,/poses/pose-8.png
+surya-namaskar:pose:9:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Right leg forward,/poses/pose-9.png
+surya-namaskar:pose:10:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Fold,/poses/pose-10.png
+surya-namaskar:pose:11:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Stretch up,/poses/pose-11.png
+surya-namaskar:pose:12:subtitle,3D Wellness,surya-namaskar,/surya-namaskar,pose_cue,Relax,/poses/pose-12.png
+dream-job-builder:career:1,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Doctor: You care deeply about people and love solving health mysteries!,
+dream-job-builder:career:2,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Teacher: You love sharing knowledge and helping others learn and grow!,
+dream-job-builder:career:3,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Artist: Your creativity shines — you make the world more beautiful!,
+dream-job-builder:career:4,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Engineer: You love building things and solving big problems!,
+dream-job-builder:career:5,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Chef: You're creative and love making people happy with delicious food!,
+dream-job-builder:career:6,3D Wellness,dream-job-builder,/dream-job-builder,career_result,"Pilot: Calm, analytical and adventurous — the sky is your office!",
+dream-job-builder:career:7,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Scientist: Endlessly curious — you love discovering how the world works!,
+dream-job-builder:career:8,3D Wellness,dream-job-builder,/dream-job-builder,career_result,Athlete: You love being active and pushing yourself to new limits!,
+job-path-maze:job:1:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,"Doctor: Doctors can work in hospitals, clinics, or even on rescue helicopters!",
+job-path-maze:job:2:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,"Chef: Chefs can work in restaurants, hotels, cruise ships, or even the White House!",
+job-path-maze:job:3:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,"Teacher: Teachers shape the future — every doctor, engineer, and artist once had a great teacher!",
+job-path-maze:job:4:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,"Engineer: Engineers built bridges, rockets, smartphones, and the internet — they solve the world's problems!",
+job-path-maze:job:5:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,"Artist: Artists work in movies, video games, fashion, architecture, advertising — art is everywhere!",
+job-path-maze:job:6:fact,3D Wellness,job-path-maze,/job-path-maze,career_fact,Pilot: Pilots can fly to over 100 different countries and see the world from above the clouds!,
+instruction:/sometimes-anytime-food,Know Your Health,sometimes-anytime-food,/sometimes-anytime-food,mascot_instruction,Hi friend! Sort the foods into anytime foods and sometimes foods! Anytime foods are healthy to eat every day. Sometimes foods are yummy treats for special occasions. Drag each food card to the right basket!,/audio/game-sometimes-anytime-food.wav
+instruction:/least-sugar-game,Know Your Health,least-sugar-game,/least-sugar-game,mascot_instruction,Hello! Find the food with the least sugar! Look carefully at each food and pick the one with the lowest sugar. Ready? Let's go!,/audio/game-least-sugar-game.wav
+instruction:/brain-health-game,Know Your Health,brain-health-game,/brain-health-game,mascot_instruction,Hey there! It's brain health time! Read each situation and pick the best choice for your brain. Listen to the explanation after each answer. You've got this!,/audio/game-brain-health-game.wav
+instruction:/water-glass-game,Know Your Health,water-glass-game,/water-glass-game,mascot_instruction,Hi! Let's drink water! Drag glasses of water to fill up your daily goal. Drinking water every day keeps you healthy and strong!,/audio/game-water-glass-game.wav
+instruction:/finish-race-game,Know Your Health,finish-race-game,/finish-race-game,mascot_instruction,"Ready, set, go! Answer the health questions correctly to run faster and win the race. The faster you answer, the faster you run!",/audio/game-finish-race-game.wav
+instruction:/habit-guard-game,Know Your Health,habit-guard-game,/habit-guard-game,mascot_instruction,Hey hero! Drag the good habits to your character to protect them! Bad habits will try to sneak in — drag them away! Keep your character safe and healthy!,/audio/game-habit-guard-game.wav
+instruction:/body-image-game,Know Your Health,body-image-game,/body-image-game,mascot_instruction,Hi! Let's talk about body image! Read each statement and decide if it shows a positive or negative body image. Every body is amazing!,/audio/game-body-image-game.wav
+instruction:/principle-of-relationship-pair-matching-game,3D Wellness,principle-of-relationship-pair-matching-game,/principle-of-relationship-pair-matching-game,mascot_instruction,Hello! Match the relationship principles with their meanings! Flip the cards and find the matching pairs. Good relationships make us happy!,/audio/game-principle-of-relationship.wav
+instruction:/fruit-vegetable-matching-game,3D Wellness,fruit-vegetable-matching-game,/fruit-vegetable-matching-game,mascot_instruction,Hey! Match the fruits and vegetables! Flip the cards and find the pairs that go together. Fruits and veggies keep us super healthy!,/audio/game-fruit-vegetable-matching.wav
+instruction:/fruit-veggie-quiz,3D Wellness,fruit-veggie-quiz,/fruit-veggie-quiz,mascot_instruction,Quiz time! Answer questions about fruits and vegetables. Each correct answer helps your plant grow bigger. How tall can you make it?,/audio/game-fruit-veggie-quiz.wav
+instruction:/challenge-quiz,3D Wellness,challenge-quiz,/challenge-quiz,mascot_instruction,Mental health challenge! Answer questions about emotions and feelings. Each correct answer builds your emotional intelligence. You're a superstar!,/audio/game-challenge-quiz.wav
+instruction:/emotion-detective-game,3D Wellness,emotion-detective-game,/emotion-detective-game,mascot_instruction,Be an emotion detective! Look at each face and figure out how they are feeling. Understanding emotions helps us be better friends!,/audio/game-emotion-detective.wav
+instruction:/environmental-wellbeing/planet-protector,3D Wellness,planet-protector-game,/environmental-wellbeing/planet-protector,mascot_instruction,"Save the planet! Sort the items into recycling, compost, and trash. Taking care of our Earth keeps it beautiful for everyone!",/audio/game-planet-protector.wav
+instruction:/environmental-wellbeing/eco-fix-it,3D Wellness,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,mascot_instruction,Eco fix it time! Find and fix the things that are bad for the environment. Every small action helps our planet stay healthy!,/audio/game-eco-fix-it.wav
+instruction:/banking-word-search,3D Wellness,banking-word-search,/banking-word-search,mascot_instruction,Word search time! Find the banking and finance words hidden in the grid. Learning about money helps you make smart choices!,/audio/game-banking-word-search.wav
+instruction:/budgeting-game,3D Wellness,budgeting-game,/budgeting-game,mascot_instruction,Let's budget! Sort items into needs and wants jars. Needs are things we must have. Wants are extra nice things. Can you fill the jars correctly?,/audio/game-budgeting-game.wav
+instruction:/study-habits-game,3D Wellness,study-habits-game,/study-habits-game,mascot_instruction,Study habits time! Sort the habits into good and bad study habits. Good study habits help you learn better and feel great!,/audio/game-study-habits-game.wav
+instruction:/job-path-maze,3D Wellness,job-path-maze,/job-path-maze,mascot_instruction,Find your path! Navigate through the maze to discover different job paths. There are so many amazing careers waiting for you!,/audio/game-job-path-maze.wav
+instruction:/dream-job-builder,3D Wellness,dream-job-builder,/dream-job-builder,mascot_instruction,Build your dream job! Mix and match skills and interests to discover what job could be perfect for you. Dream big!,/audio/game-dream-job-builder.wav
+instruction:/skills-jobs-sort,3D Wellness,skills-jobs-sort,/skills-jobs-sort,mascot_instruction,Match skills to jobs! Drag each skill to the job that needs it most. Every job needs special skills — can you find the right matches?,/audio/game-skills-jobs-sort.wav
+instruction:/healthy-plate,3D Wellness,healthy-plate,/healthy-plate,mascot_instruction,Build a healthy plate! Drag foods onto your plate and fill each section correctly. A balanced plate gives you energy to play and learn!,/audio/game-healthy-plate.wav
+instruction:/surya-namaskar,3D Wellness,surya-namaskar,/surya-namaskar,mascot_instruction,"Namaste! Let's do Surya Namaskar! Watch the animation to learn all twelve poses, then drag the cards into the right order. Sun salutations are great for your body and mind!",/audio/game-surya-namaskar.wav
+know-your-health-set-1:1,Know Your Health,sometimes-anytime-food,/sometimes-anytime-food,set_card_description,Drag each food to the right group — treat foods vs. foods you can eat anytime!,
+know-your-health-set-1:2,Know Your Health,least-sugar-game,/least-sugar-game,set_card_description,Natural sugar or added sugar? Eat more or less? Answer different questions each round!,
+know-your-health-set-1:3,Know Your Health,brain-health-game,/brain-health-game,set_card_description,Help our superhero make smart choices for his brain health across 5 real-life scenarios!,
+know-your-health-set-1:4,Know Your Health,water-glass-game,/water-glass-game,set_card_description,Answer questions about water and healthy drinks to fill up the glass — every correct answer adds water!,
+know-your-health-set-1:5,Know Your Health,finish-race-game,/finish-race-game,set_card_description,Answer questions about healthy habits and race to the finish line — every correct answer moves your runner closer!,
+know-your-health-set-1:6,Know Your Health,habit-guard-game,/habit-guard-game,set_card_description,Let good habits fall on you and drag bad habits away — protect your body from disease!,
+know-your-health-set-1:7,Know Your Health,body-image-game,/body-image-game,set_card_description,Read body image statements and decide if each one is positive or negative — build a healthy self-image!,
+3d-wellness-set-1:1,3D Wellness,principle-of-relationship-pair-matching-game,/principle-of-relationship-pair-matching-game,set_card_description,Match relationship principles and discover the building blocks of healthy connections!,
+3d-wellness-set-1:2,3D Wellness,emotion-detective-game,/emotion-detective-game,set_card_description,Identify emotions in real-life scenarios and build emotional intelligence!,
+3d-wellness-set-1:3,3D Wellness,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,set_card_description,Sort items into eco-friendly categories and protect the planet!,
+3d-wellness-set-1:4,3D Wellness,budgeting-game,/budgeting-game,set_card_description,Learn smart money management by sorting coins into the right jars!,
+3d-wellness-set-1:5,3D Wellness,study-habits-game,/study-habits-game,set_card_description,Sort good and bad study habits to build smarter learning routines!,
+3d-wellness-set-1:6,3D Wellness,dream-job-builder,/dream-job-builder,set_card_description,Explore careers and build your dream job path step by step!,
+3d-wellness-set-1:7,3D Wellness,healthy-plate,/healthy-plate,set_card_description,Build a balanced meal by placing foods in the right sections of the plate!,
+3d-wellness-set-1:8,3D Wellness,surya-namaskar,/surya-namaskar,set_card_description,Follow the sun salutation sequence and find your inner calm!,

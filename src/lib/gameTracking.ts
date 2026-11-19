@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { collection, addDoc } from "firebase/firestore";
 import { getFirestoreDb } from "./firebase";
 import type { GameUser } from "../context/GameUserContext";

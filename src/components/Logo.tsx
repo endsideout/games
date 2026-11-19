@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React from "react";
 import logoImg from "../assets/images/logos/EO_globe_vert_teal_transparent.webp";
 

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export { SometimesAnytimeGame } from "./SometimesAnytimeGame";
 export { LeastSugarGame } from "./LeastSugarGame";
 export { BrainHealthGame } from "./BrainHealthGame";

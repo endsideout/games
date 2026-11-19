@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, {
   createContext,
   useContext,
@@ -7,6 +8,7 @@ import React, {
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import { saveGameEventToFirebase } from "../lib/gameTracking";
+import { handleLmsGameEvent } from "../lib/lmsTracking";
 
 export interface GameUser {
   email: string | null;
@@ -15,6 +17,7 @@ export interface GameUser {
   teacherName: string | null;
   schoolName: string | null;
   school: string | null;
+  token?: string | null;
 }
 
 export interface GameTrackingEvent {
@@ -29,6 +32,8 @@ export interface GameTrackingEvent {
 
 interface GameUserContextValue {
   user: GameUser;
+  token: string | null;
+  isLmsSession: boolean;
   isIdentified: boolean;
   isProfileComplete: boolean;
   setPlayerProfile: (profile: {
@@ -78,8 +83,9 @@ function parseUserFromSearchParams(searchParams: URLSearchParams): GameUser {
   const teacherName = searchParams.get("teacherName") || null;
   const schoolName = searchParams.get("schoolName") || searchParams.get("school") || null;
   const school = schoolName;
+  const token = searchParams.get("token") || null;
 
-  return { email, name, grade, teacherName, schoolName, school };
+  return { email, name, grade, teacherName, schoolName, school, token };
 }
 
 export function GameUserProvider({
@@ -107,15 +113,19 @@ export function GameUserProvider({
     return {
       ...mergedUser,
       school: mergedUser.schoolName ?? searchParamUser.school ?? storedProfile.school ?? null,
+      token: searchParamUser.token ?? null,
     };
   }, [searchParamUser, storedProfile]);
 
-  const isIdentified = Boolean(user.email || user.name);
+  const token = user.token ?? null;
+  const isLmsSession = Boolean(token);
+  const isIdentified = Boolean(user.email || user.name || token);
   const isProfileComplete = Boolean(
-    user.name?.trim() &&
-    user.grade?.trim() &&
-    user.teacherName?.trim() &&
-    user.schoolName?.trim()
+    isLmsSession ||
+      (user.name?.trim() &&
+        user.grade?.trim() &&
+        user.teacherName?.trim() &&
+        user.schoolName?.trim())
   );
 
   const setPlayerProfile = useCallback((profile: {
@@ -154,17 +164,20 @@ export function GameUserProvider({
     }
 
     void saveGameEventToFirebase(payload);
+    void handleLmsGameEvent(event, user.token);
   }, [user]);
 
   const value = useMemo<GameUserContextValue>(
     () => ({
       user,
+      token,
+      isLmsSession,
       isIdentified,
       isProfileComplete,
       setPlayerProfile,
       trackEvent,
     }),
-    [user, isIdentified, isProfileComplete, setPlayerProfile, trackEvent]
+    [user, token, isLmsSession, isIdentified, isProfileComplete, setPlayerProfile, trackEvent]
   );
 
   return (

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 /**
  * Generates a unique session ID for correlating game events.
  * Format: timestamp-random (e.g., "1708368483584-a3f2b1c9")

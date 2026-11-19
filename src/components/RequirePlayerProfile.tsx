@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useGameUser } from "../context/GameUserContext";
@@ -9,14 +10,14 @@ interface RequirePlayerProfileProps {
 export function RequirePlayerProfile({
   children,
 }: RequirePlayerProfileProps): React.JSX.Element {
-  const { isProfileComplete } = useGameUser();
+  const { isProfileComplete, isLmsSession } = useGameUser();
   const location = useLocation();
 
   const isExcluded =
     location.pathname === "/player-info" ||
     location.pathname.startsWith("/admin");
 
-  if (!isProfileComplete && !isExcluded) {
+  if (!isProfileComplete && !isLmsSession && !isExcluded) {
     const returnTo = `${location.pathname}${location.search}`;
     return (
       <Navigate

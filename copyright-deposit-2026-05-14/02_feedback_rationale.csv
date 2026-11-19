@@ -1,0 +1,101 @@
+content_id,game_id,route,item_type,prompt,feedback_text,feedback_kind
+sometimes-anytime-food:mode1:cookie,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Cookie,,category
+sometimes-anytime-food:mode1:apple,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Apple,,category
+sometimes-anytime-food:mode1:banana,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Banana,,category
+sometimes-anytime-food:mode1:chocolate,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Chocolate,,category
+sometimes-anytime-food:mode1:broccoli,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Broccoli,,category
+sometimes-anytime-food:mode2:fries,sometimes-anytime-food,/sometimes-anytime-food,sort_item,French Fries,High in fat & sodium — save it for special days! Too much fat is bad for your heart!,non_benefit
+sometimes-anytime-food:mode2:cookie,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Cookie,High in added sugar — enjoy occasionally! Too much sugar harms your teeth!,non_benefit
+sometimes-anytime-food:mode2:chocolate,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Chocolate,"High in sugar & fat — a treat, not everyday! High sugar spikes your energy & crashes it!",non_benefit
+sometimes-anytime-food:mode2:apple,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Apple,Packed with fibre & vitamins! Helps focus in class,benefit
+sometimes-anytime-food:mode2:banana,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Banana,Great source of energy & potassium! Helps get better grades,benefit
+sometimes-anytime-food:mode2:broccoli,sometimes-anytime-food,/sometimes-anytime-food,sort_item,Broccoli,Packed with vitamins & fibre! Boosts your immunity,benefit
+least-sugar-game:round:1,least-sugar-game,/least-sugar-game,binary_choice,Which one has NATURAL sugar? 🍃,Oranges have natural sugar that comes with vitamins & fibre!,explanation
+least-sugar-game:round:2,least-sugar-game,/least-sugar-game,binary_choice,Which has ADDED sugar? 🏭,Cookies are loaded with added sugar put in during manufacturing!,explanation
+least-sugar-game:round:3,least-sugar-game,/least-sugar-game,binary_choice,Which should you eat MORE of? 💪,Grapes have natural sugar with antioxidants — great for you!,explanation
+least-sugar-game:round:4,least-sugar-game,/least-sugar-game,binary_choice,Which should you eat LESS of? 🚫,Most cereals are high in added sugar — oatmeal is the healthier swap!,explanation
+least-sugar-game:round:5,least-sugar-game,/least-sugar-game,binary_choice,Which has NATURAL sugar? 🍃,Watermelon is 92% water with natural sugar — super refreshing!,explanation
+brain-health-game:scenario:1,brain-health-game,/brain-health-game,scenario,What should he do to feel better?,Exercise releases feel-good chemicals in the brain that melt away stress!,explanation
+brain-health-game:scenario:2,brain-health-game,/brain-health-game,scenario,Which should he choose?,Apples fuel the brain with natural sugars and vitamins — no sugar crash!,explanation
+brain-health-game:scenario:3,brain-health-game,/brain-health-game,scenario,What should he try first?,A short movement break refreshes the brain so you can focus better when you return!,explanation
+brain-health-game:scenario:4,brain-health-game,/brain-health-game,scenario,What would help his brain health most?,Social connection boosts brain chemicals that lift your mood — superheroes need friends too!,explanation
+brain-health-game:scenario:5,brain-health-game,/brain-health-game,scenario,What's best for his brain?,The brain cleans itself and builds memories during sleep — 8 to 10 hours is every hero's superpower!,explanation
+water-glass-game:question:1,water-glass-game,/water-glass-game,mcq,Which drink is a sometimes drink?,"Soda has lots of added sugar, so it's a sometimes drink. Water is an anytime drink!",explanation
+water-glass-game:question:2,water-glass-game,/water-glass-game,mcq,How many cups of water should we drink each day?,We should drink 8 cups of water every day to stay healthy and hydrated!,explanation
+water-glass-game:question:3,water-glass-game,/water-glass-game,mcq,Which drink is the healthiest?,"Water is the healthiest drink — zero sugar, zero calories, and your body loves it!",explanation
+water-glass-game:question:4,water-glass-game,/water-glass-game,mcq,Which drink helps plants grow?,Plants need water to grow and survive — just like us!,explanation
+finish-race-game:question:1,finish-race-game,/finish-race-game,mcq,How many minutes a day should we be active?,We should be active for at least 60 minutes every day to keep our body strong and healthy!,explanation
+finish-race-game:question:2,finish-race-game,/finish-race-game,mcq,True or false: Screen time is healthier than moving your body.,False! Moving your body is always healthier than screen time. Exercise keeps your body and brain strong!,explanation
+finish-race-game:question:3,finish-race-game,/finish-race-game,mcq,What is a way we can stay active?,"All of the above! Soccer, running, and basketball are all great ways to stay active every day.",explanation
+finish-race-game:question:4,finish-race-game,/finish-race-game,mcq,What happens when we exercise more?,Exercise helps your brain focus better and gives you more energy — leading to better grades in school!,explanation
+finish-race-game:question:5,finish-race-game,/finish-race-game,mcq,Which is a muscle strengthening exercise?,Push ups are a great muscle strengthening exercise that builds strong arms and chest!,explanation
+body-image-game:statement:1,body-image-game,/body-image-game,statement,My appearance does not say anything about my character and values.,"Your kindness, creativity, and values define who you are — not how you look. That's positive body image!",explanation
+body-image-game:statement:2,body-image-game,/body-image-game,statement,I celebrate and appreciate my body.,Appreciating what your body can do and celebrating it is a beautiful sign of positive body image!,explanation
+body-image-game:statement:3,body-image-game,/body-image-game,statement,"I'm always thinking about food, exercise, and body size.","Constantly obsessing over food, exercise, and body size can be harmful and reflects a negative body image.",explanation
+body-image-game:statement:4,body-image-game,/body-image-game,statement,I compare myself to others.,Comparing yourself to others hurts your self-esteem. Everyone is unique and worthy just as they are!,explanation
+body-image-game:statement:5,body-image-game,/body-image-game,statement,I feel comfortable in my body.,Feeling comfortable in your body is a sign of positive body image. It means you accept and appreciate yourself just as you are!,explanation
+challenge-quiz:card:1,challenge-quiz,/challenge-quiz,mcq,"When you feel overwhelmed, what's the first step in the Mood Meter process?",Recognition is the first step - you need to identify and name your emotions before you can work with them effectively.,explanation
+challenge-quiz:card:2,challenge-quiz,/challenge-quiz,mcq,Which emotion word shows the highest energy and most pleasant feeling?,Ecstatic represents high energy and high pleasantness on the Mood Meter - it's in the yellow quadrant.,explanation
+challenge-quiz:card:3,challenge-quiz,/challenge-quiz,mcq,"When a friend is upset, what's the most empathetic response?",Empathy starts with listening and reflecting back what you hear - showing you understand their perspective.,explanation
+challenge-quiz:card:4,challenge-quiz,/challenge-quiz,mcq,"What does it mean to ""perspective-take""?",Perspective-taking means imagining how someone else might think and feel in their situation.,explanation
+challenge-quiz:card:5,challenge-quiz,/challenge-quiz,mcq,What's a healthy way to say no to a request you can't handle?,"Healthy boundaries are clear, kind, and honest - you can say no while still showing you care.",explanation
+challenge-quiz:card:6,challenge-quiz,/challenge-quiz,mcq,Why are boundaries important for relationships?,Boundaries protect your well-being and actually strengthen relationships by creating mutual respect.,explanation
+challenge-quiz:card:7,challenge-quiz,/challenge-quiz,mcq,When is it most important to seek help?,Seeking help when you feel overwhelmed prevents small problems from becoming bigger ones.,explanation
+challenge-quiz:card:8,challenge-quiz,/challenge-quiz,mcq,What's a good way to ask for help?,Being specific about what kind of help you need makes it easier for others to support you effectively.,explanation
+eco-fix-it-game:item:1,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Electric Car,Zero emissions vehicle,description
+eco-fix-it-game:item:2,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Reusable Bag,Reduces plastic waste,description
+eco-fix-it-game:item:3,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Solar Panels,Clean renewable energy,description
+eco-fix-it-game:item:4,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Recycling Bin,Sorts waste properly,description
+eco-fix-it-game:item:5,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Bicycle,Zero emission transport,description
+eco-fix-it-game:item:6,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Tree Planting,Produces oxygen,description
+eco-fix-it-game:item:7,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Wind Turbine,Renewable energy,description
+eco-fix-it-game:item:8,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Composting,Natural fertilizer,description
+eco-fix-it-game:item:9,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,LED Bulb,Energy efficient,description
+eco-fix-it-game:item:10,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Water Conservation,Saves water,description
+eco-fix-it-game:item:11,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Gas Car,Emits pollution,description
+eco-fix-it-game:item:12,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Plastic Bags,Single-use plastic,description
+eco-fix-it-game:item:13,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Factory Smoke,Air pollution,description
+eco-fix-it-game:item:14,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Trash Pile,Unsorted waste,description
+eco-fix-it-game:item:15,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Cutting Trees,Deforestation,description
+eco-fix-it-game:item:16,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Coal Power,Polluting energy,description
+eco-fix-it-game:item:17,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Littering,Pollutes environment,description
+eco-fix-it-game:item:18,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Water Waste,Wastes resources,description
+eco-fix-it-game:item:19,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Incandescent Bulb,Energy wasting,description
+eco-fix-it-game:item:20,eco-fix-it-game,/environmental-wellbeing/eco-fix-it,sort_item,Aerosol Spray,Harmful chemicals,description
+banking-word-search:word:1,banking-word-search,/banking-word-search,definition,BANK,A safe place to keep your money,definition
+banking-word-search:word:2,banking-word-search,/banking-word-search,definition,SAVE,To keep money for later,definition
+banking-word-search:word:3,banking-word-search,/banking-word-search,definition,CASH,Paper money and coins,definition
+banking-word-search:word:4,banking-word-search,/banking-word-search,definition,LOAN,Money borrowed that must be repaid,definition
+banking-word-search:word:5,banking-word-search,/banking-word-search,definition,FEES,Charges for using some services,definition
+banking-word-search:word:6,banking-word-search,/banking-word-search,definition,SAFE,A secure place for valuables,definition
+banking-word-search:word:7,banking-word-search,/banking-word-search,definition,COIN,Small round metal money,definition
+banking-word-search:word:8,banking-word-search,/banking-word-search,definition,CREDIT,Borrowing money to pay back later,definition
+banking-word-search:word:9,banking-word-search,/banking-word-search,definition,TRUST,Believing the bank keeps money safe,definition
+banking-word-search:word:10,banking-word-search,/banking-word-search,definition,MONEY,What we use to buy things,definition
+banking-word-search:word:11,banking-word-search,/banking-word-search,definition,DEPOSIT,Put money INTO your account,definition
+banking-word-search:word:12,banking-word-search,/banking-word-search,definition,BALANCE,How much money you have,definition
+banking-word-search:word:13,banking-word-search,/banking-word-search,definition,SAVINGS,Account to grow your money,definition
+job-path-maze:job:1:checkpoint:1,job-path-maze,/job-path-maze,mcq,Which subject helps a doctor the most?,Science helps doctors understand how the body works!,explanation
+job-path-maze:job:1:checkpoint:2,job-path-maze,/job-path-maze,mcq,A patient is scared. What should a doctor do?,Doctors need empathy to help patients feel safe.,explanation
+job-path-maze:job:1:checkpoint:3,job-path-maze,/job-path-maze,mcq,What does a doctor use to listen to your heartbeat?,A stethoscope amplifies sounds inside your body!,explanation
+job-path-maze:job:1:checkpoint:4,job-path-maze,/job-path-maze,mcq,Which skill makes a great doctor?,Caring for people is the heart of being a doctor.,explanation
+job-path-maze:job:2:checkpoint:1,job-path-maze,/job-path-maze,mcq,What does a chef need most?,Cooking skills are the foundation of being a great chef!,explanation
+job-path-maze:job:2:checkpoint:2,job-path-maze,/job-path-maze,mcq,A dish tastes too salty. What do you do?,Good chefs taste and adjust to make food just right.,explanation
+job-path-maze:job:2:checkpoint:3,job-path-maze,/job-path-maze,mcq,Which skill makes a great chef?,Creativity helps chefs invent new and delicious recipes!,explanation
+job-path-maze:job:2:checkpoint:4,job-path-maze,/job-path-maze,mcq,Where does a chef mostly work?,The kitchen is a chef's workplace and creative space!,explanation
+job-path-maze:job:3:checkpoint:1,job-path-maze,/job-path-maze,mcq,What is the most important skill for a teacher?,Patience helps teachers support every student's learning pace.,explanation
+job-path-maze:job:3:checkpoint:2,job-path-maze,/job-path-maze,mcq,A student doesn't understand. What should a teacher do?,Great teachers find new ways to explain until everyone gets it!,explanation
+job-path-maze:job:3:checkpoint:3,job-path-maze,/job-path-maze,mcq,Which tool does a teacher use most?,Books and lessons are a teacher's main tools for sharing knowledge.,explanation
+job-path-maze:job:3:checkpoint:4,job-path-maze,/job-path-maze,mcq,Where does a teacher work?,Classrooms are where teachers inspire the next generation!,explanation
+job-path-maze:job:4:checkpoint:1,job-path-maze,/job-path-maze,mcq,Which subject is most useful for an engineer?,Math and science are the building blocks of engineering!,explanation
+job-path-maze:job:4:checkpoint:2,job-path-maze,/job-path-maze,mcq,A bridge design has a problem. What does an engineer do?,Engineers are problem solvers — they keep improving until it's right.,explanation
+job-path-maze:job:4:checkpoint:3,job-path-maze,/job-path-maze,mcq,What skill helps engineers most?,Critical thinking helps engineers find the best solutions.,explanation
+job-path-maze:job:4:checkpoint:4,job-path-maze,/job-path-maze,mcq,Which tool do engineers often use?,Computers and blueprints help engineers design and plan structures.,explanation
+job-path-maze:job:5:checkpoint:1,job-path-maze,/job-path-maze,mcq,What does an artist need most?,Creativity is the fuel that powers all great artwork!,explanation
+job-path-maze:job:5:checkpoint:2,job-path-maze,/job-path-maze,mcq,An artwork doesn't look right. What should an artist do?,Great artists grow by practising and learning from mistakes.,explanation
+job-path-maze:job:5:checkpoint:3,job-path-maze,/job-path-maze,mcq,Which skill helps an artist succeed?,"Noticing small details helps artists create beautiful, precise work.",explanation
+job-path-maze:job:5:checkpoint:4,job-path-maze,/job-path-maze,mcq,Where can an artist show their work?,Artists can share their work with the whole world!,explanation
+job-path-maze:job:6:checkpoint:1,job-path-maze,/job-path-maze,mcq,Which skill is most important for a pilot?,Staying calm helps pilots make safe decisions in any situation.,explanation
+job-path-maze:job:6:checkpoint:2,job-path-maze,/job-path-maze,mcq,There is bad weather ahead. What should a pilot do?,Pilots use instruments and training to navigate safely.,explanation
+job-path-maze:job:6:checkpoint:3,job-path-maze,/job-path-maze,mcq,What does a pilot use to navigate?,Modern pilots use advanced instruments and GPS to fly safely.,explanation
+job-path-maze:job:6:checkpoint:4,job-path-maze,/job-path-maze,mcq,Which subject helps a future pilot?,"Math and physics help pilots understand speed, altitude, and navigation.",explanation
