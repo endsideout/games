@@ -17,6 +17,13 @@ Use your staging base URL in place of `https://staging-endsideoutgames.netlify.a
 - `https://staging-endsideoutgames.netlify.app/financial-literacy`
 - `https://staging-endsideoutgames.netlify.app/budgeting-game`
 
+## Spike Lab (static prototype)
+
+Spike Lab is a self-contained static app in `public/spike-lab/`. It does not use the player profile gate or Firebase tracking: no sign-in, and nothing leaves the device.
+
+- `https://staging-endsideoutgames.netlify.app/spike-lab/`
+- Preview a date or season: add `?date=2026-11-20` or `?season=winter`
+
 ## Optional query-param links (LMS style testing)
 
 - `https://staging-endsideoutgames.netlify.app/least-sugar-game?firstName=Alex&email=alex.tester@example.org&grade=6&teacherName=Ms+Green&schoolName=Staging+Academy`
