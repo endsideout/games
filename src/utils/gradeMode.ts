@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export type GameMode = 1 | 2 | 3;
 
 export const MODE_INFO: Record<GameMode, { label: string; grades: string; emoji: string; gradient: string }> = {

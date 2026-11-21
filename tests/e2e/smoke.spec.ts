@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import { expect, test } from "@playwright/test";
 
 const profileStorageKey = "endsideout-player-profile";

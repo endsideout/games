@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 // Shared audio
 // One "voice channel" for mascot clips and text-to-speech
 

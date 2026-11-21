@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 // Type definitions
 export interface Card {
   id: number;

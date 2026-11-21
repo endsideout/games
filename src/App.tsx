@@ -1,9 +1,10 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GameUserProvider } from "./context/GameUserContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { EnvironmentBanner, RequirePlayerProfile, GradeModeWrapper } from "./components";
+import { EnvironmentBanner, RequirePlayerProfile, GradeModeWrapper, CopyrightFooter } from "./components";
 
 const MascotWidget = lazy(() =>
   import("./components/Mascot/MascotWidget").then(m => ({ default: m.MascotWidget }))
@@ -165,6 +166,7 @@ export default function App(): React.JSX.Element {
         />
       </Routes>
           </RequirePlayerProfile>
+          <CopyrightFooter />
       </GameUserProvider>
       </AuthProvider>
     </Router>

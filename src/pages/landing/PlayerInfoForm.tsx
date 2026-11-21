@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGameUser } from "../../context/GameUserContext";

@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 import sharp from 'sharp';
 import { readdir, stat, mkdir } from 'fs/promises';
 import { join, dirname, extname } from 'path';

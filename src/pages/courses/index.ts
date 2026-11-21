@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 export { ThreeDWellness } from "./ThreeDWellness";
 export { ThreeDWellnessSet1 } from "./ThreeDWellnessSet1";
 export { KnowYourHealth } from "./KnowYourHealth";

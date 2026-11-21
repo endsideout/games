@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`serializeGameAnalyticsCsv > matches snapshot for minimal stats 1`] = `
+"Metric,Value
+Total Games Started,2
+Games Completed,1
+Games Abandoned,1
+Completion Rate,50.0%
+Average Score,10.0
+Average Moves,3.0
+Average Time Remaining,12s
+Highest Score,N/A
+Highest Score User,N/A
+Highest Score Completed At,N/A
+
+Game,Started,Completed,Avg Score
+g1,2,1,10.0
+
+Games by Result,,
+Game,Score Range,Count
+g1,10,1
+
+Date,Started,Completed
+fixed-date,1,1"
+`;

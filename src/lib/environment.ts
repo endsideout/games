@@ -1,3 +1,4 @@
+/* © 2026 EndsideOut, Inc. All rights reserved. */
 const PROD_HOSTS = new Set(["endsideoutgames.netlify.app"]);
 
 function splitCsv(value: string | undefined): string[] {
