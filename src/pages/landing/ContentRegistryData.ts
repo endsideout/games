@@ -33,7 +33,23 @@ export interface ScenarioRow {
   correct: string;
 }
 
-export type ContentType = "qa" | "items" | "vocab" | "scenarios";
+/**
+ * Food values behind a simulation. These are NOT nutrition-label figures — see
+ * the reviewNote on any game that uses them before reading the numbers.
+ */
+export interface NutritionRow {
+  id: string;
+  food: string;
+  group: string;
+  fastSugar: number;
+  starch: number;
+  fiber: number;
+  protein: number;
+  fat: number;
+  notes?: string;
+}
+
+export type ContentType = "qa" | "items" | "vocab" | "scenarios" | "nutrition";
 
 export interface Game {
   id: string;
@@ -45,10 +61,13 @@ export interface Game {
   duration: string;
   voiceover: string;
   contentType: ContentType;
+  /** Shown above the table. Use it to tell a reviewer what the numbers mean. */
+  reviewNote?: string;
   qa?: QARow[];
   items?: ItemRow[];
   vocab?: VocabRow[];
   scenarios?: ScenarioRow[];
+  nutrition?: NutritionRow[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -774,6 +793,91 @@ export const GAMES: Game[] = [
       { id: "3DW-SPI-001-12", item: "Tadasana — Mountain Pose",          category: "Sun Salutation Sequence", notes: "Pose 12 of 12. Closing position." },
     ],
   },
+
+  // ── Labs ──────────────────────────────────────────────────────────────────
+  // Spike Lab is a static page under public/, not a React route, so it is
+  // registered here by hand rather than picked up by generateContentRegistry.ts.
+
+  {
+    id: "SPK-001",
+    name: "Spike Lab",
+    module: "Labs",
+    route: "/spike-lab/index.html",
+    type: "Open-ended simulation",
+    gradeLevel: "Grade 3 to Grade 7 (ages 8-12)",
+    duration: "Open-ended",
+    voiceover: "Hi, I'm Hexi! I'm a glucose molecule, the sugar your body uses for energy. Let's find out how food fuels you.",
+    contentType: "nutrition",
+    reviewNote:
+      "READ THIS BEFORE THE NUMBERS. These are not nutrition-label values and they are not grams. " +
+      "Each is a relative weight on a 0-10 scale, for one typical child's portion, and they exist only to " +
+      "drive the shape of Hexi's curve. No serving size is defined anywhere in the app. " +
+      "The model: gas = fastSugar + 0.7 x starch; brake = 1.2 x fiber + 0.8 x protein + 0.6 x fat; " +
+      "the peak height is gas x 12 / (1 + 0.12 x brake), and a dip below the start appears only when " +
+      "peak > 55 and brake < 7. So what matters for review is each food's size RELATIVE to the others " +
+      "in its group, and whether the resulting shape tells a child something true. An absolute value " +
+      "being 'wrong in grams' is expected. Children are never shown these numbers, or any number: they " +
+      "see a line, a shape name, and a sentence. Nothing here has been reviewed by a dietitian.",
+    nutrition: [
+      { id: "SPK-001-01", food: "Soda",                    group: "Drinks",              fastSugar:    9, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-02", food: "Juice box",               group: "Drinks",              fastSugar:    6, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-03", food: "Milk",                    group: "Drinks",              fastSugar:    2, starch:    0, fiber:    0, protein:    4, fat:    2 },
+      { id: "SPK-001-04", food: "Water",                   group: "Drinks",              fastSugar:    0, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-05", food: "Sugary cereal",           group: "Grains",              fastSugar:    4, starch:    4, fiber:    0, protein:    1, fat:    0 },
+      { id: "SPK-001-06", food: "Oatmeal",                 group: "Grains",              fastSugar:    1, starch:    4, fiber:    4, protein:    1, fat:    1 },
+      { id: "SPK-001-07", food: "White bread",             group: "Grains",              fastSugar:    1, starch:    5, fiber:    1, protein:    1, fat:    0 },
+      { id: "SPK-001-08", food: "Whole wheat bread",       group: "Grains",              fastSugar:    1, starch:    4, fiber:    3, protein:    2, fat:    0 },
+      { id: "SPK-001-09", food: "White rice",              group: "Grains",              fastSugar:    0, starch:    6, fiber:    0, protein:    1, fat:    0 },
+      { id: "SPK-001-10", food: "Brown rice",              group: "Grains",              fastSugar:    0, starch:    5, fiber:    3, protein:    1, fat:    0 },
+      { id: "SPK-001-11", food: "Apple",                   group: "Fruits & veggies",    fastSugar:    3, starch:    0, fiber:    4, protein:    0, fat:    0 },
+      { id: "SPK-001-12", food: "Banana",                  group: "Fruits & veggies",    fastSugar:    3, starch:    1, fiber:    2, protein:    0, fat:    0 },
+      { id: "SPK-001-13", food: "Berries",                 group: "Fruits & veggies",    fastSugar:    2, starch:    0, fiber:    4, protein:    0, fat:    0 },
+      { id: "SPK-001-14", food: "Carrots",                 group: "Fruits & veggies",    fastSugar:    1, starch:    1, fiber:    3, protein:    0, fat:    0 },
+      { id: "SPK-001-15", food: "Broccoli",                group: "Fruits & veggies",    fastSugar:    0, starch:    1, fiber:    4, protein:    1, fat:    0 },
+      { id: "SPK-001-16", food: "Eggs",                    group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    0, protein:    6, fat:    4 },
+      { id: "SPK-001-17", food: "Chicken",                 group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    0, protein:    8, fat:    2 },
+      { id: "SPK-001-18", food: "Beans",                   group: "Protein & fats",      fastSugar:    0, starch:    3, fiber:    6, protein:    4, fat:    0 },
+      { id: "SPK-001-19", food: "Peanut butter",           group: "Protein & fats",      fastSugar:    0, starch:    1, fiber:    2, protein:    4, fat:    6 },
+      { id: "SPK-001-20", food: "Plain yogurt",            group: "Protein & fats",      fastSugar:    1, starch:    0, fiber:    0, protein:    5, fat:    2 },
+      { id: "SPK-001-21", food: "Cheese",                  group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    0, protein:    4, fat:    4 },
+      { id: "SPK-001-22", food: "Candy",                   group: "Treats",              fastSugar:    7, starch:    0, fiber:    0, protein:    0, fat:    1 },
+      { id: "SPK-001-23", food: "Chips",                   group: "Treats",              fastSugar:    0, starch:    4, fiber:    1, protein:    1, fat:    4 },
+      { id: "SPK-001-24", food: "Pancakes + syrup",        group: "Treats",              fastSugar:    5, starch:    4, fiber:    0, protein:    1, fat:    1 },
+      { id: "SPK-001-25", food: "Cookie",                  group: "Treats",              fastSugar:    5, starch:    2, fiber:    0, protein:    1, fat:    2 },
+      { id: "SPK-001-26", food: "Corn tortilla",           group: "Grains",              fastSugar:    0, starch:    5, fiber:    2, protein:    1, fat:    1 },
+      { id: "SPK-001-27", food: "Roti / chapati",          group: "Grains",              fastSugar:    0, starch:    5, fiber:    3, protein:    2, fat:    1 },
+      { id: "SPK-001-28", food: "Injera",                  group: "Grains",              fastSugar:    0, starch:    5, fiber:    3, protein:    2, fat:    0 },
+      { id: "SPK-001-29", food: "Rice noodles",            group: "Grains",              fastSugar:    0, starch:    6, fiber:    1, protein:    1, fat:    0 },
+      { id: "SPK-001-30", food: "Pita bread",              group: "Grains",              fastSugar:    0, starch:    5, fiber:    1, protein:    2, fat:    0 },
+      { id: "SPK-001-31", food: "Grits",                   group: "Grains",              fastSugar:    0, starch:    5, fiber:    1, protein:    1, fat:    1 },
+      { id: "SPK-001-32", food: "Cornbread",               group: "Grains",              fastSugar:    3, starch:    4, fiber:    1, protein:    1, fat:    2 },
+      { id: "SPK-001-33", food: "Instant noodles",         group: "Grains",              fastSugar:    1, starch:    6, fiber:    1, protein:    2, fat:    5 },
+      { id: "SPK-001-34", food: "Cereal bar",              group: "Grains",              fastSugar:    5, starch:    3, fiber:    1, protein:    1, fat:    2 },
+      { id: "SPK-001-35", food: "Tofu",                    group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    1, protein:    5, fat:    3 },
+      { id: "SPK-001-36", food: "Lentils / dal",           group: "Protein & fats",      fastSugar:    0, starch:    3, fiber:    5, protein:    4, fat:    0 },
+      { id: "SPK-001-37", food: "Chickpeas",               group: "Protein & fats",      fastSugar:    0, starch:    3, fiber:    5, protein:    4, fat:    1 },
+      { id: "SPK-001-38", food: "Fish",                    group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    0, protein:    7, fat:    2 },
+      { id: "SPK-001-39", food: "Canned tuna",             group: "Protein & fats",      fastSugar:    0, starch:    0, fiber:    0, protein:    7, fat:    1 },
+      { id: "SPK-001-40", food: "Black-eyed peas",         group: "Protein & fats",      fastSugar:    0, starch:    3, fiber:    5, protein:    4, fat:    0 },
+      { id: "SPK-001-41", food: "Edamame",                 group: "Protein & fats",      fastSugar:    0, starch:    1, fiber:    4, protein:    5, fat:    2 },
+      { id: "SPK-001-42", food: "Plantain",                group: "Fruits & veggies",    fastSugar:    3, starch:    4, fiber:    2, protein:    0, fat:    0 },
+      { id: "SPK-001-43", food: "Mango",                   group: "Fruits & veggies",    fastSugar:    4, starch:    0, fiber:    2, protein:    0, fat:    0 },
+      { id: "SPK-001-44", food: "Avocado",                 group: "Fruits & veggies",    fastSugar:    0, starch:    0, fiber:    5, protein:    1, fat:    6 },
+      { id: "SPK-001-45", food: "Collard greens",          group: "Fruits & veggies",    fastSugar:    0, starch:    0, fiber:    4, protein:    1, fat:    0 },
+      { id: "SPK-001-46", food: "Sweet potato",            group: "Fruits & veggies",    fastSugar:    2, starch:    5, fiber:    4, protein:    1, fat:    0 },
+      { id: "SPK-001-47", food: "Corn",                    group: "Fruits & veggies",    fastSugar:    1, starch:    4, fiber:    3, protein:    1, fat:    1 },
+      { id: "SPK-001-48", food: "Canned peaches",          group: "Fruits & veggies",    fastSugar:    4, starch:    0, fiber:    1, protein:    0, fat:    0 },
+      { id: "SPK-001-49", food: "Kimchi",                  group: "Fruits & veggies",    fastSugar:    0, starch:    0, fiber:    2, protein:    0, fat:    0 },
+      { id: "SPK-001-50", food: "Seaweed snack",           group: "Fruits & veggies",    fastSugar:    0, starch:    0, fiber:    1, protein:    1, fat:    1 },
+      { id: "SPK-001-51", food: "Dates",                   group: "Fruits & veggies",    fastSugar:    6, starch:    0, fiber:    2, protein:    0, fat:    0 },
+      { id: "SPK-001-52", food: "Gummy candy",             group: "Treats (Candy Lab)",  fastSugar:    7, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-53", food: "Candy corn",              group: "Treats (Candy Lab)",  fastSugar:    7, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-54", food: "Lollipop",                group: "Treats (Candy Lab)",  fastSugar:    6, starch:    0, fiber:    0, protein:    0, fat:    0 },
+      { id: "SPK-001-55", food: "Chocolate bar",           group: "Treats (Candy Lab)",  fastSugar:    5, starch:    0, fiber:  0.5, protein:    1, fat:    3 },
+      { id: "SPK-001-56", food: "Peanut butter cup",       group: "Treats (Candy Lab)",  fastSugar:    4, starch:    0, fiber:    1, protein:    2, fat:    4 },
+    ],
+  },
+
 ];
 
 // ── Change log ────────────────────────────────────────────────────────────────

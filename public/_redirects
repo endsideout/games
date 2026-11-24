@@ -1,1 +1,10 @@
+# Pretty URLs for the static labs. Netlify already serves an existing file
+# before applying redirects, so these only make the intent explicit and keep
+# the bare "/spike-lab" (no trailing slash) working in links we hand out.
+# They do not apply to the Vite dev server, which answers "/spike-lab/" with
+# the SPA shell — in-app links therefore point at the file itself.
+/spike-lab     /spike-lab/index.html   200
+/spike-lab/    /spike-lab/index.html   200
+
+# SPA fallback for every React route. Must stay last.
 /*    /index.html   200
