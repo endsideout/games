@@ -212,6 +212,13 @@ main{padding-block:20px 40px}
   background:var(--surface);background:color-mix(in srgb,var(--accent) 9%,var(--surface));
   border:1px solid var(--line);border-radius:12px}
 .ridekey svg{flex:0 0 auto;width:42px;height:24px;margin-top:3px;color:var(--accent)}
+.ridekey .vbtn{margin-left:auto;align-self:center}
+.ridekey .vbtn svg{width:20px;height:20px;margin-top:0}
+/* One-time nudge toward the explanation. Applied only when the viewer has not
+   asked for reduced motion; see setChartKey. */
+@keyframes keyflash{0%,100%{box-shadow:0 0 0 0 transparent}
+  25%,75%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 34%,transparent)}}
+.ridekey.keyflash{animation:keyflash 1.35s ease-in-out 2}
 .ridekey b{color:var(--ink);font-weight:800}
 /* Hexi's voice. The speaker buttons only appear once "Hexi talks out loud" is on,
    so a classroom that has not opted in never sees an audio control at all. */
@@ -739,6 +746,10 @@ footer{color:var(--muted);font-size:.82rem;padding-block:0 32px}
         <p style="font-weight:800;margin-bottom:6px">How old are you? <span class="promise">(You can skip this.)</span></p>
         <div class="bandrow" id="welcomeBands"></div>
       </div>
+      <div>
+        <p style="font-weight:800;margin-bottom:6px">Want Hexi to read things out loud? <span class="promise">(You can change this any time in Settings.)</span></p>
+        <div class="bandrow" id="welcomeVoice"></div>
+      </div>
       <p class="promise">Spike Lab never asks your name, email or birthday. Everything you do stays on this device.</p>
       <div class="bandrow"><button class="primary" id="welcomeGo" style="margin-top:0">Let's go</button><button class="say" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button></div>
     </div>
@@ -1157,7 +1168,7 @@ footer{color:var(--muted);font-size:.82rem;padding-block:0 32px}
 // ---------- Settings (saved only on this device) ----------
 document.documentElement.lang='en';
 const PKEY='spikelab-prefs-v1';
-const PDEF={onboarded:false,band:null,ex:[],fasting:false,showBody:true,read:false,voice:false,seenLabelIntro:false,look:'day',tips:{}};
+const PDEF={onboarded:false,band:null,ex:[],fasting:false,showBody:true,read:false,voice:false,voiceAsked:false,seenKey:false,seenLabelIntro:false,look:'day',tips:{}};
 let prefs={...PDEF};
 try{const p=JSON.parse(localStorage.getItem(PKEY));if(p&&typeof p==='object')prefs={...PDEF,...p}}catch(e){}
 function savePrefs(){try{localStorage.setItem(PKEY,JSON.stringify(prefs))}catch(e){}}
@@ -1472,7 +1483,24 @@ function setCap(svg,text,short,say){
 }
 const KEY_MEAL='<b>What is this?</b> The track is Hexi’s energy. The ride starts at your first bite on the left and ends a few hours later on the right.',
       KEY_DAY='<b>What is this?</b> The track is Hexi’s energy for a whole day — morning on the left, bedtime on the right. Each sign is a part of the day.';
-function setChartKey(day){const el=document.getElementById('chartKeyTxt');if(el)el.innerHTML=day?KEY_DAY:KEY_MEAL}
+function setChartKey(day){
+  const el=document.getElementById('chartKeyTxt');if(!el)return;
+  el.innerHTML=day?KEY_DAY:KEY_MEAL;
+  const row=el.parentElement;
+  let b=row.querySelector('[data-vsay]');
+  if(!b){row.insertAdjacentHTML('beforeend',vButton('Hear what the track means'));b=row.querySelector('[data-vsay]')}
+  // Only the whole-day wording is recorded. The single-meal wording is not, so
+  // the speaker hides itself there instead of saying something that differs
+  // from the words on the screen.
+  b.dataset.ids=day?'cap_day':'';
+  vSyncButtons();
+  // The first time a chart appears, draw the eye to the explanation once. It is
+  // a nudge, not a step: nothing to dismiss and nothing blocking the page.
+  if(!prefs.seenKey){
+    prefs.seenKey=true;savePrefs();
+    if(!RM.matches){row.classList.add('keyflash');setTimeout(()=>row.classList.remove('keyflash'),2700)}
+  }
+}
 function drawRide(svg,c){
   cancelAnimationFrame(rideRAF);rideC=c;rideSvg=svg;svg._c=c;
   const P=svg.id;let s=`<defs><linearGradient id="${P}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--sky)"/><stop offset="1" stop-color="var(--sky2)"/></linearGradient><clipPath id="${P}-clip"><rect width="720" height="300" rx="18"/></clipPath></defs><g clip-path="url(#${P}-clip)">`;
@@ -2234,6 +2262,11 @@ function renderPrefsUI(){
     ws.dataset.ready='1';
   }
   $('welcomeBands').innerHTML=bandBtns(prefs.band)+`<button class="chip" data-band="" aria-pressed="false">Skip</button>`;
+  // Neither option is pre-picked until the child answers, so the card asks a
+  // question rather than announcing a decision already taken for them.
+  $('welcomeVoice').innerHTML=
+    `<button class="chip" data-vopt="1" aria-pressed="${prefs.voiceAsked&&!!prefs.voice}">Yes, read to me</button>`+
+    `<button class="chip" data-vopt="0" aria-pressed="${prefs.voiceAsked&&!prefs.voice}">No thanks</button>`;
   $('prefBands').innerHTML=bandBtns(prefs.band);
   $('prefFoods').innerHTML=EXCL.map(x=>`<label class="check"><input type="checkbox" data-ex="${x.k}" ${prefs.ex.includes(x.k)?'checked':''}> ${x.n}</label>`).join('');
   applyLook();$('prefLook').innerHTML=LOOKS.map(([k,n])=>`<button class="chip" data-look="${k}" aria-pressed="${(prefs.look||'day')===k}">${n}</button>`).join('');
@@ -2258,6 +2291,17 @@ function applyPrefs(){
 function setBand(k){prefs.band=k||null;if(k==='6-9')prefs.read=canSpeak;savePrefs();renderPrefsUI()}
 $('welcomeBands').onclick=e=>{const b=e.target.closest('[data-band]');if(!b)return;setBand(b.dataset.band);
   $('welcomeBands').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+// Hexi's voice is asked for here rather than switched on by default. A room of
+// thirty devices that all start talking at once is a room where the sound gets
+// turned off for good, and a speaker icon in Settings is never found by anyone.
+// The tap doubles as the user gesture iOS requires before Web Audio will play,
+// so the sprite is warmed on the same click that asked for it.
+$('welcomeVoice').onclick=e=>{
+  const b=e.target.closest('[data-vopt]');if(!b)return;
+  const on=b.dataset.vopt==='1';
+  prefs.voiceAsked=true;prefs.voice=on;savePrefs();renderPrefsUI();
+  if(on){vLoad().then(()=>vSay(['intro_hi'])).catch(()=>{})}else{vStop()}
+};
 // A second viewing is not a first run: re-opening must not restart the tour.
 let welcomeReopened=false;
 document.addEventListener('click',e=>{
