@@ -130,6 +130,7 @@ type QARow       = { id: string; scenario?: string; question: string; optionA: s
 type ItemRow     = { id: string; item: string; category: string; notes?: string };
 type VocabRow    = { id: string; word: string; definition: string };
 type ScenarioRow = { id: string; situation: string; options: string; correct: string };
+type NutritionRow = { id: string; food: string; group: string; fastSugar: number; starch: number; fiber: number; protein: number; fat: number; notes?: string };
 
 function qaTable(rows: QARow[]): Table {
   const hasScenario = rows.some(r => r.scenario);
@@ -212,6 +213,44 @@ function itemTable(rows: ItemRow[]): Table {
           td(r.item,          wItem, { bg }),
           td(r.category,      wCat,  { bg }),
           ...(hasNotes ? [td(r.notes ?? "", wNote, { bg })] : []),
+        ],
+      });
+    }),
+  ]);
+}
+
+function nutritionTable(rows: NutritionRow[]): Table {
+  const wId    = 1300;
+  const wNum   = 1100;                       // five numeric columns
+  const wFood  = 3300;
+  const wGroup = PW - wId - wFood - wNum * 5;
+
+  return table([
+    new TableRow({
+      tableHeader: true,
+      children: [
+        th("ID", wId),
+        th("Food", wFood),
+        th("Group", wGroup),
+        th("Fast sugar", wNum),
+        th("Starch", wNum),
+        th("Fiber", wNum),
+        th("Protein", wNum),
+        th("Fat", wNum),
+      ],
+    }),
+    ...rows.map((r, i) => {
+      const bg = i % 2 === 0 ? WHITE : ROWALT;
+      return new TableRow({
+        children: [
+          tdBrand(r.id, wId),
+          td(r.food,  wFood,  { bg }),
+          td(r.group, wGroup, { bg }),
+          td(String(r.fastSugar), wNum, { bg }),
+          td(String(r.starch),    wNum, { bg }),
+          td(String(r.fiber),     wNum, { bg }),
+          td(String(r.protein),   wNum, { bg }),
+          td(String(r.fat),       wNum, { bg }),
         ],
       });
     }),
@@ -369,10 +408,16 @@ export async function downloadContentRegistryDocx(): Promise<void> {
         gap(80),
       );
 
+      // Shown before the table, so a reviewer reads what the numbers mean first.
+      if (game.reviewNote) {
+        children.push(para(game.reviewNote, { size: 17, italic: true, before: 0, after: 60 }));
+      }
+
       if (game.qa)        { children.push(qaTable(game.qa),        gap(80)); }
       if (game.items)     { children.push(itemTable(game.items),    gap(80)); }
       if (game.vocab)     { children.push(vocabTable(game.vocab),   gap(80)); }
       if (game.scenarios) { children.push(scenarioTable(game.scenarios), gap(80)); }
+      if (game.nutrition) { children.push(nutritionTable(game.nutrition), gap(80)); }
     }
   }
 

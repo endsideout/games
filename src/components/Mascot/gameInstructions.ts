@@ -13,6 +13,14 @@ export const REACT_AUDIO = {
   giggle:  "/audio/react-giggle.wav",
 } as const;
 
+/**
+ * Keyed by route path: MascotWidget looks up GAME_INSTRUCTIONS[location.pathname].
+ *
+ * Static labs under public/ (currently Spike Lab, at /spike-lab/index.html) are
+ * deliberately absent. They are separate documents outside the router, so
+ * MascotWidget never mounts on them and an entry here would be dead code. Spike
+ * Lab carries its own mascot, Hexi, with its own recorded voice and per-tab tips.
+ */
 export const GAME_INSTRUCTIONS: Record<string, GameInstruction> = {
   "/sometimes-anytime-food": {
     emoji: "🍎",

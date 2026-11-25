@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { GAMES, CHANGELOG } from "./ContentRegistryData";
-import type { QARow, ItemRow, VocabRow, ScenarioRow, Game } from "./ContentRegistryData";
+import type { QARow, ItemRow, VocabRow, ScenarioRow, NutritionRow, Game } from "./ContentRegistryData";
 import { downloadContentRegistryDocx } from "./generateContentRegistry";
 
 const BRAND   = "#005d5b";
@@ -145,6 +145,49 @@ function ItemTable({ rows }: { rows: ItemRow[] }) {
               <td style={{ ...TD, fontWeight: 700, color: BRAND, fontFamily: "sans-serif" }}>{r.id}</td>
               <td style={TD}>{r.item}</td>
               <td style={TD}>{r.category}</td>
+              {hasNotes && <td style={TD}>{r.notes ?? ""}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function NutritionTable({ rows }: { rows: NutritionRow[] }) {
+  const hasNotes = rows.some(r => r.notes);
+  const NUM = { ...TD, textAlign: "right" as const, fontFamily: "sans-serif", fontVariantNumeric: "tabular-nums" as const };
+  const THNUM = { ...TH, textAlign: "right" as const };
+  return (
+    <div style={{ overflowX: "auto", marginBottom: "1.5rem" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
+        <caption style={{ captionSide: "top", textAlign: "left", padding: "0 0 6px", color: GREY, fontSize: "0.78rem" }}>
+          Relative weights on a 0&ndash;10 scale, not grams. Read the note above first.
+        </caption>
+        <thead>
+          <tr style={{ background: LIGHT }}>
+            <th style={TH}>ID</th>
+            <th style={TH}>Food</th>
+            <th style={TH}>Group</th>
+            <th style={THNUM}>Fast sugar</th>
+            <th style={THNUM}>Starch</th>
+            <th style={THNUM}>Fiber</th>
+            <th style={THNUM}>Protein</th>
+            <th style={THNUM}>Fat</th>
+            {hasNotes && <th style={TH}>Notes</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id} style={{ background: i % 2 === 0 ? "white" : BRAND_L, borderBottom: "1px solid #e5e7eb" }}>
+              <td style={{ ...TD, fontWeight: 700, color: BRAND, fontFamily: "sans-serif" }}>{r.id}</td>
+              <td style={TD}>{r.food}</td>
+              <td style={TD}>{r.group}</td>
+              <td style={NUM}>{r.fastSugar}</td>
+              <td style={NUM}>{r.starch}</td>
+              <td style={NUM}>{r.fiber}</td>
+              <td style={NUM}>{r.protein}</td>
+              <td style={NUM}>{r.fat}</td>
               {hasNotes && <td style={TD}>{r.notes ?? ""}</td>}
             </tr>
           ))}
@@ -358,10 +401,20 @@ export function ContentRegistry(): React.JSX.Element {
                 </h3>
                 <GameHeader game={game} />
 
+                {game.reviewNote && (
+                  <p style={{
+                    margin: "0 0 1rem", padding: "0.7rem 0.9rem", fontSize: "0.82rem", lineHeight: 1.55,
+                    color: "#78350f", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 6,
+                  }}>
+                    {game.reviewNote}
+                  </p>
+                )}
+
                 {game.qa        && <QATable       rows={game.qa} />}
                 {game.items     && <ItemTable     rows={game.items} />}
                 {game.vocab     && <VocabTable    rows={game.vocab} />}
                 {game.scenarios && <ScenarioTable rows={game.scenarios} />}
+                {game.nutrition && <NutritionTable rows={game.nutrition} />}
               </section>
             ))}
           </div>

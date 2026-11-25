@@ -13,9 +13,16 @@ export function RequirePlayerProfile({
   const { isProfileComplete, isLmsSession } = useGameUser();
   const location = useLocation();
 
+  // Pages that are not gameplay and are read by adults rather than students.
+  // The profile form asks for a student's name, grade, teacher and school, so
+  // gating these means a dietitian reviewing game content, or a district
+  // reading the accessibility report, has to pose as a child to get in.
+  const ADULT_REFERENCE_PATHS = ["/accessibility", "/game-content"];
+
   const isExcluded =
     location.pathname === "/player-info" ||
-    location.pathname.startsWith("/admin");
+    location.pathname.startsWith("/admin") ||
+    ADULT_REFERENCE_PATHS.includes(location.pathname);
 
   if (!isProfileComplete && !isLmsSession && !isExcluded) {
     const returnTo = `${location.pathname}${location.search}`;

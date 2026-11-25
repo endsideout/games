@@ -1,0 +1,23 @@
+# Netlify response headers. Copied verbatim from public/ into dist/ by Vite.
+#
+# Why this file exists: Vite fingerprints the files it builds, so they can be
+# cached forever. Anything under public/ is copied with its name unchanged, so
+# a browser that has cached one keeps serving the old copy after a deploy. The
+# static labs under /spike-lab/ are all unhashed, so they need these rules or a
+# fix reaches us and never reaches the classroom.
+
+/spike-lab/index.html
+  Cache-Control: no-cache
+
+/spike-lab/
+  Cache-Control: no-cache
+
+# Voice sprite and OCR engine: large, and changed only when the lab itself is
+# rebuilt. Fresh for a day, then served from cache while being refreshed in the
+# background, so a school network is not asked for 13 MB on every visit. Not
+# "immutable" — these keep their filenames across rebuilds.
+/spike-lab/voice/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+
+/spike-lab/ocr/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000

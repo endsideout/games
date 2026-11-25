@@ -9,6 +9,9 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([globalIgnores([
   "dist",
+  // Static assets served verbatim, including vendored minified libraries
+  // (e.g. the Tesseract build under public/spike-lab/ocr). Not our source.
+  "public",
   "storybook-static",
   "playwright-report",
   "test-results",

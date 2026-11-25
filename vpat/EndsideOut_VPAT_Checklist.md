@@ -124,3 +124,75 @@ grep -rn "tabindex=[\"'][1-9]" src/
 ---
 
 *This checklist is based on VPAT 2.5 WCAG Edition. Update ratings in the Word doc version (EndsideOut_VPAT_2026.docx) after reviewing your codebase.*
+
+---
+
+# Appendix A — Spike Lab
+
+**Scope:** `public/spike-lab/index.html` (v45) and its `voice/` and `ocr/` assets. This is a
+standalone static page outside the React app and the router, so the ratings in Tables 1 and 2 above
+do not describe it. **Audited:** 24 November 2026. **Audited by:** Darren Dcunha, with Claude.
+
+Spike Lab is for children aged 8–12 and is graded against WCAG 2.1 / 2.2 Level AA.
+
+## What was tested, and how
+
+| Check | Method | Result |
+|---|---|---|
+| Automated rule scan | axe-core 4.10.2, tags `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, across 5 tabs × 2 viewport widths (1280, 390) × light and dark = 20 page states | 0 violations |
+| Keyboard operability (2.1.1) | 70 distinct controls reached with real `Tab` key presses, not programmatic focus | All reachable |
+| Focus visible (2.4.7) | Every control that matched `:focus-visible` during that traversal checked for an outline, box-shadow or border change | Visible ring on all 70 |
+| Target size (2.5.8) | Measured the bounding box of every visible interactive element across all tabs | 2 failures found and fixed — see below |
+| Reflow (1.4.10) | 320px viewport, all tabs, checked `scrollWidth` against `clientWidth` | No horizontal scroll |
+| Text spacing (1.4.12) | Injected line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, paragraph spacing 2em | No clipping, no overflow |
+| Resize text (1.4.4) | 640px viewport at deviceScaleFactor 2, as a 200% zoom equivalent | No horizontal scroll |
+| Language of page (3.1.1) | `axe html-has-lang` plus inspection of the served markup | Passes — fixed, see below |
+
+## Fixed during this audit
+
+- **2.5.8 Target Size (Minimum) — was a Level AA failure.** The two `.walkchip` checkbox labels
+  ("10-minute walk after lunch" on Hexi's Day, "Show % Daily Value" in Label Lab) were 22.1px tall.
+  The native checkbox renders at 13px and the wrapping `<label>` is the target, so the height had to
+  come from the label. Both are now 24px. Note that an earlier pass fixed `.check` to 24px and missed
+  `.walkchip`: these are two separate classes doing the same job, and only measuring the rendered box
+  caught it.
+- **3.1.1 Language of Page.** `lang` was being set at runtime by script
+  (`documentElement.lang='en'`), so axe passed but the page declared no language until JavaScript
+  ran. `lang="en"` is now in the markup. The runtime assignment stays, because it is what will switch
+  the language when Spanish ships.
+
+## Spike Lab specifics worth recording
+
+- **Graphs carry text, not just images.** Each blood-sugar chart has a plain-language caption
+  underneath, and the same sentence is the SVG's `aria-label`, so a child who cannot read the graph
+  and a screen reader get identical wording. This is the main 1.1.1 mechanism.
+- **13 `aria-live="polite"` regions** announce caption and verdict changes (4.1.3).
+- **No autoplay audio.** Hexi's recorded voice is off by default and plays only from a button, which
+  also satisfies the iOS requirement for a user gesture (1.4.2).
+- **`prefers-reduced-motion` is honoured** throughout, including Hexi's animation (2.3.3).
+- **No accounts, no tracking, and photos never leave the device.** The label scanner runs Tesseract
+  locally. There is no login, so 3.3.8 Accessible Authentication does not apply.
+- **Reading level** is targeted at grade 3. This has not been formally measured (3.1.5 is Level AAA
+  and out of scope, but it is the criterion that matters most for this audience).
+
+## Not verified — do not claim these
+
+1. **No real hardware.** Every result above comes from headless Chromium in a container. Spike Lab
+   has never run on a school Chromebook or a phone. The camera in "Snap a label" and Web Audio on iOS
+   are the two things most likely to behave differently, and neither can be emulated here.
+2. **No screen reader was actually listened to.** `aria-label` and `aria-live` were inspected in the
+   DOM; nobody has run NVDA, JAWS or VoiceOver and listened to the result. Inspecting an attribute is
+   not the same as hearing what gets announced.
+3. **axe-core covers only the automatable subset of WCAG** — commonly put at a third to a half of the
+   criteria. "0 violations" means no machine-detectable failures in those 20 states, not conformance.
+4. **Colour contrast was only machine-checked.** axe measures computed contrast, but it skips text
+   over gradients and over SVG fills, both of which Spike Lab uses.
+5. **Cognitive load and comprehension are untested with children.** The caption wording exists
+   because a reviewer could not tell what the graph meant; whether the fix works is unknown until
+   children use it.
+6. **The recorded audio has never been checked for pronunciation**, including "Hexi", "injera",
+   "pupusa" and "edamame".
+
+Items 1 and 2 are the gaps that matter before any pilot. Until they are closed, Spike Lab's rating
+should be recorded as **Partially Supports** for the criteria above rather than Supports, however
+clean the automated run looks.

@@ -14,6 +14,30 @@ const MODULES = [
   { label: "Module 7", route: "/know-your-health/module-7", comingSoon: false },
 ];
 
+// ── Labs ─────────────────────────────────────────────────────────────────────
+// Open-ended tools rather than scored games, so they sit outside SET1_GAMES:
+// that list is an ordered playlist with a game count and a "Play All" run.
+// `href` (not `route`) marks a static page under /public that the router does
+// not serve — it must be reached with a plain <a>, or React Router will
+// intercept the click and land on a blank screen.
+//
+// The path ends in index.html on purpose. Netlify serves the directory form
+// "/spike-lab/" from the file, but Vite's dev server answers it with the SPA
+// shell instead, so the pretty URL works in production and silently lands on
+// the player-info form locally. Naming the file behaves the same everywhere.
+// public/_redirects keeps "/spike-lab/" working for links we hand out.
+const LABS = [
+  {
+    name: "Spike Lab",
+    href: "/spike-lab/index.html",
+    icon: "🍯",
+    tagline: "Build a meal and watch Hexi ride your blood sugar",
+    description:
+      "Meet Hexi, a sugar molecule. Build a plate, scan a label, or ride along through the body — then see whether your meal gives you a steady cruise or a rollercoaster.",
+    badge: "New",
+  },
+];
+
 const COLORS = [
   { bg: "from-blue-50 to-green-50",    border: "border-blue-300",   text: "text-blue-800",   btn: "from-blue-500 to-green-600",    icon: "🌱" },
   { bg: "from-green-50 to-teal-50",    border: "border-green-300",  text: "text-green-800",  btn: "from-green-500 to-teal-600",    icon: "🥗" },
@@ -90,6 +114,45 @@ export function KnowYourHealth(): React.JSX.Element {
               </div>
             </div>
           </Link>
+        </div>
+
+        {/* Labs — open-ended tools, each a static page outside the router */}
+        <div className="mb-10">
+          <h2 className="text-white font-black text-2xl mb-4 text-center drop-shadow">🔬 Labs</h2>
+          {LABS.map((lab) => (
+            <a
+              key={lab.href}
+              href={lab.href}
+              className="block bg-white/95 rounded-3xl shadow-2xl border-4 border-amber-300 p-6 hover:scale-[1.02] transition-transform duration-200"
+            >
+              <div className="flex items-center gap-5">
+                <div
+                  className="flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #F7C948, #F59E0B)" }}
+                >
+                  <span aria-hidden="true">{lab.icon}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-black text-gray-800">{lab.name}</h3>
+                    {lab.badge && (
+                      <span className="text-xs font-bold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                        {lab.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-700 text-sm font-semibold mb-1">{lab.tagline}</p>
+                  <p className="text-gray-500 text-xs leading-snug">{lab.description}</p>
+                </div>
+                <div
+                  className="flex-shrink-0 px-5 py-3 text-white font-black rounded-full shadow-lg text-sm"
+                  style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                >
+                  Open Lab →
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
 
         <h2 className="text-white font-black text-2xl mb-4 text-center drop-shadow">📚 Modules</h2>
